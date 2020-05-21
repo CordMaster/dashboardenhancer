@@ -1,0 +1,93 @@
+import React, { useContext } from 'react';
+
+import { makeStyles, ThemeProvider, CircularProgress, withWidth } from '@material-ui/core';
+
+import { Switch, Route, Redirect } from 'react-router-dom';
+
+import Settings from './endpoints/Settings.js';
+import View from './endpoints/View.js';
+
+import AppDrawer from './components/AppDrawer.js';
+import AppBar from './components/AppBar.js';
+import { MainContext } from './contexts/MainContextProvider.js';
+import More from './endpoints/More.js';
+
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+    [theme.breakpoints.down('sm')]: {
+      flexFlow: 'column nowrap'
+    },
+    [theme.breakpoints.up('md')]: {
+      flexFlow: 'row nowrap'
+    }
+  },
+
+  content: {
+    flex: '1 0 0',
+    //another weird fix
+    overflow: 'hidden',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%'
+    },
+    [theme.breakpoints.up('md')]: {
+      height: '100%'
+    }
+  },
+
+  main: {
+    //cheap height fix
+    height: '100%',
+
+    whiteSpace: 'nowrap',
+    overflow: 'auto',
+
+    //for children
+    position: 'relative'
+  },
+
+  loader: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)'
+  }
+}));
+
+function MainContainer({ width }) {
+  const classes = useStyles();
+
+  const { loading, genTheme, defaultDashboard, iconsOnly } = useContext(MainContext);
+
+  const isSmall = width === 'sm' || width === 'xs';
+
+  return (
+    loading === 0 ?
+      <ThemeProvider theme={genTheme}>
+        <div className={classes.root}>
+          { !isSmall ? <AppDrawer iconsOnly={iconsOnly} /> : null }
+
+          <div className={classes.content}>
+            <main className={classes.main}>
+              <Switch>
+                <Route path="/settings" component={Settings} />
+                <Route path="/more" component={More} />
+                <Route exact path="/" render={() => <Redirect to={defaultDashboard === -1 ? 'settings/' + window.location.search : '' + defaultDashboard + '/' + window.location.search} />} />
+                <Route path="/" render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} />} />
+              </Switch>
+            </main>
+          </div>
+
+          { isSmall ? <AppBar iconsOnly={iconsOnly} /> : null }
+        </div>
+      </ThemeProvider> :
+      <div className={classes.loader}>
+        <CircularProgress size={100} />
+      </div>
+  );
+}
+
+export default withWidth()(MainContainer);
