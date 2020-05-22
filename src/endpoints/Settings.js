@@ -76,6 +76,10 @@ function Settings() {
           :
           <ColorOverrideSettings />
           }
+
+          <SettingsSection title="Legal">
+            <Button variant="outlined" color="secondary" onClick={() => window.location.assign('https://cdn.plumpynuggets.com/attribution.txt')}>Licenses</Button>
+          </SettingsSection>
         </Grid>
       </Grid>
     </Paper>

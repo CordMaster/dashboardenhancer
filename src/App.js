@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { BrowserRouter as Router } from 'react-router-dom';
 import { endpoint } from './Constants.js'
 

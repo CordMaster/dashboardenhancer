@@ -12,6 +12,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+//only render if we have an index
 function View({ index, preload }) {
   const classes = useStyles();
 

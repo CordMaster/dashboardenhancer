@@ -76,8 +76,9 @@ function MainContainer({ width }) {
                 <Route path="/settings" component={Settings} />
                 <Route path="/more" component={More} />
                 <Route exact path="/" render={() => <Redirect to={defaultDashboard === -1 ? 'settings/' + window.location.search : '' + defaultDashboard + '/' + window.location.search} />} />
-                <Route path="/" render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} />} />
               </Switch>
+              
+              <Route path="/" render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} />} />
             </main>
           </div>
 

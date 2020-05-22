@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import Immutable, { List, Map } from 'immutable';
 
@@ -9,6 +9,8 @@ import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 import { endpoint, access_token } from '../Constants.js';
 
 export const MainContext = React.createContext({});
+
+const websocket = new WebSocket('ws://192.168.1.211/eventsocket');
 
 //util for autogen configs
 function useConfig(fields) {
@@ -44,11 +46,16 @@ function MainContextProvider(props) {
     dashboards: List([])
   }));
 
+  const objState = useMemo(() => state.toJS(), [state]);
+
+  const [devices, setDevices] = useState(new Map());
+  const objDevices = useMemo(() => devices.toJS(), [devices]);
+
   const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 },
   { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }]);
 
   //go down loading by 1 til we get to 0
-  const [loading, setLoading] = useState(2);
+  const [loading, setLoading] = useState(3);
   const [token, setToken] = useState('');
   const [allDashboards, setAllDashboards] = useState([]);
 
@@ -77,8 +84,6 @@ function MainContextProvider(props) {
 
     setGenTheme(theme);
   }, [config.theme, config.fontSize, config.overrideColors, config.overrideBG, config.overrideFG, config.overridePrimary, config.overrideSecondary]);
-
-  const objState = state.toJS();
 
   const modifyDashboards = (obj) => {
     const type = obj.type;
@@ -116,31 +121,47 @@ function MainContextProvider(props) {
   useEffect(() => {
     //allow using no access token
     if(access_token) {
-      if(loading === 2) {
+      if(loading === 3) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
           if(!data.error) {
             if(data.state) setState(Immutable.fromJS(data.state));
             delete data.state;
             mergeAllConfig(data);
+
+            console.log(`Got config`);
           }
         }).always(() => {
-          setLoading(loading - 1);
+          setLoading(2);
         });
-      } else if(loading === 1) {
+      } else if(loading === 2) {
         //load all dashboards from hub
-        if(access_token && !objState.token) {
-          $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
-            setToken(data.token);
-            setAllDashboards(data.dashboards);
-          }).always(() => {
-            setLoading(loading - 1);
-          });
-        }
+        $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
+          setToken(data.token);
+          setAllDashboards(data.dashboards);
+
+          console.log(`Got all dashboards`);
+        }).always(() => {
+          setLoading(1);
+        });
+      } else if(loading === 1 && objState.dashboards.length > 1) {
+        //load device data from the first dashboard
+        //get devices
+        $.get(`${endpoint}getDashboardDevices/${objState.dashboards[0].id}/?access_token=${access_token}`, (data) => {
+          //map devices to device id
+          const cleanData = {};
+          data.forEach(it => cleanData[it.id] = it);
+          setDevices(Immutable.fromJS(cleanData));
+
+          console.log(`Got devices:`);
+          console.log(cleanData);
+        }).always(() => {
+          setLoading(0);
+        });
       }
     } else {
       setLoading(0);
     }
-  }, [loading, mergeAllConfig, objState.token]);
+  }, [loading]);
 
   const save = () => {
     //save
@@ -153,8 +174,27 @@ function MainContextProvider(props) {
     }
   }
 
+  //attach websocket
+  useEffect(() => {
+    //if loaded
+    if(loading === 0) {
+      websocket.onmessage = (resp) => {
+        const data = JSON.parse(resp.data);
+
+        console.log(data);
+
+        //update our cache
+        if(data.deviceId && data.name && data.value) {
+          const attrIndex = objDevices[data.deviceId].attr.findIndex(it => it[data.name]);
+          const newDevices = devices.updateIn([ '' + data.deviceId, 'attr', attrIndex ], value => { return { ...value, [data.name]: data.value } });
+          setDevices(newDevices);
+        }
+      };
+    }
+  }, [loading, devices, objDevices]);
+
   return (
-    <MainContext.Provider value={{ loading, token, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, save }}>
+    <MainContext.Provider value={{ loading, token, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, devices: objDevices, save }}>
       {props.children}
     </MainContext.Provider>
   );

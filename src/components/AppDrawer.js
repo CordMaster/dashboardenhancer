@@ -1,7 +1,7 @@
-import React, { useContext, Fragment } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, Fragment, useEffect, useState, useMemo } from 'react';
+import $ from 'jquery';
 
-import { Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Drawer } from '@material-ui/core';
+import { Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Drawer, Badge } from '@material-ui/core';
 
 import { Link } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import { MainContext } from '../contexts/MainContextProvider';
 
 import { withRouter } from 'react-router';
 import Clock from './Clock';
+import { endpoint, access_token } from '../Constants';
 
 const useStyles = makeStyles(theme => ({
   drawerList: {
@@ -70,36 +71,59 @@ function AppDrawer({ location, iconsOnly }) {
         <div className={classes.listItemSpacer} />
         <Divider />
 
-        <DrawerItem label="Settings" Icon={Icons.Settings} component={Link} to={`/settings/${window.location.search}`} selected={subLocation == 'settings/'} hideText={iconsOnly} />
+        <DrawerItem label="Settings" Icon={Icons.Settings} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} hideText={iconsOnly} />
         <Divider />
         {!iconsOnly ?
-          <Fragment>
-            <ListItem className={classes.drawerAppBar}>
-              <ListItemText disableTypography>
-                <Clock />
-              </ListItemText>
-            </ListItem>
-            <Divider />
-          </Fragment> : null
+          <ListItem className={classes.drawerAppBar}>
+            <ListItemText disableTypography>
+              <Clock />
+            </ListItemText>
+          </ListItem> : null
         }
       </List>
     </Drawer>
   );
 }
 
+//util for tracking dashboard state to handle notifications
+function useNotifications(dashboardId) {
+  const { devices } = useContext(MainContext);
+
+  const [layout, setLayout] = useState([]);
+
+  useEffect(() => {
+    //get layout
+    $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
+      setLayout(data.tiles);
+      console.log(`Got layout for: ${dashboardId}`);
+      console.log(data);
+    });
+  }, [dashboardId]);
+
+  const notifications = useMemo(() => {
+    return layout.map(it => it.device).filter(it => {
+      return devices[it] && (devices[it].t === 'switch' || devices[it].t === 'fan' || devices[it].t === 'bulb-color' || devices[it].t === 'button' || devices[it].t === 'dimmer');
+    }).map(it => devices[it].attr.find(it => it['switch']).switch).filter(it => it === 'on').length;
+  }, [devices, layout]);
+
+  return notifications;
+}
+
 function DashboardDrawerItem({ index, dashboard, location, ...props }) {
     const Icon = Icons[dashboard.iconName];
 
+    const notifications = useNotifications(dashboard.id);
+
     return (
       <Fragment>
-        <DrawerItem label={dashboard.label} Icon={Icon} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
+        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
         <Divider />
       </Fragment>
     );
 }
 
 //visual drawer item
-function DrawerItem({ label, Icon, onClick, selected, selectedColor = 'primary', hideText, ...props }) {
+function DrawerItem({ label, badgeCount, Icon, onClick, selected, selectedColor = 'primary', hideText, ...props }) {
   const booleanColor = bool => {
     return bool ? selectedColor : undefined;
   }
@@ -107,7 +131,9 @@ function DrawerItem({ label, Icon, onClick, selected, selectedColor = 'primary',
   return (
     <ListItem button {...props} onClick={onClick} selected={selected}>
       <ListItemIcon>
-        <Icon />
+        <Badge badgeContent={badgeCount} color="secondary">
+          <Icon />
+        </Badge>
       </ListItemIcon>
       <ListItemText primaryTypographyProps={{ color: booleanColor(selected) }}>
           {!hideText ? label : '-'}
