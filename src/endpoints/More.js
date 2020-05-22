@@ -1,11 +1,15 @@
 import React, { useContext, Fragment } from 'react';
-import { makeStyles, Hidden, List, ListItem, ListItemIcon, ListItemText, Typography, ListSubheader, Divider } from '@material-ui/core';
+import { makeStyles, Hidden, List, ListItem, ListItemIcon, ListItemText, Typography, ListSubheader, Divider, Paper } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
 import * as Icons from '@material-ui/icons';
 import { useHistory } from 'react-router';
 import { pushHistoryPreserve } from '../Utils';
 
 const useStyles = makeStyles(theme => ({
+  settingsPaper: {
+    minHeight: '100%'
+  },
+
   listItem: {
     paddingLeft: theme.spacing(4)
   }
@@ -27,17 +31,19 @@ function More({ index }) {
   } else uiDashboards.push(<Fragment key={"none"}><ListItem key={"none"} className={classes.listItem} disabled><ListItemText>No other panels</ListItemText></ListItem><Divider /></Fragment>);
 
   return (
-    <List disablePadding>
-      <ListSubheader>Other Panels</ListSubheader>
-      <Divider />
+    <Paper square elevation={0} className={classes.settingsPaper}>
+      <List disablePadding>
+        <ListSubheader>Other Panels</ListSubheader>
+        <Divider />
 
-      {uiDashboards}
+        {uiDashboards}
 
-      <ListSubheader>Settings</ListSubheader>
-      <Divider />
+        <ListSubheader>Settings</ListSubheader>
+        <Divider />
 
-      <ImprovedListItem label="Settings" Icon={Icons.Settings} onClick={() => pushHistoryPreserve(history, '/settings/')} />
-    </List>
+        <ImprovedListItem label="Settings" Icon={Icons.Settings} onClick={() => pushHistoryPreserve(history, '/settings/')} />
+      </List>
+    </Paper>
   );
 }
 

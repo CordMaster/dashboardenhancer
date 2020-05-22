@@ -3,9 +3,11 @@ import PropTypes from 'prop-types';
 
 import $ from 'jquery';
 
-import { makeStyles, CircularProgress } from '@material-ui/core';
+import { makeStyles, CircularProgress, Snackbar, SnackbarContent } from '@material-ui/core';
 
 import { Grid, Paper, Typography, TextField, MenuItem, Button, Switch, FormControlLabel, Divider, List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, FormControl, FormLabel, RadioGroup, Radio, ThemeProvider } from '@material-ui/core';
+
+import { Alert } from '@material-ui/lab';
 
 import * as Icons from '@material-ui/icons';
 
@@ -29,15 +31,33 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const {token, allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, overrideColors, setOverrideColors, save} = useContext(MainContext);;
+  const {token, allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, save} = useContext(MainContext);
+
+  const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
+
+  const handleSave = () => {
+    save().done(() => {
+      setSnackbarContent({ value: "Successfully saved settings!", type: 'success' });
+    }).fail(() => {
+      setSnackbarContent({ value: "There was an error saving your settings.", type: 'error' });
+    });
+  }
 
   return (
     <Paper square elevation={0} className={classes.settingsPaper}>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={snackbarContent.value !== ''} autoHideDuration={5000} onClose={() => setSnackbarContent({ value: '', type: '' })}>
+        <Alert severity={snackbarContent.type} onClose={() => setSnackbarContent({ value: '', type: '' })}>
+          <Typography color="textSecondary" variant="inherit">
+            {snackbarContent.value}
+          </Typography>
+        </Alert>
+      </Snackbar>
+
       <Grid container direction="row" wrap="nowrap" justify="center">
         <Grid item xs={11} sm={10}>
           <Typography variant="h5" gutterBottom>
             Settings
-            <Button variant="contained" color="primary" onClick={save} className={classes.saveBtn}>Save</Button>
+            <Button variant="contained" color="primary" onClick={handleSave} className={classes.saveBtn}>Save</Button>
           </Typography>
           
           {token ? 
@@ -53,29 +73,29 @@ function Settings() {
             </FormControl>
           </SettingsSection>
 
-          <SettingsSection title="Icons only on the drawer">
+          <SettingsSection title="Drawer Settings">
             <FormControl fullWidth margin="dense">
               <FormControlLabel control={<Switch />} label="Icons only" checked={iconsOnly} onChange={() => setIconsOnly(!iconsOnly)} />
+            </FormControl>
+
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Show badges" checked={showBadges} onChange={() => setShowBadges(!showBadges)} />
             </FormControl>
           </SettingsSection>
 
           <FontSizeSettings />
 
-          <SettingsSection title="Override Colors">
+          <SettingsSection title="Color Settings">
             <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Override colors" checked={overrideColors} onChange={() => setOverrideColors(!overrideColors) & setTheme('light')} />
+              <FormControlLabel control={<Switch />} label={`${overrideColors ? 'Dark base' : 'Dark theme'}`} checked={theme === 'dark'} onChange={() => theme === 'dark' ? setTheme('light') : setTheme('dark')} />
+            </FormControl>
+
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Override colors" checked={overrideColors} onChange={() => setOverrideColors(!overrideColors)} />
             </FormControl>
           </SettingsSection>
-          
-          {!overrideColors ? 
-          <SettingsSection title="Theme">
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Dark mode" checked={theme === 'dark'} onChange={() => theme === 'dark' ? setTheme('light') : setTheme('dark')} />
-            </FormControl>
-          </SettingsSection>
-          :
-          <ColorOverrideSettings />
-          }
+
+          {overrideColors && <ColorOverrideSettings />}
 
           <SettingsSection title="Legal">
             <Button variant="outlined" color="secondary" onClick={() => window.location.assign('https://cdn.plumpynuggets.com/attribution.txt')}>Licenses</Button>

@@ -1,5 +1,5 @@
 import React, { useContext, Fragment } from 'react';
-import { makeStyles, Hidden } from '@material-ui/core';
+import { makeStyles, Hidden, Paper } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
 
 const useStyles = makeStyles(theme => ({
@@ -21,9 +21,9 @@ function View({ index, preload }) {
   const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ visibility: index === i ? 'visible' : 'hidden'}} className={classes.fullFrame} src={`http://192.168.1.211/apps/api/1/dashboard/${dashboard.id}?access_token=${token}`} title="Hubitat" />);
 
   return (
-    <Fragment>
-      {preload ? frames : <iframe className={classes.fullFrame} src={`http://192.168.1.211/apps/api/1/dashboard/${dashboards[index].id}?access_token=${token}`} title="Hubitat" />}
-    </Fragment>
+    <Paper square elevation={0} style={{ display: isNaN(index) ? 'none' : 'initial' }}>
+      {preload ? frames : !isNaN(index) && <iframe className={classes.fullFrame} src={`http://192.168.1.211/apps/api/1/dashboard/${dashboards[index].id}?access_token=${token}`} title="Hubitat" />}
+    </Paper>
   );
 }
 

@@ -6,11 +6,11 @@ import $ from 'jquery';
 import Color from 'color';
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
-import { endpoint, access_token } from '../Constants.js';
+import { endpoint, access_token, hubIp } from '../Constants.js';
 
 export const MainContext = React.createContext({});
 
-const websocket = new WebSocket('ws://192.168.1.211/eventsocket');
+const websocket = new WebSocket(`${hubIp.replace('http', 'ws')}eventsocket`);
 
 //util for autogen configs
 function useConfig(fields) {
@@ -51,7 +51,7 @@ function MainContextProvider(props) {
   const [devices, setDevices] = useState(new Map());
   const objDevices = useMemo(() => devices.toJS(), [devices]);
 
-  const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 },
+  const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }]);
 
   //go down loading by 1 til we get to 0
@@ -164,24 +164,19 @@ function MainContextProvider(props) {
   }, [loading]);
 
   const save = () => {
-    //save
-    if(access_token) {
-      $.ajax(`${endpoint}options/?access_token=${access_token}`, {
-        type: 'POST',
-        contentType: "multipart/form-data",
-        data: JSON.stringify({ state: objState, ...config })
-      });
-    }
+    return $.ajax(`${endpoint}options/?access_token=${access_token}`, {
+      type: 'POST',
+      contentType: "multipart/form-data",
+      data: JSON.stringify({ state: objState, ...config })
+    });
   }
 
   //attach websocket
   useEffect(() => {
     //if loaded
-    if(loading === 0) {
+    if(loading === 0 && Object.keys(objDevices).length > 0) {
       websocket.onmessage = (resp) => {
         const data = JSON.parse(resp.data);
-
-        console.log(data);
 
         //update our cache
         if(data.deviceId && data.name && data.value) {
