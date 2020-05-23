@@ -186,7 +186,7 @@ function MainContextProvider(props) {
         }).always(() => {
           setLoading(0);
         });
-      }
+      } else setLoading(0);
     } else {
       if(loading !== 0) setLoading(0);
     }
