@@ -1,7 +1,7 @@
 import React, { useContext, Fragment } from 'react';
 import { makeStyles, Hidden, Paper } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
-import { hubIp } from '../Constants';
+import { hubIp, dashboardAppId } from '../Constants';
 
 const useStyles = makeStyles(theme => ({
   fullFrame: {
@@ -19,11 +19,11 @@ function View({ index, preload }) {
 
   const { token, dashboards } = useContext(MainContext);
 
-  const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ visibility: index === i ? 'visible' : 'hidden'}} className={classes.fullFrame} src={`${hubIp}apps/api/1/dashboard/${dashboard.id}?access_token=${token}`} title="Hubitat" />);
+  const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ visibility: index === i ? 'visible' : 'hidden'}} className={classes.fullFrame} src={`${hubIp}apps/api/${dashboardAppId}/dashboard/${dashboard.id}?access_token=${token}`} title="Hubitat" />);
 
   return (
     <Paper square elevation={0} style={{ display: isNaN(index) ? 'none' : 'initial' }}>
-      {preload ? frames : !isNaN(index) && <iframe className={classes.fullFrame} src={`${hubIp}apps/api/1/dashboard/${dashboards[index].id}?access_token=${token}`} title="Hubitat" />}
+      {preload ? frames : !isNaN(index) && <iframe className={classes.fullFrame} src={`${hubIp}apps/api/${dashboardAppId}/dashboard/${dashboards[index].id}?access_token=${token}`} title="Hubitat" />}
     </Paper>
   );
 }
