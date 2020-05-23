@@ -42,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 function AppDrawer({ location, iconsOnly }) {
   const classes = useStyles();
 
-  const { dashboards, title } = useContext(MainContext);
+  const { dashboards, title, showClock, clockOnTop } = useContext(MainContext);
 
   const subLocation = location.pathname.substr(1);
 
@@ -62,24 +62,23 @@ function AppDrawer({ location, iconsOnly }) {
                 </Typography>
               </ListItemText>
             </ListItem>
-            <Divider />
           </Fragment> :
           null
         }
 
+        {showClock && clockOnTop ?
+          <ClockDrawerItem /> : null
+        }
+
         {uiDashboards}
+        <Divider />
 
         <div className={classes.listItemSpacer} />
         <Divider />
 
         <DrawerItem label="Settings" Icon={Icons.Settings} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} hideText={iconsOnly} />
-        <Divider />
-        {!iconsOnly ?
-          <ListItem className={classes.drawerAppBar}>
-            <ListItemText disableTypography>
-              <Clock />
-            </ListItemText>
-          </ListItem> : null
+        {showClock && !clockOnTop ?
+          <ClockDrawerItem /> : null
         }
       </List>
     </Drawer>
@@ -108,10 +107,23 @@ function useNotifications(dashboardId) {
   const notifications = useMemo(() => {
     return layout.map(it => it.device).filter(it => {
       return devices[it] && (devices[it].t === 'switch' || devices[it].t === 'fan' || devices[it].t === 'bulb-color' || devices[it].t === 'button' || devices[it].t === 'dimmer');
-    }).map(it => devices[it].attr.find(it => it['switch']).switch).filter(it => it === 'on').length;
+    }).map(it => devices[it].attr.find(it => it['switch'])).filter(it => it && it.switch === 'on').length;
   }, [devices, layout]);
 
   return notifications;
+}
+
+function ClockDrawerItem() {
+  return (
+    <Fragment>
+      <Divider />
+      <ListItem>
+        <ListItemText disableTypography>
+          <Clock />
+        </ListItemText>
+      </ListItem>
+    </Fragment>
+  )
 }
 
 function DashboardDrawerItem({ index, dashboard, location, ...props }) {
@@ -121,8 +133,8 @@ function DashboardDrawerItem({ index, dashboard, location, ...props }) {
 
     return (
       <Fragment>
-        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
         <Divider />
+        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
       </Fragment>
     );
 }

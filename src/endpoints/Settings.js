@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const {token, allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, save} = useContext(MainContext);
+  const {token, allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, save} = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -75,11 +75,19 @@ function Settings() {
 
           <SettingsSection title="Drawer Settings">
             <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Icons only" checked={iconsOnly} onChange={() => setIconsOnly(!iconsOnly)} />
+              <FormControlLabel control={<Switch />} label="Icons only" checked={iconsOnly} onChange={() => setIconsOnly(!iconsOnly) & setShowClock(false)} />
             </FormControl>
 
             <FormControl fullWidth margin="dense">
               <FormControlLabel control={<Switch />} label="Show badges" checked={showBadges} onChange={() => setShowBadges(!showBadges)} />
+            </FormControl>
+
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Show clock" disabled={iconsOnly} checked={showClock} onChange={() => setShowClock(!showClock)} />
+            </FormControl>
+
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Show clock on top" disabled={iconsOnly} checked={clockOnTop} onChange={() => setClockOnTop(!clockOnTop)} />
             </FormControl>
           </SettingsSection>
 

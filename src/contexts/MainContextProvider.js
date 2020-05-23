@@ -57,6 +57,8 @@ function useDevices(loading) {
       websocket.onmessage = (resp) => {
         const data = JSON.parse(resp.data);
 
+        devLog(data);
+
         //update our cache
         if(data.deviceId && data.name && data.value) {
           const attrIndex = objDevices[data.deviceId].attr.findIndex(it => it[data.name]);
@@ -83,7 +85,8 @@ function MainContextProvider(props) {
   const [devices, setDevices] = useDevices(loading);
 
   const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
-  { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }]);
+  { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
+  { name: 'showClock', default: true }, { name: 'clockOnTop', default: false } ]);
 
   const [token, setToken] = useState('');
   const [allDashboards, setAllDashboards] = useState([]);
