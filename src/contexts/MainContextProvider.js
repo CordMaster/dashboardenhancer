@@ -6,7 +6,8 @@ import $ from 'jquery';
 import Color from 'color';
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
-import { endpoint, access_token, hubIp } from '../Constants.js';
+import { endpoint, access_token, hubIp, devMode } from '../Constants.js';
+import { devLog } from '../Utils.js';
 
 export const MainContext = React.createContext({});
 
@@ -41,21 +42,49 @@ function useConfig(fields) {
   return [ret, setRet, mergeAll];
 }
 
+//util for devices
+function useDevices(loading) {
+  const [devices, setDevices] = useState(new Map());
+  const objDevices = useMemo(() => devices.toJS(), [devices]);
+
+  //so we can update multiple items in the state at once
+  let preStateUpdate = devices;
+
+  //attach websocket
+  useEffect(() => {
+    //if loaded
+    if(loading === 0 && Object.keys(objDevices).length > 0) {
+      websocket.onmessage = (resp) => {
+        const data = JSON.parse(resp.data);
+
+        //update our cache
+        if(data.deviceId && data.name && data.value) {
+          const attrIndex = objDevices[data.deviceId].attr.findIndex(it => it[data.name]);
+          preStateUpdate = preStateUpdate.updateIn([ '' + data.deviceId, 'attr', attrIndex ], value => { return { ...value, [data.name]: data.value } }); //eslint-disable-line
+          setDevices(preStateUpdate);
+        }
+      };
+    }
+  }, [loading, devices, objDevices]);
+
+  return [devices, setDevices];
+}
+
 function MainContextProvider(props) {
+  //go down loading by 1 til we get to 0
+  const [loading, setLoading] = useState(3);
+
   const [state, setState] = useState(Map({
     dashboards: List([])
   }));
 
   const objState = useMemo(() => state.toJS(), [state]);
 
-  const [devices, setDevices] = useState(new Map());
-  const objDevices = useMemo(() => devices.toJS(), [devices]);
+  const [devices, setDevices] = useDevices(loading);
 
   const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }]);
 
-  //go down loading by 1 til we get to 0
-  const [loading, setLoading] = useState(3);
   const [token, setToken] = useState('');
   const [allDashboards, setAllDashboards] = useState([]);
 
@@ -128,7 +157,7 @@ function MainContextProvider(props) {
             delete data.state;
             mergeAllConfig(data);
 
-            console.log(`Got config`);
+            devLog(`Got config`);
           }
         }).always(() => {
           setLoading(2);
@@ -139,7 +168,7 @@ function MainContextProvider(props) {
           setToken(data.token);
           setAllDashboards(data.dashboards);
 
-          console.log(`Got all dashboards`);
+          devLog(`Got all dashboards`);
         }).always(() => {
           setLoading(1);
         });
@@ -152,14 +181,14 @@ function MainContextProvider(props) {
           data.forEach(it => cleanData[it.id] = it);
           setDevices(Immutable.fromJS(cleanData));
 
-          console.log(`Got devices:`);
-          console.log(cleanData);
+          devLog(`Got devices:`);
+          devLog(cleanData);
         }).always(() => {
           setLoading(0);
         });
       }
     } else {
-      setLoading(0);
+      if(loading !== 0) setLoading(0);
     }
   }, [loading]);
 
@@ -171,25 +200,8 @@ function MainContextProvider(props) {
     });
   }
 
-  //attach websocket
-  useEffect(() => {
-    //if loaded
-    if(loading === 0 && Object.keys(objDevices).length > 0) {
-      websocket.onmessage = (resp) => {
-        const data = JSON.parse(resp.data);
-
-        //update our cache
-        if(data.deviceId && data.name && data.value) {
-          const attrIndex = objDevices[data.deviceId].attr.findIndex(it => it[data.name]);
-          const newDevices = devices.updateIn([ '' + data.deviceId, 'attr', attrIndex ], value => { return { ...value, [data.name]: data.value } });
-          setDevices(newDevices);
-        }
-      };
-    }
-  }, [loading, devices, objDevices]);
-
   return (
-    <MainContext.Provider value={{ loading, token, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, devices: objDevices, save }}>
+    <MainContext.Provider value={{ loading, token, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, devices: devices.toJS(), save }}>
       {props.children}
     </MainContext.Provider>
   );

@@ -12,7 +12,8 @@ import { MainContext } from '../contexts/MainContextProvider';
 
 import { withRouter } from 'react-router';
 import Clock from './Clock';
-import { endpoint, access_token } from '../Constants';
+import { endpoint, access_token, devMode } from '../Constants';
+import { devLog } from '../Utils';
 
 const useStyles = makeStyles(theme => ({
   drawerList: {
@@ -96,8 +97,8 @@ function useNotifications(dashboardId) {
     if(showBadges) {
       $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
         setLayout(data.tiles);
-        console.log(`Got layout for: ${dashboardId}`);
-        console.log(data);
+        devLog(`Got layout for: ${dashboardId}`);
+        devLog(data);
       });
     } else {
       setLayout([]);
