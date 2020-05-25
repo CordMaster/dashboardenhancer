@@ -7,7 +7,7 @@ import { makeStyles, CircularProgress, Snackbar, SnackbarContent } from '@materi
 
 import { Grid, Paper, Typography, TextField, MenuItem, Button, Switch, FormControlLabel, Divider, List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, FormControl, FormLabel, RadioGroup, Radio, ThemeProvider } from '@material-ui/core';
 
-import { Alert } from '@material-ui/lab';
+import { Alert, ToggleButton } from '@material-ui/lab';
 
 import * as Icons from '@material-ui/icons';
 
@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const {token, allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, save} = useContext(MainContext);
+  const {allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, lockSettings, setLockSettings, lockFully, setLockFully, save} = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -60,8 +60,8 @@ function Settings() {
             <Button variant="contained" color="primary" onClick={handleSave} className={classes.saveBtn}>Save</Button>
           </Typography>
           
-          {token ? 
-            <DashboardsSettings token={token} allDashboards={allDashboards} /> :
+          {allDashboards.length > 0 ? 
+            <DashboardsSettings allDashboards={allDashboards} /> :
             <SettingsSection title="Dashboards Loading">
               <CircularProgress />
             </SettingsSection>
@@ -70,6 +70,16 @@ function Settings() {
           <SettingsSection title="Title">
             <FormControl fullWidth margin="dense">
               <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </FormControl>
+          </SettingsSection>
+
+          <SettingsSection title="Lock Settings">
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Disable settings when locked" checked={lockSettings} onChange={() => setLockSettings(!lockSettings)} />
+            </FormControl>
+
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Fully disable viewing dashboards when locked" checked={lockFully} onChange={() => setLockFully(!lockFully)} />
             </FormControl>
           </SettingsSection>
 
@@ -222,7 +232,7 @@ function ColorOverrideSettings() {
   );
 }
 
-function DashboardsSettings({ token, allDashboards }) {
+function DashboardsSettings({ allDashboards }) {
   const classes = usePSStyles();
 
   const { dashboards, modifyDashboards, defaultDashboard, setDefaultDashboard } = useContext(MainContext);
@@ -354,6 +364,10 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
     modifyDashboard({type: 'modify', data: { iconName: selectedIcon } });
     setSelectIconOpen('');
   }
+
+  const handleToggleLock = () => {
+    modifyDashboard({type: 'modify', data: { lock: !dashboard.lock } });
+  }
   
   const Icon = Icons[dashboard.iconName];
 
@@ -376,6 +390,8 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
 
               <ListItemSecondaryAction>
                 <Switch checked={defaultDashboard === index} onChange={() => setDefaultDashboard(index)} />
+
+                <ToggleButton size="small" selected={dashboard.lock} onChange={() => handleToggleLock()}>Child Lock</ToggleButton>
 
                 <IconButton disabled={editMode} onClick={() => setEditMode(true)}>
                   <Icons.Edit />

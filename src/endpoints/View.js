@@ -1,7 +1,7 @@
 import React, { useContext, Fragment } from 'react';
 import { makeStyles, Hidden, Paper } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
-import { hubIp, dashboardAppId } from '../Constants';
+import { hubIp, dashboardAppId, dashboardAccessToken } from '../Constants';
 
 const useStyles = makeStyles(theme => ({
   fullFrame: {
@@ -17,13 +17,18 @@ const useStyles = makeStyles(theme => ({
 function View({ index, preload }) {
   const classes = useStyles();
 
-  const { token, dashboards } = useContext(MainContext);
+  const { dashboards, locked, lockFully } = useContext(MainContext);
 
-  const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ display: index === i ? 'initial' : 'none'}} className={classes.fullFrame} src={`${hubIp}apps/api/${dashboardAppId}/dashboard/${dashboard.id}?access_token=${token}`} title="Hubitat" />);
+  const blockingStyles = {
+    pointerEvents: locked !== -1 && !lockFully ? 'none' : 'initial',
+    touchAction: locked !== -1 && !lockFully ? 'none' : 'initial'
+  }
+
+  const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ display: index === i ? 'initial' : 'none', ...blockingStyles }} className={classes.fullFrame} src={`http://${hubIp}/apps/api/${dashboardAppId}/dashboard/${dashboard.id}?access_token=${dashboardAccessToken}`} title="Hubitat" />);
 
   return (
     <Paper square elevation={0} style={{ display: isNaN(index) ? 'none' : 'initial' }}>
-      {preload ? frames : !isNaN(index) && <iframe className={classes.fullFrame} src={`${hubIp}apps/api/${dashboardAppId}/dashboard/${dashboards[index].id}?access_token=${token}`} title="Hubitat" />}
+      {preload ? frames : !isNaN(index) && <iframe style={blockingStyles} className={classes.fullFrame} src={`http://${hubIp}/apps/api/${dashboardAppId}/dashboard/${dashboards[index].id}?access_token=${dashboardAccessToken}`} title="Hubitat" />}
     </Paper>
   );
 }

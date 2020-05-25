@@ -11,7 +11,7 @@ import { devLog } from '../Utils.js';
 
 export const MainContext = React.createContext({});
 
-const websocket = new WebSocket(`${hubIp.replace('http', 'ws')}eventsocket`);
+const websocket = new WebSocket(`ws://${hubIp}/eventsocket`);
 
 //util for autogen configs
 function useConfig(fields) {
@@ -86,12 +86,19 @@ function MainContextProvider(props) {
 
   const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
-  { name: 'showClock', default: true }, { name: 'clockOnTop', default: false } ]);
+  { name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
-  const [token, setToken] = useState('');
   const [allDashboards, setAllDashboards] = useState([]);
 
   const [genTheme, setGenTheme] = useState(createMuiTheme({}));
+
+  //locally stored lock
+  const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? -1 : parseInt(window.localStorage.getItem('locked')));
+  
+  const setLocked = code => {
+    _setLocked(code);
+    window.localStorage.setItem('locked', code);
+  }
 
   useEffect(() => {
     let preGen = {
@@ -133,7 +140,7 @@ function MainContextProvider(props) {
       setState(state.set("dashboards", newArr));
     } else if(type === "new") {
       const index = obj.index;
-      const newData = Map(Object.assign({ iconName: "Home", label: allDashboards.find((val) => val.id === obj.data.id).label }, obj.data));
+      const newData = Map(Object.assign({ iconName: "Home", lock: false, label: allDashboards.find((val) => val.id === obj.data.id).label }, obj.data));
 
       const newArr = state.get("dashboards").splice(index, 0, newData);
 
@@ -168,7 +175,6 @@ function MainContextProvider(props) {
       } else if(loading === 2) {
         //load all dashboards from hub
         $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
-          setToken(data.token);
           setAllDashboards(data.dashboards);
 
           devLog(`Got all dashboards`);
@@ -204,7 +210,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ loading, token, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, devices: devices.toJS(), save }}>
+    <MainContext.Provider value={{ loading, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, devices: devices.toJS(), locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );

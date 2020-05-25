@@ -14,6 +14,7 @@ import { withRouter } from 'react-router';
 import Clock from './Clock';
 import { endpoint, access_token, devMode } from '../Constants';
 import { devLog } from '../Utils';
+import useLock from './useLock';
 
 const useStyles = makeStyles(theme => ({
   drawerList: {
@@ -42,9 +43,11 @@ const useStyles = makeStyles(theme => ({
 function AppDrawer({ location, iconsOnly }) {
   const classes = useStyles();
 
-  const { dashboards, title, showClock, clockOnTop } = useContext(MainContext);
+  const { dashboards, title, showClock, clockOnTop, lockSettings } = useContext(MainContext);
 
   const subLocation = location.pathname.substr(1);
+
+  const [locked, openDialog, providedDialog] = useLock();
 
   const uiDashboards = dashboards.map((dashboard, index) => {
     return <DashboardDrawerItem key={dashboard.id} index={index} dashboard={dashboard} location={subLocation} hideText={iconsOnly} />
@@ -62,23 +65,35 @@ function AppDrawer({ location, iconsOnly }) {
                 </Typography>
               </ListItemText>
             </ListItem>
+            <Divider />
           </Fragment> :
           null
         }
 
         {showClock && clockOnTop ?
-          <ClockDrawerItem /> : null
+          <Fragment>
+            <ClockDrawerItem />
+            <Divider />
+          </Fragment>
+          : null
         }
 
         {uiDashboards}
-        <Divider />
 
         <div className={classes.listItemSpacer} />
         <Divider />
 
-        <DrawerItem label="Settings" Icon={Icons.Settings} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} hideText={iconsOnly} />
+        <DrawerItem label={locked !== -1 ? "Unlock" : "Lock"} Icon={locked !== -1 ? Icons.LockOpen : Icons.Lock} onClick={openDialog} />
+        {providedDialog}
+        <Divider />
+
+        <DrawerItem label="Settings" Icon={Icons.Settings} disabled={locked !== -1 && lockSettings} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} hideText={iconsOnly} />
         {showClock && !clockOnTop ?
-          <ClockDrawerItem /> : null
+          <Fragment>
+            <Divider />
+            <ClockDrawerItem />
+        </Fragment>
+        : null
         }
       </List>
     </Drawer>
@@ -115,26 +130,25 @@ function useNotifications(dashboardId) {
 
 function ClockDrawerItem() {
   return (
-    <Fragment>
-      <Divider />
-      <ListItem>
-        <ListItemText disableTypography>
-          <Clock />
-        </ListItemText>
-      </ListItem>
-    </Fragment>
+    <ListItem>
+      <ListItemText disableTypography>
+        <Clock />
+      </ListItemText>
+    </ListItem>
   )
 }
 
 function DashboardDrawerItem({ index, dashboard, location, ...props }) {
+  const { locked, lockFully } = useContext(MainContext);
+
     const Icon = Icons[dashboard.iconName];
 
     const notifications = useNotifications(dashboard.id);
 
     return (
       <Fragment>
+        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} disabled={locked !== -1 && lockFully && dashboard.lock} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
         <Divider />
-        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
       </Fragment>
     );
 }
