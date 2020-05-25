@@ -19,7 +19,7 @@ function View({ index, preload }) {
 
   const { token, dashboards } = useContext(MainContext);
 
-  const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ visibility: index === i ? 'visible' : 'hidden'}} className={classes.fullFrame} src={`${hubIp}apps/api/${dashboardAppId}/dashboard/${dashboard.id}?access_token=${token}`} title="Hubitat" />);
+  const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ display: index === i ? 'initial' : 'none'}} className={classes.fullFrame} src={`${hubIp}apps/api/${dashboardAppId}/dashboard/${dashboard.id}?access_token=${token}`} title="Hubitat" />);
 
   return (
     <Paper square elevation={0} style={{ display: isNaN(index) ? 'none' : 'initial' }}>
