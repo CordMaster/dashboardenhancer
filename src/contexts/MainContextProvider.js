@@ -86,7 +86,7 @@ function MainContextProvider(props) {
 
   const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
-  { name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
+  { name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
   const [allDashboards, setAllDashboards] = useState([]);
 
@@ -181,7 +181,7 @@ function MainContextProvider(props) {
         }).always(() => {
           setLoading(1);
         });
-      } else if(loading === 1 && objState.dashboards.length > 1) {
+      } else if(loading === 1 && objState.dashboards.length > 0) {
         //load device data from the first dashboard
         //get devices
         $.get(`${endpoint}getDashboardDevices/${objState.dashboards[0].id}/?access_token=${access_token}`, (data) => {

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import $ from 'jquery';
 
-import { makeStyles, CircularProgress, Snackbar, SnackbarContent } from '@material-ui/core';
+import { makeStyles, CircularProgress, Snackbar, SnackbarContent, Select } from '@material-ui/core';
 
 import { Grid, Paper, Typography, TextField, MenuItem, Button, Switch, FormControlLabel, Divider, List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, FormControl, FormLabel, RadioGroup, Radio, ThemeProvider } from '@material-ui/core';
 
@@ -16,6 +16,7 @@ import { MainContext } from '../contexts/MainContextProvider';
 
 import IconSelectDialog from '../components/IconSelectDialog.js';
 import ColorPicker from '../components/colorpicker/ColorPicker';
+import DevicePicker from '../components/DevicePicker';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -31,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const {allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, lockSettings, setLockSettings, lockFully, setLockFully, save} = useContext(MainContext);
+  const {allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, showClockAttributes, setShowClockAttributes, lockSettings, setLockSettings, lockFully, setLockFully, save} = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -85,7 +86,7 @@ function Settings() {
 
           <SettingsSection title="Drawer Settings">
             <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Icons only" checked={iconsOnly} onChange={() => setIconsOnly(!iconsOnly) & setShowClock(false)} />
+              <FormControlLabel control={<Switch />} label="Icons only" checked={iconsOnly} onChange={() => setIconsOnly(!iconsOnly) & setShowClock(false) & setShowClockAttributes(false)} />
             </FormControl>
 
             <FormControl fullWidth margin="dense">
@@ -99,6 +100,12 @@ function Settings() {
             <FormControl fullWidth margin="dense">
               <FormControlLabel control={<Switch />} label="Show clock on top" disabled={iconsOnly} checked={clockOnTop} onChange={() => setClockOnTop(!clockOnTop)} />
             </FormControl>
+
+            <FormControl fullWidth margin="dense">
+              <FormControlLabel control={<Switch />} label="Show attributes under clock" disabled={iconsOnly} checked={showClockAttributes} onChange={() => setShowClockAttributes(!showClockAttributes)} />
+            </FormControl>
+
+            { showClockAttributes && <ClockAttrSettings /> }
           </SettingsSection>
 
           <FontSizeSettings />
@@ -181,6 +188,32 @@ const usePSStyles = makeStyles(theme => ({
     transform: 'translate(-50%, -50%)'
   }
 }));
+
+function ClockAttrSettings() {
+  const { clockAttr1, setClockAttr1, clockAttr2, setClockAttr2, clockAttr1Label, setClockAttr1Label, clockAttr2Label, setClockAttr2Label, devices } = useContext(MainContext);
+
+  let deviceItems = [];
+
+  Object.entries(devices).forEach(([id, device]) => {
+    deviceItems.push(<MenuItem key={id} value={id}>{device.label}</MenuItem>)
+  });
+
+  return (
+    <Fragment>
+      <FormControl fullWidth margin="dense">
+        <TextField label="1st Attribute Label" value={clockAttr1Label} onChange={(e) => setClockAttr1Label(e.target.value)} />
+      </FormControl>
+
+      <DevicePicker value={clockAttr1} onChange={(value) => setClockAttr1(value)} />
+
+      <FormControl fullWidth margin="dense">
+        <TextField label="2nd Attribute Label" value={clockAttr2Label} onChange={(e) => setClockAttr2Label(e.target.value)} />
+      </FormControl>
+
+      <DevicePicker value={clockAttr2} onChange={(value) => setClockAttr2(value)} />
+  </Fragment>
+  );
+}
 
 function FontSizeSettings() {
   const {fontSize, setFontSize} = useContext(MainContext);
