@@ -1,7 +1,7 @@
 import React, { useContext, Fragment, useEffect, useState, useMemo } from 'react';
 import $ from 'jquery';
 
-import { Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Drawer, Badge } from '@material-ui/core';
+import { Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Drawer, Badge, Button } from '@material-ui/core';
 
 import { Link } from 'react-router-dom';
 
@@ -37,6 +37,41 @@ const useStyles = makeStyles(theme => ({
 
   listItemSpacer: {
     flex: '1 0 0'
+  },
+
+  bottomListContainer: {
+    padding: 0
+  },
+
+  bottomList: {
+    padding: 0,
+
+    width: '100%',
+    display: 'flex',
+    flexFlow: 'row wrap',
+    justifyContent: 'space-between'
+  },
+
+  bottomListItemContainer: {
+    display: 'flex',
+    flexFlow: 'row nowrap'
+  },
+
+  bottomListItemDivider: {
+    display: 'inline-block'
+  },
+
+  bottomListItemDividerHoriz: {
+    display: 'inline-block',
+    height: 1,
+    flexBasis: '100%'
+  },
+
+  bottomListItem: {
+    display: 'inline-block',
+
+    width: 'auto',
+    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`
   }
 }));
 
@@ -83,18 +118,35 @@ function AppDrawer({ location, iconsOnly }) {
         <div className={classes.listItemSpacer} />
         <Divider />
 
-        <DrawerItem label={locked !== -1 ? "Unlock" : "Lock"} Icon={locked !== -1 ? Icons.LockOpen : Icons.Lock} onClick={openDialog} />
-        {providedDialog}
-        <Divider />
-
-        <DrawerItem label="Settings" Icon={Icons.Settings} disabled={locked !== -1 && lockSettings} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} hideText={iconsOnly} />
         {showClock && !clockOnTop ?
           <Fragment>
-            <Divider />
             <ClockDrawerItem />
-        </Fragment>
+            <Divider />
+          </Fragment>
         : null
         }
+
+        <ListItem className={classes.bottomListContainer}>
+          <List className={classes.bottomList}>
+            <div className={classes.bottomListItemContainer}> 
+              <ListItem button className={classes.bottomListItem} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
+                <Icons.Settings color="action" />
+              </ListItem>
+              {!iconsOnly &&  <Divider orientation="vertical" className={classes.bottomListItemDivider} />}
+            </div>
+
+            {iconsOnly &&  <Divider className={classes.bottomListItemDividerHoriz} />}
+
+            <div className={classes.bottomListItemContainer}>
+              {!iconsOnly && <Divider orientation="vertical"  className={classes.bottomListItemDivider} />}
+              <ListItem button className={classes.bottomListItem} onClick={openDialog}>
+                {locked !== -1 ? <Icons.LockOpen color="action" /> : <Icons.Lock color="action" />}
+              </ListItem>
+            </div>
+          </List>
+        </ListItem>
+
+        {providedDialog}
       </List>
     </Drawer>
   );
@@ -153,22 +205,32 @@ function DashboardDrawerItem({ index, dashboard, location, ...props }) {
     );
 }
 
+const useDrawerItemStyles = makeStyles(theme => ({
+  textHidden: {
+    padding: theme.spacing(2)
+  }
+}));
+
 //visual drawer item
 function DrawerItem({ label, badgeCount, Icon, onClick, selected, selectedColor = 'primary', hideText, ...props }) {
+  const classes = useDrawerItemStyles();
+
   const booleanColor = bool => {
     return bool ? selectedColor : undefined;
   }
 
   return (
-    <ListItem button {...props} onClick={onClick} selected={selected}>
+    <ListItem className={hideText && classes.textHidden} button {...props} onClick={onClick} selected={selected}>
       <ListItemIcon>
         <Badge badgeContent={badgeCount} color="secondary">
           <Icon />
         </Badge>
       </ListItemIcon>
-      <ListItemText primaryTypographyProps={{ color: booleanColor(selected) }}>
-          {!hideText ? label : '-'}
-      </ListItemText>
+      {!hideText &&
+        <ListItemText primaryTypographyProps={{ color: booleanColor(selected) }}>
+            {label}
+        </ListItemText>
+      }
     </ListItem>
   );
 }
