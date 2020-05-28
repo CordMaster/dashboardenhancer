@@ -8,3 +8,5 @@ export const endpoint = `http://${hubIp}${path.substring(0, path.indexOf('/main'
 export const dashboardAppId = params.get('dashboardAppId');
 export const dashboardAccessToken = params.get('dashboardAccessToken');
 export const access_token = params.get('access_token');
+
+export const openWeatherToken = params.get('openWeatherToken');

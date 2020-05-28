@@ -15,6 +15,8 @@ import Clock from './Clock';
 import { endpoint, access_token, devMode } from '../Constants';
 import { devLog } from '../Utils';
 import useLock from './useLock';
+import WeatherWidget from './WeatherWidget';
+import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
 
 const useStyles = makeStyles(theme => ({
   drawerList: {
@@ -79,6 +81,7 @@ function AppDrawer({ location, iconsOnly }) {
   const classes = useStyles();
 
   const { dashboards, title, showClock, clockOnTop, lockSettings } = useContext(MainContext);
+  const { current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
   const subLocation = location.pathname.substr(1);
 
@@ -116,6 +119,9 @@ function AppDrawer({ location, iconsOnly }) {
         {uiDashboards}
 
         <div className={classes.listItemSpacer} />
+        <Divider />
+
+        <WeatherWidget currentWeather={currentWeather} futureWeather={futureWeather} />
         <Divider />
 
         {showClock && !clockOnTop ?
