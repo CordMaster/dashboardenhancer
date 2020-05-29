@@ -54,26 +54,23 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-between'
   },
 
-  bottomListItemContainer: {
-    display: 'flex',
-    flexFlow: 'row nowrap'
-  },
-
-  bottomListItemDivider: {
-    display: 'inline-block'
-  },
-
-  bottomListItemDividerHoriz: {
-    display: 'inline-block',
-    height: 1,
-    flexBasis: '100%'
-  },
-
   bottomListItem: {
     display: 'inline-block',
 
     width: 'auto',
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`
+    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+
+    '&.right': {
+      borderRight: `1px solid ${theme.palette.divider}`
+    },
+
+    '&.left': {
+      borderLeft: `1px solid ${theme.palette.divider}`
+    },
+
+    '&.bottom': {
+      borderBottom: `1px solid ${theme.palette.divider}`
+    }
   }
 }));
 
@@ -133,21 +130,19 @@ function AppDrawer({ location, iconsOnly }) {
 
         <ListItem className={classes.bottomListContainer}>
           <List className={classes.bottomList}>
-            <div className={classes.bottomListItemContainer}> 
-              <ListItem button className={classes.bottomListItem} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
+              <ListItem button className={`${classes.bottomListItem} ${!iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
                 <Icons.Settings color="action" />
               </ListItem>
-              {!iconsOnly &&  <Divider orientation="vertical" className={classes.bottomListItemDivider} />}
-            </div>
+              
+              <div>
+                <ListItem button className={`${classes.bottomListItem}  ${!iconsOnly ? 'left' : 'bottom'}`}>
+                  <Icons.Refresh color="action" />
+                </ListItem>
 
-            {iconsOnly &&  <Divider className={classes.bottomListItemDividerHoriz} />}
-
-            <div className={classes.bottomListItemContainer}>
-              {!iconsOnly && <Divider orientation="vertical"  className={classes.bottomListItemDivider} />}
-              <ListItem button className={classes.bottomListItem} onClick={openDialog}>
-                {locked !== -1 ? <Icons.LockOpen color="action" /> : <Icons.Lock color="action" />}
-              </ListItem>
-            </div>
+                <ListItem button className={`${classes.bottomListItem} ${!iconsOnly && 'left'}`} onClick={openDialog}>
+                  {locked !== -1 ? <Icons.LockOpen color="action" /> : <Icons.Lock color="action" />}
+                </ListItem>
+              </div>
           </List>
         </ListItem>
 
