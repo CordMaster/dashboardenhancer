@@ -81,7 +81,6 @@ function AppDrawer({ location, iconsOnly }) {
   const classes = useStyles();
 
   const { dashboards, title, showClock, clockOnTop, lockSettings } = useContext(MainContext);
-  const { current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
   const subLocation = location.pathname.substr(1);
 
@@ -121,7 +120,7 @@ function AppDrawer({ location, iconsOnly }) {
         <div className={classes.listItemSpacer} />
         <Divider />
 
-        <WeatherWidget currentWeather={currentWeather} futureWeather={futureWeather} />
+        <WeatherWidget />
         <Divider />
 
         {showClock && !clockOnTop ?

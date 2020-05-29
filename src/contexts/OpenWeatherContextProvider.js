@@ -1,26 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import $ from 'jquery';
 import { openWeatherToken } from '../Constants';
+import useCachedDataSource from './useCachedDataSource';
 
 
 export const OpenWeatherContext = React.createContext({});
 
 export default function(props) {
-  const [currentWeather, setCurrentWeather] = useState({ loaded: false });
+  const [ready, setReady] = useState(false);
+  const [position, setPosition] = useState({ coords: {} });
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      $.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, (data) => {
-        console.log(data);
-        setCurrentWeather({
-          loaded: true,
-          current: data.current,
-          future: data.daily.slice(0, 4)
-        });
-      });    
-    })
-    
+    navigator.geolocation.getCurrentPosition((gotPosition) => setPosition(gotPosition) & setReady(true));
   }, []);
 
-  return <OpenWeatherContext.Provider value={{ ...currentWeather }}>{props.children}</OpenWeatherContext.Provider>
+  const [loaded, error, data] = useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, ready, 60000);
+  const parsedWeather = useMemo(() => {
+    return data ? {
+      loaded: true,
+      current: data.current,
+      future: data.daily.slice(0, 4)
+    } : null;
+  }, [data]);
+
+  return <OpenWeatherContext.Provider value={{ loaded, error, ...parsedWeather }}>{props.children}</OpenWeatherContext.Provider>
 }
