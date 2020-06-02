@@ -11,6 +11,51 @@ import { devLog } from '../Utils.js';
 
 export const MainContext = React.createContext({});
 
+export const settings = [
+  {
+    sectionLabel: 'Title',
+    sectionOptions: [
+      { name: 'title', label: 'Title', type: 'string', default: 'Panel' }
+    ]
+  },
+
+  {
+    sectionLabel: 'Lock Settings',
+    sectionOptions: [
+      { name: 'lockCode', label: 'Lock code', type: 'number', default: '' },
+      { name: 'lockSettings', label: 'Disable settings when locked', type: 'boolean', default: false },
+      { name: 'lockFully', label: 'Disable viewing selected dashboards when locked', type: 'boolean', default: false }
+    ]
+  },
+
+  {
+    sectionLabel: 'Drawer Settings',
+    sectionOptions: [
+      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false },
+      { name: 'showBadges', label: 'Show badges', type: 'boolean', default: false },
+      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true },
+      { name: 'showClockOnTop', label: 'Show clock on top', type: 'boolean', default: false }
+    ]
+  },
+
+  {
+    sectionLabel: 'Font Size',
+    saveBuffer: true,
+    sectionOptions: [
+      { name: 'fontSize', label: 'Font Size', type: 'number', default: 12 },
+    ]
+  },
+
+  {
+    sectionLabel: 'Theme',
+    saveBuffer: true,
+    sectionOptions: [
+      { name: 'darkTheme', label: 'Dark Theme', type: 'boolean', default: false },
+      { name: 'overrideTheme', label: 'Custom Theme', type: 'boolean', default: false }
+    ]
+  }
+]
+
 const websocket = new WebSocket(`ws://${hubIp}/eventsocket`);
 
 //util for autogen configs

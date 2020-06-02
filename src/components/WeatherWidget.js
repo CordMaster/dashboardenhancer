@@ -1,7 +1,9 @@
 import React, { useContext, Fragment } from 'react';
-import { ListItem, Grid, Typography, makeStyles, Divider, CircularProgress } from '@material-ui/core';
+import { ListItem, Grid, Typography, makeStyles, Divider, CircularProgress, SvgIcon } from '@material-ui/core';
 import * as Icons from '@material-ui/icons';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
+
+import * as MdiIcons from '@mdi/js';
 
 const useStyles = makeStyles(theme => ({
   listItem: {
@@ -24,16 +26,28 @@ const useStyles = makeStyles(theme => ({
 function TypeToIcon(type) {
   switch(type) {
     case 'Clear':
-    return Icons.WbSunny;
+    return MdiIcons.mdiWeatherSunny;
 
     case 'Clouds':
-    return Icons.WbCloudyOutlined;
+    return MdiIcons.mdiWeatherCloudy;
+
+    case 'Drizzle':
+    return MdiIcons.mdiWeatherRainy;
 
     case 'Rain':
-    return Icons.WbCloudy;
+    return MdiIcons.mdiWeatherPouring;
+
+    case 'Thunderstorm':
+    return MdiIcons.mdiWeatherLightning;
+
+    case 'Snow':
+    return MdiIcons.mdiWeatherSnowy;
+
+    case 'Atmosphere':
+    return MdiIcons.mdiWeatherFog;
 
     default:
-    return Icons.Error;
+    return MdiIcons.mdiAlertCircle;
   }
 }
 
@@ -103,7 +117,7 @@ const useDayStyles = makeStyles(theme => ({
 
 function Day({ label, low, high, precip, type }) {
   const classes = useDayStyles();
-  const Icon = TypeToIcon(type);
+  const icon = TypeToIcon(type);
 
   return (
     <Grid container className={classes.container} direction="column" alignItems="center">
@@ -114,7 +128,9 @@ function Day({ label, low, high, precip, type }) {
       </Grid>
 
       <Grid itemRef>
-        <Icon />
+        <SvgIcon>
+          <path d={icon} />
+        </SvgIcon>
       </Grid>
 
       <Grid itemType>
@@ -146,12 +162,14 @@ const useCWStyles = makeStyles(theme => ({
 function CurrentWeather({ precip, type }) {
   const classes = useCWStyles();
 
-  const Icon = TypeToIcon(type);
+  const icon = TypeToIcon(type);
 
   return (
     <Grid container direction="column" alignItems="center">
       <Grid item xs={12}>
-        <Icon className={classes.bigIcon} />
+        <SvgIcon className={classes.bigIcon}>
+          <path d={icon} />
+        </SvgIcon>
       </Grid>
 
       <Grid item xs={12}>
