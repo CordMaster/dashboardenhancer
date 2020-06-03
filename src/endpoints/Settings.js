@@ -183,7 +183,7 @@ const useSectionStyles = makeStyles(theme => ({
   }
 }));
 
-function SettingsSection({ title, button, buttonLabel, onButtonClick, children }) {
+const SettingsSection = React.memo(({ title, button, buttonLabel, onButtonClick, children }) => {
   const classes = useSectionStyles();
 
   return (
@@ -198,35 +198,31 @@ function SettingsSection({ title, button, buttonLabel, onButtonClick, children }
       {children}
     </Paper>
   );
-}
+});
 
-SettingsSection.propTypes = {
-  title: PropTypes.string.isRequired
-}
-
-function BooleanType({label, value, setValue}) {
+const BooleanType = React.memo(({label, value, setValue}) => {
   return (
     <FormControl fullWidth margin="dense">
       <FormControlLabel control={<Switch />} label={label} checked={value} onChange={() => setValue(!value)} />
     </FormControl>
   );
-}
+});
 
-function TextType({label, value, setValue}) {
+const TextType = React.memo(({label, value, setValue}) => {
   return (
     <FormControl fullWidth margin="dense">
       <TextField label={label} value={value} onChange={(e) => setValue(e.target.value)} />
     </FormControl>
   );
-}
+});
 
-function NumberType({label, value, setValue}) {
+const NumberType = React.memo(({label, value, setValue}) => {
   return (
     <FormControl fullWidth margin="dense">
       <TextField type="number" label={label} value={value} onChange={(e) => setValue(e.target.value)} />
     </FormControl>
   );
-}
+});
 
 function ColorType({ label, value, setValue }) {
   return (
