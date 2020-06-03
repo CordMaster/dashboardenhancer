@@ -74,7 +74,7 @@ function Settings() {
       });
 
       return (
-        <SettingsSection key={section.name} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={() => null}>
+        <SettingsSection key={section.sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={() => null}>
           {children}
         </SettingsSection>
       );
@@ -108,7 +108,7 @@ function Settings() {
 
           {compiledSettings}
 
-          <SettingsSection title="Title">
+          {/*<SettingsSection title="Title">
             <FormControl fullWidth margin="dense">
               <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             </FormControl>
@@ -160,7 +160,7 @@ function Settings() {
             </FormControl>
           </SettingsSection>
 
-          {overrideColors && <ColorOverrideSettings />}
+        {overrideColors && <ColorOverrideSettings />}*/}
 
           <SettingsSection title="Legal">
             <Button variant="outlined" color="secondary" onClick={() => window.location.assign('https://cdn.plumpynuggets.com/attribution.txt')}>Licenses</Button>
@@ -224,18 +224,18 @@ const NumberType = React.memo(({label, value, setValue}) => {
   );
 });
 
-function ColorType({ label, value, setValue }) {
+const ColorType = React.memo(({ label, value, setValue }) => {
   return (
     <Fragment>
       <Typography variant="subtitle1">Background Color</Typography>
       <ColorPicker value={value} onChange={(value) => setValue(value)} />
     </Fragment>
   );
-}
+});
 
-function DeviceAttributeType({ value, setValue }) {
+const DeviceAttributeType = React.memo(({ value, setValue }) => {
   return <DevicePicker value={value} onChange={(value) => setValue(value)} />
-}
+});
 
 const usePSStyles = makeStyles(theme => ({
   listContainer: {
