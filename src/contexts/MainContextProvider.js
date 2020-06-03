@@ -53,8 +53,20 @@ export const settings = [
       { name: 'darkTheme', label: 'Dark Theme', type: 'boolean', default: false },
       { name: 'overrideTheme', label: 'Custom Theme', type: 'boolean', default: false }
     ]
-  }
-]
+  },
+
+  {
+    sectionLabel: 'Custom Theme Colors',
+    saveBuffer: true,
+    dependsOn: [{ name: 'overrideTheme', value: true }],
+    sectionOptions: [
+      { name: 'overrideBG', label: 'Background Color', type: 'color', default: { r: 50, b: 50, g: 50, alpha: 1.0 } },
+      { name: 'overrideFG', label: 'Foreground Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } },
+      { name: 'overridePrimary', label: 'Primary Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } },
+      { name: 'overrideSecondary', label: 'Secondary Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }
+    ]
+  },
+];
 
 const websocket = new WebSocket(`ws://${hubIp}/eventsocket`);
 
