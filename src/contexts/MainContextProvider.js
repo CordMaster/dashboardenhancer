@@ -13,13 +13,15 @@ export const MainContext = React.createContext({});
 
 export const settings = [
   {
+    sectionName: 'title',
     sectionLabel: 'Title',
     sectionOptions: [
-      { name: 'title', label: 'Title', type: 'string', default: 'Panel' }
+      { name: 'title', label: 'Title', type: 'text', default: 'Panel' }
     ]
   },
 
   {
+    sectionName: 'lock',
     sectionLabel: 'Lock Settings',
     sectionOptions: [
       { name: 'lockCode', label: 'Lock code', type: 'number', default: '' },
@@ -29,16 +31,40 @@ export const settings = [
   },
 
   {
+    sectionName: 'drawer',
     sectionLabel: 'Drawer Settings',
     sectionOptions: [
       { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false },
       { name: 'showBadges', label: 'Show badges', type: 'boolean', default: false },
-      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true },
-      { name: 'showClockOnTop', label: 'Show clock on top', type: 'boolean', default: false }
+      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true }
     ]
   },
 
   {
+    sectionName: 'clock',
+    sectionLabel: 'Clock Settings',
+    dependsOn: [{ name: 'showClock', value: true }],
+    sectionOptions: [
+      { name: 'clockOnTop', label: 'Show clock on top', type: 'boolean', default: false },
+      { name: 'showClockAttributes', label: 'Show attributes from devices', type: 'boolean', default: false }
+    ]
+  },
+
+  {
+    sectionName: 'clockAttrs',
+    sectionLabel: 'Clock Device Attributes',
+    dependsOn: [{ name: 'showClockAttributes', value: true }],
+    sectionOptions: [
+      { name: 'clockAttr1Label', label: '1st attribute label', type: 'text', default: 'Attr1' },
+      { name: 'clockAttr1', label: '1st attribute', type: 'deviceattribute', default: { device: '', attribute: '' } },
+
+      { name: 'clockAttr2Label', label: '2nd attribute label', type: 'text', default: 'Attr2' },
+      { name: 'clockAttr2', label: '2nd attribute', type: 'deviceattribute', default: { device: '', attribute: '' } }
+    ]
+  },
+
+  {
+    sectionName: 'font',
     sectionLabel: 'Font Size',
     saveBuffer: true,
     sectionOptions: [
@@ -47,6 +73,7 @@ export const settings = [
   },
 
   {
+    sectionName: 'theme',
     sectionLabel: 'Theme',
     saveBuffer: true,
     sectionOptions: [
@@ -56,6 +83,7 @@ export const settings = [
   },
 
   {
+    sectionName: 'themeColors',
     sectionLabel: 'Custom Theme Colors',
     saveBuffer: true,
     dependsOn: [{ name: 'overrideTheme', value: true }],
@@ -66,6 +94,14 @@ export const settings = [
       { name: 'overrideSecondary', label: 'Secondary Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }
     ]
   },
+
+  {
+    sectionName: 'none',
+    noShow: true,
+    sectionOptions: [
+      { name: 'defaultDashboard', type: 'number', default: -1 },
+    ]
+  }
 ];
 
 const websocket = new WebSocket(`ws://${hubIp}/eventsocket`);
@@ -86,7 +122,7 @@ function useConfig(fields) {
   let setRet = {};
   Object.entries(state).forEach(([key, val]) => {
     ret[key] = val;
-    setRet[`set${key.charAt(0).toUpperCase() + key.substring(1)}`] = (newVal) => {
+    setRet[key] = (newVal) => {
       preStateUpdate[key] = newVal;
       setState(Object.assign({}, state, preStateUpdate));
     }
@@ -141,9 +177,11 @@ function MainContextProvider(props) {
 
   const [devices, setDevices] = useDevices(loading);
 
-  const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
-  { name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
-  { name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
+  //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
+  //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
+  //{ name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
+
+  const [config, setConfig, mergeAllConfig] = useConfig(settings.reduce((val, entry) => [...val, ...entry.sectionOptions], []));
 
   const [allDashboards, setAllDashboards] = useState([]);
 
@@ -267,7 +305,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ loading, allDashboards, genTheme, ...state.toJS(), modifyDashboards, ...config, ...setConfig, devices: devices.toJS(), locked, setLocked, save }}>
+    <MainContext.Provider value={{ loading, allDashboards, genTheme, ...state.toJS(), modifyDashboards, config, setConfig, devices: devices.toJS(), locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );

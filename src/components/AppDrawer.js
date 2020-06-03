@@ -74,28 +74,28 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function AppDrawer({ location, iconsOnly }) {
+function AppDrawer({ location }) {
   const classes = useStyles();
 
-  const { dashboards, title, showClock, clockOnTop, lockSettings } = useContext(MainContext);
+  const { dashboards, config, lockSettings } = useContext(MainContext);
 
   const subLocation = location.pathname.substr(1);
 
   const [locked, openDialog, providedDialog] = useLock();
 
   const uiDashboards = dashboards.map((dashboard, index) => {
-    return <DashboardDrawerItem key={dashboard.id} index={index} dashboard={dashboard} location={subLocation} hideText={iconsOnly} />
+    return <DashboardDrawerItem key={dashboard.id} index={index} dashboard={dashboard} location={subLocation} hideText={config.iconsOnly} />
   });
 
   return (
-    <Drawer variant="permanent" className={iconsOnly ? classes.drawerIconsOnly : classes.drawer} classes={{ paper: iconsOnly ? classes.drawerIconsOnly : classes.drawer }}>
+    <Drawer variant="permanent" className={config.iconsOnly ? classes.drawerIconsOnly : classes.drawer} classes={{ paper: config.iconsOnly ? classes.drawerIconsOnly : classes.drawer }}>
       <List className={classes.drawerList}>
-        {!iconsOnly ?
+        {!config.iconsOnly ?
           <Fragment>
             <ListItem className={classes.drawerAppBar}>
               <ListItemText disableTypography>
                 <Typography variant="h6">
-                  {title}
+                  {config.title}
                 </Typography>
               </ListItemText>
             </ListItem>
@@ -104,7 +104,7 @@ function AppDrawer({ location, iconsOnly }) {
           null
         }
 
-        {showClock && clockOnTop ?
+        {config.showClock && config.clockOnTop ?
           <Fragment>
             <ClockDrawerItem />
             <Divider />
@@ -120,7 +120,7 @@ function AppDrawer({ location, iconsOnly }) {
         <WeatherWidget />
         <Divider />
 
-        {showClock && !clockOnTop ?
+        {config.showClock && !config.clockOnTop ?
           <Fragment>
             <ClockDrawerItem />
             <Divider />
@@ -130,16 +130,16 @@ function AppDrawer({ location, iconsOnly }) {
 
         <ListItem className={classes.bottomListContainer}>
           <List className={classes.bottomList}>
-              <ListItem button className={`${classes.bottomListItem} ${!iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
+              <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
                 <Icons.Settings color="action" />
               </ListItem>
               
               <div>
-                <ListItem button className={`${classes.bottomListItem}  ${!iconsOnly ? 'left' : 'bottom'}`}>
+                <ListItem button className={`${classes.bottomListItem}  ${!config.iconsOnly ? 'left' : 'bottom'}`}>
                   <Icons.Refresh color="action" />
                 </ListItem>
 
-                <ListItem button className={`${classes.bottomListItem} ${!iconsOnly && 'left'}`} onClick={openDialog}>
+                <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly && 'left'}`} onClick={openDialog}>
                   {locked !== -1 ? <Icons.LockOpen color="action" /> : <Icons.Lock color="action" />}
                 </ListItem>
               </div>
@@ -154,13 +154,13 @@ function AppDrawer({ location, iconsOnly }) {
 
 //util for tracking dashboard state to handle notifications
 function useNotifications(dashboardId) {
-  const { devices, showBadges } = useContext(MainContext);
+  const { devices, config } = useContext(MainContext);
 
   const [layout, setLayout] = useState([]);
 
   useEffect(() => {
     //get layout if we are showing badges
-    if(showBadges) {
+    if(config.showBadges) {
       $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
         setLayout(data.tiles);
         devLog(`Got layout for: ${dashboardId}`);
@@ -169,7 +169,7 @@ function useNotifications(dashboardId) {
     } else {
       setLayout([]);
     }
-  }, [showBadges, dashboardId]);
+  }, [config.showBadges, dashboardId]);
 
   const notifications = useMemo(() => {
     return layout.map(it => it.device).filter(it => {

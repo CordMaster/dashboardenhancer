@@ -60,7 +60,7 @@ const useStyles = makeStyles(theme => ({
 function MainContainer({ width }) {
   const classes = useStyles();
 
-  const { loading, genTheme, defaultDashboard, iconsOnly } = useContext(MainContext);
+  const { loading, genTheme, config } = useContext(MainContext);
 
   const isSmall = width === 'sm' || width === 'xs';
 
@@ -68,21 +68,21 @@ function MainContainer({ width }) {
     loading === 0 ?
       <ThemeProvider theme={genTheme}>
         <div className={classes.root}>
-          { !isSmall ? <AppDrawer iconsOnly={iconsOnly} /> : null }
+          { !isSmall ? <AppDrawer /> : null }
 
           <div className={classes.content}>
             <main className={classes.main}>
               <Switch>
                 <Route path="/settings" component={Settings} />
                 <Route path="/more" component={More} />
-                <Route exact path="/" render={() => <Redirect to={defaultDashboard === -1 ? 'settings/' + window.location.search : '' + defaultDashboard + '/' + window.location.search} />} />
+                <Route exact path="/" render={() => <Redirect to={config.defaultDashboard === -1 ? 'settings/' + window.location.search : '' + config.defaultDashboard + '/' + window.location.search} />} />
               </Switch>
               
               <Route path="/" render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} />} />
             </main>
           </div>
 
-          { isSmall ? <AppBar iconsOnly={iconsOnly} /> : null }
+          { isSmall ? <AppBar /> : null }
         </div>
       </ThemeProvider> :
       <div className={classes.loader}>

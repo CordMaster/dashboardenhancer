@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, Fragment } from 'react';
+import React, { useState, useEffect, useContext, Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 import $ from 'jquery';
@@ -12,7 +12,7 @@ import { Alert, ToggleButton } from '@material-ui/lab';
 import * as Icons from '@material-ui/icons';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { MainContext } from '../contexts/MainContextProvider';
+import { MainContext, settings } from '../contexts/MainContextProvider';
 
 import IconSelectDialog from '../components/IconSelectDialog.js';
 import ColorPicker from '../components/colorpicker/ColorPicker';
@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const {allDashboards, theme, setTheme, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, showClockAttributes, setShowClockAttributes, lockSettings, setLockSettings, lockFully, setLockFully, save} = useContext(MainContext);
+  const {allDashboards, theme, setTheme, config, setConfig, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, showClockAttributes, setShowClockAttributes, lockSettings, setLockSettings, lockFully, setLockFully, save} = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -43,6 +43,44 @@ function Settings() {
       setSnackbarContent({ value: "There was an error saving your settings.", type: 'error' });
     });
   }
+
+  const compiledSettings = useMemo(() => { 
+    return settings.map((section) => {
+      const children = section.sectionOptions.map((setting) => {
+        let Type;
+
+        switch(setting.type){
+          case 'text':
+            Type = TextType;
+            break;
+          case 'number':
+            Type = NumberType;
+            break;
+          case 'boolean':
+            Type = BooleanType;
+            break;
+          case 'color':
+            Type = ColorType;
+            break;
+          case 'deviceattribute':
+            Type = DeviceAttributeType;
+            break;
+          default:
+            Type = Typography;
+            break;
+        }
+
+        return <Type key={setting.name} label={setting.label} value={config[setting.name]} setValue={setConfig[setting.name]} />;
+      });
+
+      return (
+        <SettingsSection key={section.name} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={() => null}>
+          {children}
+        </SettingsSection>
+      );
+    });
+  }, [config, setConfig]);
+
 
   return (
     <Paper square elevation={0} className={classes.settingsPaper}>
@@ -67,6 +105,8 @@ function Settings() {
               <CircularProgress />
             </SettingsSection>
           }
+
+          {compiledSettings}
 
           <SettingsSection title="Title">
             <FormControl fullWidth margin="dense">
@@ -162,6 +202,43 @@ function SettingsSection({ title, button, buttonLabel, onButtonClick, children }
 
 SettingsSection.propTypes = {
   title: PropTypes.string.isRequired
+}
+
+function BooleanType({label, value, setValue}) {
+  return (
+    <FormControl fullWidth margin="dense">
+      <FormControlLabel control={<Switch />} label={label} checked={value} onChange={() => setValue(!value)} />
+    </FormControl>
+  );
+}
+
+function TextType({label, value, setValue}) {
+  return (
+    <FormControl fullWidth margin="dense">
+      <TextField label={label} value={value} onChange={(e) => setValue(e.target.value)} />
+    </FormControl>
+  );
+}
+
+function NumberType({label, value, setValue}) {
+  return (
+    <FormControl fullWidth margin="dense">
+      <TextField type="number" label={label} value={value} onChange={(e) => setValue(e.target.value)} />
+    </FormControl>
+  );
+}
+
+function ColorType({ label, value, setValue }) {
+  return (
+    <Fragment>
+      <Typography variant="subtitle1">Background Color</Typography>
+      <ColorPicker value={value} onChange={(value) => setValue(value)} />
+    </Fragment>
+  );
+}
+
+function DeviceAttributeType({ value, setValue }) {
+  return <DevicePicker value={value} onChange={(value) => setValue(value)} />
 }
 
 const usePSStyles = makeStyles(theme => ({

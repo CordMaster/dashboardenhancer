@@ -7,7 +7,7 @@ function timeStr(num) {
 }
 
 function Clock() {
-  const { devices, showClockAttributes, clockAttr1, clockAttr2, clockAttr1Label, clockAttr2Label } = useContext(MainContext);
+  const { devices, config } = useContext(MainContext);
 
   const [time, setTime] = useState(new Date());
 
@@ -23,21 +23,21 @@ function Clock() {
     }
   }, [setTime]);
 
-  const attr1 = clockAttr1.device && clockAttr1.attribute && devices[clockAttr1.device].attr.find((e) => Object.keys(e).findIndex(i => i  === clockAttr1.attribute) !== -1);
-  const attr2 = clockAttr2.device && clockAttr2.attribute && devices[clockAttr2.device].attr.find((e) => Object.keys(e).findIndex(i => i  === clockAttr2.attribute) !== -1);
+  const attr1 = config.clockAttr1.device && config.clockAttr1.attribute && devices[config.clockAttr1.device].attr.find((e) => Object.keys(e).findIndex(i => i  === config.clockAttr1.attribute) !== -1);
+  const attr2 = config.clockAttr2.device && config.clockAttr2.attribute && devices[config.clockAttr2.device].attr.find((e) => Object.keys(e).findIndex(i => i  === config.clockAttr2.attribute) !== -1);
   return (
     <Fragment>
       <Typography>{time.toLocaleDateString()}</Typography>
       <Typography variant="h6">{time.getHours() > 12 ? time.getHours() - 12 : time.getHours()}:{timeStr(time.getMinutes())}:{timeStr(time.getSeconds())} {time.getHours() > 12 ? 'PM' : 'AM'}</Typography>
       
-      {showClockAttributes &&
+      {config.showClockAttributes &&
         <Grid container direction="row" spacing={3}>
           <Grid item>
-            <Typography variant="caption">{clockAttr1Label}: {attr1 ? attr1[clockAttr1.attribute] : false}</Typography>
+            <Typography variant="caption">{config.clockAttr1Label}: {attr1 ? attr1[config.clockAttr1.attribute] : false}</Typography>
           </Grid>
 
           <Grid item>
-            <Typography variant="caption">{clockAttr2Label}: {attr2 ? attr2[clockAttr2.attribute] : false}</Typography>
+            <Typography variant="caption">{config.clockAttr2Label}: {attr2 ? attr2[config.clockAttr2.attribute] : false}</Typography>
           </Grid>
         </Grid>
       }
