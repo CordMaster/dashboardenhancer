@@ -29,8 +29,8 @@ function Clock() {
   const attr2 = config.clockAttr2.device && config.clockAttr2.attribute && devices[config.clockAttr2.device].attr.find((e) => Object.keys(e).findIndex(i => i  === config.clockAttr2.attribute) !== -1);
   return (
     <Fragment>
-      <Typography>{time.toLocaleDateString()}</Typography>
-      <Typography variant="h6">{time.getHours() > 12 ? time.getHours() - 12 : time.getHours()}:{timeStr(time.getMinutes())}:{timeStr(time.getSeconds())} {time.getHours() > 12 ? 'PM' : 'AM'}</Typography>
+      <Typography>{config.showDate && time.toLocaleDateString()}</Typography>
+      <Typography variant="h6">{time.getHours() > 12 ? time.getHours() - 12 : time.getHours()}:{timeStr(time.getMinutes())}{config.showSeconds && `:${timeStr(time.getSeconds())}`} {time.getHours() > 12 ? 'PM' : 'AM'}</Typography>
       
       {config.showClockAttributes &&
         <Grid container direction="row" spacing={3}>

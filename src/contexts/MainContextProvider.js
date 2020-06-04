@@ -47,6 +47,8 @@ export const settings = {
     dependsOn: [{ name: 'showClock', value: true }],
     sectionOptions: [
       { name: 'clockOnTop', label: 'Show clock on top', type: 'boolean', default: false },
+      { name: 'showSeconds', label: 'Show seconds', type: 'boolean', default: true },
+      { name: 'showDate', label: 'Show date', type: 'boolean', default: true },
       { name: 'showClockAttributes', label: 'Show attributes from devices', type: 'boolean', default: false }
     ]
   },
@@ -136,6 +138,7 @@ function useConfig() {
           if(affectedFieldIndex !== -1) return section.sectionOptions;
           else return sum;
         }, []);
+
         if(affectedField.affects) updateAffects(affectedField, affected.setTo);
       };
     });
