@@ -13,17 +13,15 @@ import { LoadingContext } from './LoadingContextProvider.js';
 
 export const MainContext = React.createContext({});
 
-export const settings = [
-  {
-    sectionName: 'title',
+export const settings = {
+  'title': {
     sectionLabel: 'Title',
     sectionOptions: [
       { name: 'title', label: 'Title', type: 'text', default: 'Panel' }
     ]
   },
 
-  {
-    sectionName: 'lock',
+  'lock': {
     sectionLabel: 'Lock Settings',
     sectionOptions: [
       { name: 'lockCode', label: 'Lock code', type: 'number', default: '' },
@@ -32,18 +30,16 @@ export const settings = [
     ]
   },
 
-  {
-    sectionName: 'drawer',
+  'drawer': {
     sectionLabel: 'Drawer Settings',
     sectionOptions: [
       { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false },
       { name: 'showBadges', label: 'Show badges', type: 'boolean', default: false },
-      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true }
+      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, affects: [{ name: 'showClockAttributes', value: false, setTo: false }] }
     ]
   },
 
-  {
-    sectionName: 'clock',
+  'clock': {
     sectionLabel: 'Clock Settings',
     dependsOn: [{ name: 'showClock', value: true }],
     sectionOptions: [
@@ -52,8 +48,7 @@ export const settings = [
     ]
   },
 
-  {
-    sectionName: 'clockAttrs',
+  'clockAttrs': {
     sectionLabel: 'Clock Device Attributes',
     dependsOn: [{ name: 'showClockAttributes', value: true }],
     sectionOptions: [
@@ -65,8 +60,7 @@ export const settings = [
     ]
   },
 
-  {
-    sectionName: 'font',
+  'font': {
     sectionLabel: 'Font Size',
     saveBuffer: true,
     sectionOptions: [
@@ -74,21 +68,18 @@ export const settings = [
     ]
   },
 
-  {
-    sectionName: 'theme',
+  'theme': {
     sectionLabel: 'Theme',
-    saveBuffer: true,
     sectionOptions: [
       { name: 'darkTheme', label: 'Dark Theme', type: 'boolean', default: false },
-      { name: 'overrideTheme', label: 'Custom Theme', type: 'boolean', default: false }
+      { name: 'overrideColors', label: 'Custom Theme', type: 'boolean', default: false }
     ]
   },
 
-  {
-    sectionName: 'themeColors',
+  'themeColors': {
     sectionLabel: 'Custom Theme Colors',
     saveBuffer: true,
-    dependsOn: [{ name: 'overrideTheme', value: true }],
+    dependsOn: [{ name: 'overrideColors', value: true }],
     sectionOptions: [
       { name: 'overrideBG', label: 'Background Color', type: 'color', default: { r: 50, b: 50, g: 50, alpha: 1.0 } },
       { name: 'overrideFG', label: 'Foreground Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } },
@@ -97,36 +88,52 @@ export const settings = [
     ]
   },
 
-  {
-    sectionName: 'none',
+  'none': {
     noShow: true,
     sectionOptions: [
       { name: 'defaultDashboard', type: 'number', default: -1 },
     ]
   }
-];
+};
 
 //util for autogen configs
-function useConfig(fields) {
+function useConfig() {
   //so we can update multiple items in the state at once
   let preStateUpdate = {};
 
   let def = {};
-  fields.forEach((it) => {
-    def[it.name] = it.default;
+  
+  Object.values(settings).forEach((section) => {
+    section.sectionOptions.forEach(field => {
+      def[field.name] = field.default;
+    });
   });
 
   const [state, setState] = useState(def);
 
   let ret = {};
   let setRet = {};
-  Object.entries(state).forEach(([key, val]) => {
-    ret[key] = val;
-    setRet[key] = (newVal) => {
-      preStateUpdate[key] = newVal;
+  Object.entries(settings).forEach(([sectionName, section]) => {
+    section.sectionOptions.forEach(field => {
+    
+    ret[field.name] = state[field.name];
+    setRet[field.name] = (newVal) => {
+      //set the state
+      preStateUpdate[field.name] = newVal;
+
+      //set the other states
+      if(field.affects) {
+        field.affects.forEach(affected => {
+          if(newVal === affected.value) {
+            preStateUpdate[affected.name] = affected.setTo;
+          };
+        });
+      }
+
       setState(Object.assign({}, state, preStateUpdate));
     }
   });
+});
 
   const mergeAll = (other) => {
     setState(Object.assign({}, state, other));
@@ -148,22 +155,22 @@ function MainContextProvider(props) {
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
   //{ name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
-  const [config, setConfig, mergeAllConfig] = useConfig(settings.reduce((val, entry) => [...val, ...entry.sectionOptions], []));
-
-  const [genTheme, setGenTheme] = useState(createMuiTheme({}));
+  const [config, setConfig, mergeAllConfig] = useConfig();
 
   //locally stored lock
   const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? -1 : parseInt(window.localStorage.getItem('locked')));
-  
+
   const setLocked = code => {
     _setLocked(code);
     window.localStorage.setItem('locked', code);
   }
 
+  const [genTheme, setGenTheme] = useState(createMuiTheme({}));
+  
   useEffect(() => {
     let preGen = {
       palette: {
-        type: config.theme,
+        type: config.darkTheme ? 'dark' : 'light',
       },
 
       typography: {

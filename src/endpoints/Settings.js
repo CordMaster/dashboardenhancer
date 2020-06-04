@@ -47,40 +47,9 @@ function Settings() {
   }
 
   const compiledSettings = useMemo(() => { 
-    return settings.map((section) => {
+    return Object.entries(settings).map(([sectionName, section]) => {
       if(!section.noShow) {
-        const children = section.sectionOptions.map((setting) => {
-          let Type;
-
-          switch(setting.type){
-            case 'text':
-              Type = TextType;
-              break;
-            case 'number':
-              Type = NumberType;
-              break;
-            case 'boolean':
-              Type = BooleanType;
-              break;
-            case 'color':
-              Type = ColorType;
-              break;
-            case 'deviceattribute':
-              Type = DeviceAttributeType;
-              break;
-            default:
-              Type = Typography;
-              break;
-          }
-
-          return <Type key={setting.name} label={setting.label} value={config[setting.name]} setValue={setConfig[setting.name]} />;
-        });
-
-        return (
-          <SettingsSection key={section.sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={() => null}>
-            {children}
-          </SettingsSection>
-        );
+        return <DerrivedSettingsSection sectionName={sectionName} section={section} config={config} setConfig={setConfig} />
       } else {
         return null;
       }
@@ -114,60 +83,6 @@ function Settings() {
 
           {compiledSettings}
 
-          {/*<SettingsSection title="Title">
-            <FormControl fullWidth margin="dense">
-              <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-            </FormControl>
-          </SettingsSection>
-
-          <SettingsSection title="Lock Settings">
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Disable settings when locked" checked={lockSettings} onChange={() => setLockSettings(!lockSettings)} />
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Fully disable viewing dashboards when locked" checked={lockFully} onChange={() => setLockFully(!lockFully)} />
-            </FormControl>
-          </SettingsSection>
-
-          <SettingsSection title="Drawer Settings">
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Icons only" checked={iconsOnly} onChange={() => setIconsOnly(!iconsOnly) & setShowClock(false) & setShowClockAttributes(false)} />
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Show badges" checked={showBadges} onChange={() => setShowBadges(!showBadges)} />
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Show clock" disabled={iconsOnly} checked={showClock} onChange={() => setShowClock(!showClock)} />
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Show clock on top" disabled={iconsOnly} checked={clockOnTop} onChange={() => setClockOnTop(!clockOnTop)} />
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Show attributes under clock" disabled={iconsOnly} checked={showClockAttributes} onChange={() => setShowClockAttributes(!showClockAttributes)} />
-            </FormControl>
-
-            { showClockAttributes && <ClockAttrSettings /> }
-          </SettingsSection>
-
-          <FontSizeSettings />
-
-          <SettingsSection title="Color Settings">
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label={`${overrideColors ? 'Dark base' : 'Dark theme'}`} checked={theme === 'dark'} onChange={() => theme === 'dark' ? setTheme('light') : setTheme('dark')} />
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <FormControlLabel control={<Switch />} label="Override colors" checked={overrideColors} onChange={() => setOverrideColors(!overrideColors)} />
-            </FormControl>
-          </SettingsSection>
-
-        {overrideColors && <ColorOverrideSettings />}*/}
-
           <SettingsSection title="Legal">
             <Button variant="outlined" color="secondary" onClick={() => window.location.assign('https://cdn.plumpynuggets.com/attribution.txt')}>Licenses</Button>
           </SettingsSection>
@@ -189,11 +104,11 @@ const useSectionStyles = makeStyles(theme => ({
   }
 }));
 
-const SettingsSection = React.memo(({ title, button, buttonLabel, onButtonClick, children }) => {
+const SettingsSection = React.memo(({ title, button, buttonLabel, onButtonClick, className, children, ...props }) => {
   const classes = useSectionStyles();
 
   return (
-    <Paper className={classes.paper}>
+    <Paper className={`${classes.paper} ${className}`} {...props}>
       <Typography variant="subtitle1" gutterBottom>
         {title}
         { button ?
@@ -206,11 +121,79 @@ const SettingsSection = React.memo(({ title, button, buttonLabel, onButtonClick,
   );
 });
 
-const DerrivedSettingsSection = React.memo(({  }) => {
-  const cachedValues = useState({});
+const useDSSStyles = makeStyles(theme => ({
+  noDisplay: {
+    display: 'none'
+  }
+}));
+
+const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setConfig }) => {
+  const classes = useDSSStyles();
+
+  const [cachedValues, setCachedValues] = useState(() => {
+    return section.sectionOptions.reduce((sum, it) => {
+        sum[it.name] = config[it.name];
+        return sum;
+      }, {});
+    });
+
+  const handleChange = (name, value) => {
+    if(section.saveBuffer) {
+      console.log({ ...cachedValues, [name]: value })
+      setCachedValues({ ...cachedValues, [name]: value });
+    } else {
+      setConfig[name](value);
+    }
+  }
+
+  const children = section.sectionOptions.map((setting) => {
+    let Type;
+
+    switch(setting.type) {
+      case 'text':
+        Type = TextType;
+        break;
+      case 'number':
+        Type = NumberType;
+        break;
+      case 'boolean':
+        Type = BooleanType;
+        break;
+      case 'color':
+        Type = ColorType;
+        break;
+      case 'deviceattribute':
+        Type = DeviceAttributeType;
+        break;
+      default:
+        Type = Typography;
+        break;
+    }
+
+    return <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[setting.name]} setValue={value => handleChange(setting.name, value)} />;
+  });
+
+  const handleSave = () => {
+    section.sectionOptions.forEach(it => {
+      setConfig[it.name](cachedValues[it.name]);
+    });
+  }
+
+  let noShow = false;
+  if(section.dependsOn) {
+    for(let i = 0; i < section.dependsOn.length; i++) {
+      const dependency = section.dependsOn[i];
+      if(config[dependency.name] !== dependency.value) {
+        noShow = true;
+        break;
+      }
+    }
+  }
 
   return (
-    null
+    <SettingsSection className={noShow && classes.noDisplay} key={sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={handleSave}>
+      {children}
+    </SettingsSection>
   );
 });
 
@@ -241,7 +224,7 @@ const NumberType = React.memo(({label, value, setValue}) => {
 const ColorType = React.memo(({ label, value, setValue }) => {
   return (
     <Fragment>
-      <Typography variant="subtitle1">Background Color</Typography>
+      <Typography variant="subtitle1">{label}</Typography>
       <ColorPicker value={value} onChange={(value) => setValue(value)} />
     </Fragment>
   );
