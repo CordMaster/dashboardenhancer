@@ -33,9 +33,9 @@ export const settings = {
   'drawer': {
     sectionLabel: 'Drawer Settings',
     sectionOptions: [
-      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false },
+      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false, affects: [{ value: true, name: 'showClock', setTo: false }] },
       { name: 'showBadges', label: 'Show badges', type: 'boolean', default: false },
-      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, affects: [{ name: 'showClockAttributes', value: false, setTo: false }] }
+      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, affects: [{ value: false, name: 'showClockAttributes', setTo: false }] }
     ]
   },
 
@@ -111,6 +111,21 @@ function useConfig() {
 
   const [state, setState] = useState(def);
 
+  function updateAffects(field, newVal) {
+    field.affects.forEach(affected => {
+      if(newVal === affected.value) {
+        preStateUpdate[affected.name] = affected.setTo;
+  
+        //recursive changes
+        //find field affected
+        const affectedFieldSection = Object.values(settings).find(section => section.sectionOptions.find(field => field.name === affected.name) !== null).sectionOptions;
+        const affectedFieldIndex = section.sectionOptions.find(field => field.name === affected.name) !== null);
+        const affectedField = affectedFieldSection.sectionOptions[];
+        if(affectedField.affects) updateAffects(affectedField, affected.setTo);
+      };
+    });
+  }
+
   let ret = {};
   let setRet = {};
   Object.entries(settings).forEach(([sectionName, section]) => {
@@ -123,11 +138,7 @@ function useConfig() {
 
       //set the other states
       if(field.affects) {
-        field.affects.forEach(affected => {
-          if(newVal === affected.value) {
-            preStateUpdate[affected.name] = affected.setTo;
-          };
-        });
+        updateAffects(field, newVal);
       }
 
       setState(Object.assign({}, state, preStateUpdate));
