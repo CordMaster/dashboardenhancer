@@ -1,9 +1,9 @@
 import React, { useContext, useMemo } from 'react';
 import { Grid, Select, MenuItem, FormControl, FormControlLabel, InputLabel } from '@material-ui/core';
-import { MainContext } from '../contexts/MainContextProvider';
+import { HubContext } from '../contexts/HubContextProvider';
 
 export default function({ value, onChange }) {
-  const { devices } = useContext(MainContext);
+  const { devices } = useContext(HubContext);
 
   const onChangeDevice = val => {
     onChange({ device: val, attribute: '' });

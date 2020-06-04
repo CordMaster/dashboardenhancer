@@ -1,13 +1,15 @@
 import React, { useEffect, useState, Fragment, useContext } from 'react';
 import { Typography, Grid } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
+import { HubContext } from '../contexts/HubContextProvider';
 
 function timeStr(num) {
   return num > 9 ? num : '0' + num;
 }
 
 function Clock() {
-  const { devices, config } = useContext(MainContext);
+  const { config } = useContext(MainContext);
+  const { devices } = useContext(HubContext);
 
   const [time, setTime] = useState(new Date());
 

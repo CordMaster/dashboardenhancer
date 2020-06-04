@@ -17,6 +17,7 @@ import { devLog } from '../Utils';
 import useLock from './useLock';
 import WeatherWidget from './WeatherWidget';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
+import { HubContext } from '../contexts/HubContextProvider';
 
 const useStyles = makeStyles(theme => ({
   drawerList: {
@@ -154,7 +155,8 @@ function AppDrawer({ location }) {
 
 //util for tracking dashboard state to handle notifications
 function useNotifications(dashboardId) {
-  const { devices, config } = useContext(MainContext);
+  const { config } = useContext(MainContext);
+  const { devices } = useContext(HubContext);
 
   const [layout, setLayout] = useState([]);
 

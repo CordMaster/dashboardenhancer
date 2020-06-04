@@ -7,15 +7,21 @@ import MainContextProvider from './contexts/MainContextProvider.js';
 import OpenWeatherContextProvider from './contexts/OpenWeatherContextProvider.js';
 
 import MainContainer from './MainContainer.js';
+import HubContextProvider from './contexts/HubContextProvider.js';
+import LoadingContextProvider from './contexts/LoadingContextProvider.js';
 
 function App() {
   return (
     <Router basename={`${endpoint.substr(endpoint.indexOf('/', 7))}main`}>
-      <MainContextProvider>
-        <OpenWeatherContextProvider>
-          <MainContainer />
-        </OpenWeatherContextProvider>
-      </MainContextProvider>
+      <LoadingContextProvider>
+        <MainContextProvider>
+          <HubContextProvider>
+            <OpenWeatherContextProvider>
+              <MainContainer />
+            </OpenWeatherContextProvider>
+          </HubContextProvider>
+        </MainContextProvider>
+      </LoadingContextProvider>
     </Router>
   );
 }

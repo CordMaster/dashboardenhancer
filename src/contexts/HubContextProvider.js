@@ -1,17 +1,53 @@
-import React, { useState, useEffect, useMemo} from 'React';
-import { hubIp } from '../Constants';
+import React, { useState, useEffect, useContext, useMemo} from 'react';
+import $ from 'jquery';
+import Immutable, { Map } from 'immutable';
+import { hubIp, endpoint, access_token } from '../Constants';
+import { LoadingContext } from './LoadingContextProvider';
+import { devLog } from '../Utils';
 
 export const HubContext = React.createContext();
 
 const websocket = new WebSocket(`ws://${hubIp}/eventsocket`);
 
 //util for devices
-function useDevices(loading) {
+function useHub() {
+  const { loading, setLoading } = useContext(LoadingContext);
+
+  const [allDashboards, setAllDashboards] = useState([]);
+
   const [devices, setDevices] = useState(new Map());
   const objDevices = useMemo(() => devices.toJS(), [devices]);
 
   //so we can update multiple items in the state at once
   let preStateUpdate = devices;
+  
+  //for the first load
+  useEffect(() => {
+    //load last
+    if(loading === 2) {
+      $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
+        setAllDashboards(data.dashboards);
+
+        devLog(`Got all dashboards`);
+      }).always(() => {
+        setLoading(1);
+      });
+    }
+    else if(loading === 1) {
+      $.get(`${endpoint}getDashboardDevices/${allDashboards[0].id}/?access_token=${access_token}`, (data) => {
+        //map devices to device id
+        const cleanData = {};
+        data.forEach(it => cleanData[it.id] = it);
+        setDevices(Immutable.fromJS(cleanData));
+
+        devLog(`Got devices:`);
+        devLog(cleanData);
+      }).always(() => {
+        setLoading(0);
+      });
+    }
+  }, [loading]);
+
 
   //attach websocket
   useEffect(() => {
@@ -32,13 +68,14 @@ function useDevices(loading) {
     }
   }, [loading, devices, objDevices]);
 
-  return [devices, setDevices];
+  return [objDevices, allDashboards];
 }
 
 export default function({ children }) {
+  const [devices, allDashboards] = useHub();
 
   return (
-    <HubContext.Provider value={{}}>
+    <HubContext.Provider value={{ devices, allDashboards }}>
       {children}
     </HubContext.Provider>
   )

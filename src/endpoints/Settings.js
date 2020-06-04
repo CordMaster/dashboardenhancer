@@ -17,6 +17,7 @@ import { MainContext, settings } from '../contexts/MainContextProvider';
 import IconSelectDialog from '../components/IconSelectDialog.js';
 import ColorPicker from '../components/colorpicker/ColorPicker';
 import DevicePicker from '../components/DevicePicker';
+import { HubContext } from '../contexts/HubContextProvider';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -32,7 +33,8 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const {allDashboards, theme, setTheme, config, setConfig, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, showClockAttributes, setShowClockAttributes, lockSettings, setLockSettings, lockFully, setLockFully, save} = useContext(MainContext);
+  const { allDashboards } = useContext(HubContext);
+  const { theme, setTheme, config, setConfig, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, showClockAttributes, setShowClockAttributes, lockSettings, setLockSettings, lockFully, setLockFully, save } = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -46,38 +48,42 @@ function Settings() {
 
   const compiledSettings = useMemo(() => { 
     return settings.map((section) => {
-      const children = section.sectionOptions.map((setting) => {
-        let Type;
+      if(!section.noShow) {
+        const children = section.sectionOptions.map((setting) => {
+          let Type;
 
-        switch(setting.type){
-          case 'text':
-            Type = TextType;
-            break;
-          case 'number':
-            Type = NumberType;
-            break;
-          case 'boolean':
-            Type = BooleanType;
-            break;
-          case 'color':
-            Type = ColorType;
-            break;
-          case 'deviceattribute':
-            Type = DeviceAttributeType;
-            break;
-          default:
-            Type = Typography;
-            break;
-        }
+          switch(setting.type){
+            case 'text':
+              Type = TextType;
+              break;
+            case 'number':
+              Type = NumberType;
+              break;
+            case 'boolean':
+              Type = BooleanType;
+              break;
+            case 'color':
+              Type = ColorType;
+              break;
+            case 'deviceattribute':
+              Type = DeviceAttributeType;
+              break;
+            default:
+              Type = Typography;
+              break;
+          }
 
-        return <Type key={setting.name} label={setting.label} value={config[setting.name]} setValue={setConfig[setting.name]} />;
-      });
+          return <Type key={setting.name} label={setting.label} value={config[setting.name]} setValue={setConfig[setting.name]} />;
+        });
 
-      return (
-        <SettingsSection key={section.sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={() => null}>
-          {children}
-        </SettingsSection>
-      );
+        return (
+          <SettingsSection key={section.sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={() => null}>
+            {children}
+          </SettingsSection>
+        );
+      } else {
+        return null;
+      }
     });
   }, [config, setConfig]);
 
@@ -197,6 +203,14 @@ const SettingsSection = React.memo(({ title, button, buttonLabel, onButtonClick,
       </Typography>
       {children}
     </Paper>
+  );
+});
+
+const DerrivedSettingsSection = React.memo(({  }) => {
+  const cachedValues = useState({});
+
+  return (
+    null
   );
 });
 

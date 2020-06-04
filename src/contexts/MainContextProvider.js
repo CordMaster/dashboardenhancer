@@ -6,8 +6,10 @@ import $ from 'jquery';
 import Color from 'color';
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
-import { endpoint, access_token, hubIp, devMode } from '../Constants.js';
+import { endpoint, access_token } from '../Constants.js';
 import { devLog } from '../Utils.js';
+import { useContext } from 'react';
+import { LoadingContext } from './LoadingContextProvider.js';
 
 export const MainContext = React.createContext({});
 
@@ -134,8 +136,7 @@ function useConfig(fields) {
 }
 
 function MainContextProvider(props) {
-  //go down loading by 1 til we get to 0
-  const [loading, setLoading] = useState(3);
+  const { loading, setLoading } = useContext(LoadingContext);
 
   const [state, setState] = useState(Map({
     dashboards: List([])
@@ -143,15 +144,11 @@ function MainContextProvider(props) {
 
   const objState = useMemo(() => state.toJS(), [state]);
 
-  const [devices, setDevices] = useDevices(loading);
-
   //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
   //{ name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
   const [config, setConfig, mergeAllConfig] = useConfig(settings.reduce((val, entry) => [...val, ...entry.sectionOptions], []));
-
-  const [allDashboards, setAllDashboards] = useState([]);
 
   const [genTheme, setGenTheme] = useState(createMuiTheme({}));
 
@@ -203,7 +200,7 @@ function MainContextProvider(props) {
       setState(state.set("dashboards", newArr));
     } else if(type === "new") {
       const index = obj.index;
-      const newData = Map(Object.assign({ iconName: "Home", lock: false, label: allDashboards.find((val) => val.id === obj.data.id).label }, obj.data));
+      const newData = Map(Object.assign({ iconName: "Home", lock: false }, obj.data));
 
       const newArr = state.get("dashboards").splice(index, 0, newData);
 
@@ -235,30 +232,7 @@ function MainContextProvider(props) {
         }).always(() => {
           setLoading(2);
         });
-      } else if(loading === 2) {
-        //load all dashboards from hub
-        $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
-          setAllDashboards(data.dashboards);
-
-          devLog(`Got all dashboards`);
-        }).always(() => {
-          setLoading(1);
-        });
-      } else if(loading === 1 && objState.dashboards.length > 0) {
-        //load device data from the first dashboard
-        //get devices
-        $.get(`${endpoint}getDashboardDevices/${objState.dashboards[0].id}/?access_token=${access_token}`, (data) => {
-          //map devices to device id
-          const cleanData = {};
-          data.forEach(it => cleanData[it.id] = it);
-          setDevices(Immutable.fromJS(cleanData));
-
-          devLog(`Got devices:`);
-          devLog(cleanData);
-        }).always(() => {
-          setLoading(0);
-        });
-      } else setLoading(0);
+      }
     } else {
       if(loading !== 0) setLoading(0);
     }
@@ -273,7 +247,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ loading, allDashboards, genTheme, ...state.toJS(), modifyDashboards, config, setConfig, devices: devices.toJS(), locked, setLocked, save }}>
+    <MainContext.Provider value={{ genTheme, ...objState, modifyDashboards, config, setConfig, locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );

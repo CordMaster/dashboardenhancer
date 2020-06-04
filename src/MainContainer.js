@@ -11,6 +11,7 @@ import AppDrawer from './components/AppDrawer.js';
 import AppBar from './components/AppBar.js';
 import { MainContext } from './contexts/MainContextProvider.js';
 import More from './endpoints/More.js';
+import { LoadingContext } from './contexts/LoadingContextProvider.js';
 
 
 const useStyles = makeStyles(theme => ({
@@ -60,7 +61,8 @@ const useStyles = makeStyles(theme => ({
 function MainContainer({ width }) {
   const classes = useStyles();
 
-  const { loading, genTheme, config } = useContext(MainContext);
+  const { loading } = useContext(LoadingContext);
+  const { genTheme, config } = useContext(MainContext);
 
   const isSmall = width === 'sm' || width === 'xs';
 
