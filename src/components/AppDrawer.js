@@ -91,7 +91,7 @@ function AppDrawer({ location }) {
   return (
     <Drawer variant="permanent" className={config.iconsOnly ? classes.drawerIconsOnly : classes.drawer} classes={{ paper: config.iconsOnly ? classes.drawerIconsOnly : classes.drawer }}>
       <List className={classes.drawerList}>
-        {!config.iconsOnly ?
+        {config.showTitle ?
           <Fragment>
             <ListItem className={classes.drawerAppBar}>
               <ListItemText disableTypography>
@@ -118,8 +118,12 @@ function AppDrawer({ location }) {
         <div className={classes.listItemSpacer} />
         <Divider />
 
-        <WeatherWidget />
-        <Divider />
+        {config.showWeather && 
+          <Fragment>
+            <WeatherWidget />
+            <Divider />
+          </Fragment>
+        }
 
         {config.showClock && !config.clockOnTop ?
           <Fragment>

@@ -1,8 +1,8 @@
 import React, { useContext, useMemo } from 'react';
 import { Grid, Select, MenuItem, FormControl, FormControlLabel, InputLabel } from '@material-ui/core';
-import { HubContext } from '../contexts/HubContextProvider';
+import { HubContext } from '../../contexts/HubContextProvider';
 
-export default function({ value, onChange }) {
+export default function({ value, onChange, disabled }) {
   const { devices } = useContext(HubContext);
 
   const onChangeDevice = val => {
@@ -21,7 +21,7 @@ export default function({ value, onChange }) {
       <Grid item xs={6}>
         <FormControl fullWidth margin="dense">
         <InputLabel>Device</InputLabel>
-          <Select value={value.device} onChange={(e) => onChangeDevice(e.target.value)}>
+          <Select value={value.device} onChange={(e) => onChangeDevice(e.target.value)} disabled={disabled}>
             <MenuItem value="">None</MenuItem>
             {uiDevices}
           </Select>
@@ -32,7 +32,7 @@ export default function({ value, onChange }) {
       <Grid item xs={6}>
         <FormControl fullWidth margin="dense">
           <InputLabel>Attribute</InputLabel>
-          <Select value={value.attribute} onChange={(e) => onChangeAttr(e.target.value)}>
+          <Select value={value.attribute} onChange={(e) => onChangeAttr(e.target.value)} disabled={disabled}>
             <MenuItem value="">None</MenuItem>
             {uiAttrs}
           </Select>

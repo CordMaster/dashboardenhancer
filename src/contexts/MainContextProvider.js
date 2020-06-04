@@ -6,7 +6,7 @@ import $ from 'jquery';
 import Color from 'color';
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
-import { endpoint, access_token } from '../Constants.js';
+import { endpoint, access_token, openWeatherToken } from '../Constants.js';
 import { devLog } from '../Utils.js';
 import { useContext } from 'react';
 import { LoadingContext } from './LoadingContextProvider.js';
@@ -16,8 +16,10 @@ export const MainContext = React.createContext({});
 export const settings = {
   'title': {
     sectionLabel: 'Title',
+    dependsOn: [{ name: 'iconsOnly', value: false }],
     sectionOptions: [
-      { name: 'title', label: 'Title', type: 'text', default: 'Panel' }
+      { name: 'showTitle', label: 'Show Title', type: 'boolean', default: true },
+      { name: 'title', label: 'Title', type: 'text', default: 'Panel', dependsOn: [{ name: 'showTitle', value: true }] }
     ]
   },
 
@@ -33,9 +35,10 @@ export const settings = {
   'drawer': {
     sectionLabel: 'Drawer Settings',
     sectionOptions: [
-      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false, affects: [{ value: true, name: 'showClock', setTo: false }] },
+      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false, affects: [{ value: true, name: 'showTitle', setTo: false }, { value: true, name: 'showClock', setTo: false }, { value: true, name: 'showWeather', setTo: false }] },
       { name: 'showBadges', label: 'Show badges', type: 'boolean', default: false },
-      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, affects: [{ value: false, name: 'showClockAttributes', setTo: false }] }
+      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, dependsOn:[{ name: 'iconsOnly', value: false }], disableOnDepends: true, affects: [{ value: false, name: 'showClockAttributes', setTo: false }] },
+      { name: 'showWeather', label: 'Show weather', type: 'boolean', default: false, dependsOn: [{ name: () => openWeatherToken !== null, value: true }, { name: 'iconsOnly', value: false }], disableOnDepends: true }
     ]
   },
 
@@ -59,6 +62,16 @@ export const settings = {
       { name: 'clockAttr2', label: '2nd attribute', type: 'deviceattribute', default: { device: '', attribute: '' } }
     ]
   },
+
+  'weather': {
+    sectionLabel: 'Weather Settings',
+    dependsOn: [{ name: 'showWeather', value: true }],
+    sectionOptions: [
+      { name: 'useHubDeviceForIndoorTemp', label: 'Use a hub device for the indoor temperature', type: 'boolean', default: false },
+      { name: 'useHubDeviceForOutdoorTemp', label: 'Use a hub device for the outdoor temperature', type: 'boolean', default: false },
+    ]
+  },
+
 
   'font': {
     sectionLabel: 'Font Size',

@@ -15,9 +15,9 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { MainContext, settings } from '../contexts/MainContextProvider';
 
 import IconSelectDialog from '../components/IconSelectDialog.js';
-import ColorPicker from '../components/colorpicker/ColorPicker';
-import DevicePicker from '../components/DevicePicker';
-import { HubContext } from '../contexts/HubContextProvider';
+import ColorPicker from '../components/colorpicker/ColorPicker.js';
+import DevicePicker from '../components/devicepicker/DevicePicker.js';
+import { HubContext } from '../contexts/HubContextProvider.js';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -34,7 +34,7 @@ function Settings() {
   const classes = useStyles();
 
   const { allDashboards } = useContext(HubContext);
-  const { theme, setTheme, config, setConfig, iconsOnly, setIconsOnly, title, setTitle, showBadges, setShowBadges, overrideColors, setOverrideColors, showClock, setShowClock, clockOnTop, setClockOnTop, showClockAttributes, setShowClockAttributes, lockSettings, setLockSettings, lockFully, setLockFully, save } = useContext(MainContext);
+  const { config, setConfig, save } = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -132,10 +132,23 @@ const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setC
 
   const [cachedValues, setCachedValues] = useState(() => {
     return section.sectionOptions.reduce((sum, it) => {
-        sum[it.name] = config[it.name];
-        return sum;
-      }, {});
-    });
+      sum[it.name] = config[it.name];
+      return sum;
+    }, {});
+  });
+
+  const evaluateDependsOn = dependsOn => {
+    if(dependsOn) {
+      for(let i = 0; i < dependsOn.length; i++) {
+        const dependency = dependsOn[i];
+        if(typeof(dependency.name) === 'function') {
+          if(dependency.name() !== dependency.value) return true;
+        }
+        else if(dependency.name && config[dependency.name] !== dependency.value) return true;
+      }
+    }
+    return false;
+  }
 
   const handleChange = (name, value) => {
     if(section.saveBuffer) {
@@ -170,7 +183,10 @@ const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setC
         break;
     }
 
-    return <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[setting.name]} setValue={value => handleChange(setting.name, value)} />;
+    const evaluatedDepends = evaluateDependsOn(setting.dependsOn);
+    const disabled = evaluatedDepends && setting.disableOnDepends;
+    const hidden = evaluatedDepends && !setting.disableOnDepends;
+    return !hidden && <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[setting.name]} disabled={disabled} setValue={value => handleChange(setting.name, value)} />;
   });
 
   const handleSave = () => {
@@ -179,16 +195,7 @@ const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setC
     });
   }
 
-  let noShow = false;
-  if(section.dependsOn) {
-    for(let i = 0; i < section.dependsOn.length; i++) {
-      const dependency = section.dependsOn[i];
-      if(config[dependency.name] !== dependency.value) {
-        noShow = true;
-        break;
-      }
-    }
-  }
+  const noShow = evaluateDependsOn(section.dependsOn);
 
   return (
     <SettingsSection className={noShow && classes.noDisplay} key={sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={handleSave}>
@@ -197,41 +204,41 @@ const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setC
   );
 });
 
-const BooleanType = React.memo(({label, value, setValue}) => {
+const BooleanType = React.memo(({ label, value, setValue, ...props }) => {
   return (
     <FormControl fullWidth margin="dense">
-      <FormControlLabel control={<Switch />} label={label} checked={value} onChange={() => setValue(!value)} />
+      <FormControlLabel control={<Switch />} label={label} checked={value} onChange={() => setValue(!value)} {...props} />
     </FormControl>
   );
 });
 
-const TextType = React.memo(({label, value, setValue}) => {
+const TextType = React.memo(({ label, value, setValue, ...props }) => {
   return (
     <FormControl fullWidth margin="dense">
-      <TextField label={label} value={value} onChange={(e) => setValue(e.target.value)} />
+      <TextField label={label} value={value} onChange={(e) => setValue(e.target.value)} {...props} />
     </FormControl>
   );
 });
 
-const NumberType = React.memo(({label, value, setValue}) => {
+const NumberType = React.memo(({ label, value, setValue, ...props }) => {
   return (
     <FormControl fullWidth margin="dense">
-      <TextField type="number" label={label} value={value} onChange={(e) => setValue(e.target.value)} />
+      <TextField type="number" label={label} value={value} onChange={(e) => setValue(e.target.value)} {...props} />
     </FormControl>
   );
 });
 
-const ColorType = React.memo(({ label, value, setValue }) => {
+const ColorType = React.memo(({ label, value, setValue, ...props }) => {
   return (
     <Fragment>
       <Typography variant="subtitle1">{label}</Typography>
-      <ColorPicker value={value} onChange={(value) => setValue(value)} />
+      <ColorPicker value={value} onChange={(value) => setValue(value)} {...props} />
     </Fragment>
   );
 });
 
-const DeviceAttributeType = React.memo(({ value, setValue }) => {
-  return <DevicePicker value={value} onChange={(value) => setValue(value)} />
+const DeviceAttributeType = React.memo(({ value, setValue, ...props }) => {
+  return <DevicePicker value={value} onChange={(value) => setValue(value)} {...props} />
 });
 
 const usePSStyles = makeStyles(theme => ({
@@ -258,82 +265,6 @@ const usePSStyles = makeStyles(theme => ({
     transform: 'translate(-50%, -50%)'
   }
 }));
-
-function ClockAttrSettings() {
-  const { clockAttr1, setClockAttr1, clockAttr2, setClockAttr2, clockAttr1Label, setClockAttr1Label, clockAttr2Label, setClockAttr2Label, devices } = useContext(MainContext);
-
-  let deviceItems = [];
-
-  Object.entries(devices).forEach(([id, device]) => {
-    deviceItems.push(<MenuItem key={id} value={id}>{device.label}</MenuItem>)
-  });
-
-  return (
-    <Fragment>
-      <FormControl fullWidth margin="dense">
-        <TextField label="1st Attribute Label" value={clockAttr1Label} onChange={(e) => setClockAttr1Label(e.target.value)} />
-      </FormControl>
-
-      <DevicePicker value={clockAttr1} onChange={(value) => setClockAttr1(value)} />
-
-      <FormControl fullWidth margin="dense">
-        <TextField label="2nd Attribute Label" value={clockAttr2Label} onChange={(e) => setClockAttr2Label(e.target.value)} />
-      </FormControl>
-
-      <DevicePicker value={clockAttr2} onChange={(value) => setClockAttr2(value)} />
-  </Fragment>
-  );
-}
-
-function FontSizeSettings() {
-  const {fontSize, setFontSize} = useContext(MainContext);
-
-  const [tempFontSize, setTempFontSize] = useState(fontSize);
-  
-  const handleApply = () => {
-    setFontSize(Math.min(Math.max(10, tempFontSize), 100));
-  }
-
-  return (
-    <SettingsSection title="Font Size" button buttonLabel="Apply" onButtonClick={handleApply}>
-      <FormControl fullWidth margin="dense">
-        <TextField label="Size" type="number" value={tempFontSize} onChange={(e) => setTempFontSize(parseInt(e.target.value))} />
-      </FormControl>
-    </SettingsSection>
-  );
-}
-
-function ColorOverrideSettings() {
-  const {overrideBG, setOverrideBG, overrideFG, setOverrideFG, overridePrimary, setOverridePrimary, overrideSecondary, setOverrideSecondary} = useContext(MainContext);
-
-  const [tempBG, setTempBG] = useState(overrideBG);
-  const [tempFG, setTempFG] = useState(overrideFG);
-  const [tempPrimary, setTempPrimary] = useState(overridePrimary);
-  const [tempSecondary, setTempSecondary] = useState(overrideSecondary);
-
-  const handleApply = () => {
-    setOverrideBG(tempBG);
-    setOverrideFG(tempFG);
-    setOverridePrimary(tempPrimary);
-    setOverrideSecondary(tempSecondary);
-  }
-
-  return (
-    <SettingsSection title="Color Overrides" button buttonLabel="Apply" onButtonClick={handleApply}>
-      <Typography variant="subtitle1">Background Color</Typography>
-      <ColorPicker value={tempBG} onChange={(value) => setTempBG(value)} />
-
-      <Typography variant="subtitle1">Text Color</Typography>
-      <ColorPicker value={tempFG} onChange={(value) => setTempFG(value)} />
-
-      <Typography variant="subtitle1">Primary Color</Typography>
-      <ColorPicker value={tempPrimary} onChange={(value) => setTempPrimary(value)} />
-
-      <Typography variant="subtitle1">Secondary Color</Typography>
-      <ColorPicker value={tempSecondary} onChange={(value) => setTempSecondary(value)} />
-    </SettingsSection>
-  );
-}
 
 function DashboardsSettings({ allDashboards }) {
   const classes = usePSStyles();
