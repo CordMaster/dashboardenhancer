@@ -118,9 +118,11 @@ function useConfig() {
   
         //recursive changes
         //find field affected
-        const affectedFieldSection = Object.values(settings).find(section => section.sectionOptions.find(field => field.name === affected.name) !== null).sectionOptions;
-        const affectedFieldIndex = section.sectionOptions.find(field => field.name === affected.name) !== null);
-        const affectedField = affectedFieldSection.sectionOptions[];
+        const affectedField = Object.values(settings).reduce((sum, section) => {
+          const affectedFieldIndex = section.sectionOptions.findIndex(field => field.name === affected.name);
+          if(affectedFieldIndex !== -1) return section.sectionOptions;
+          else return sum;
+        }, []);
         if(affectedField.affects) updateAffects(affectedField, affected.setTo);
       };
     });
