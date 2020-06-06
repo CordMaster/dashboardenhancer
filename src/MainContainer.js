@@ -12,6 +12,7 @@ import AppBar from './components/AppBar.js';
 import { MainContext } from './contexts/MainContextProvider.js';
 import More from './endpoints/More.js';
 import { LoadingContext } from './contexts/LoadingContextProvider.js';
+import EnhancedView from './endpoints/EnhancedView.js';
 
 
 const useStyles = makeStyles(theme => ({
@@ -80,7 +81,10 @@ function MainContainer({ width }) {
                 <Route exact path="/" render={() => <Redirect to={config.defaultDashboard === -1 ? 'settings/' + window.location.search : '' + config.defaultDashboard + '/' + window.location.search} />} />
               </Switch>
               
-              <Route path="/" render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} />} />
+              { config.overridePanelView ?
+                <Route path={/\/[0-9]+\//} render={({ location }) => <EnhancedView index={parseInt(location.pathname.substr(1))} />} /> :
+                <Route path="/" render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} />} />
+              }
             </main>
           </div>
 

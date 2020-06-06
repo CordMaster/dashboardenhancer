@@ -4,29 +4,29 @@ import $ from 'jquery';
 export default function(name, url, ready, updateInterval) {
   const [data, setData] = useState({ loaded: false, error: false });
 
+  const update = () => {
+    $.get(url, (data) => {
+      console.log(`Got ${name}`);
+      console.log(data);
+
+      const parsedData = {
+        loaded: true,
+        error: false,
+        data: data
+      }
+
+      setData(parsedData);
+
+      //save data so we don't always reload
+      window.localStorage.setItem(name, JSON.stringify({ timestamp: Date.now(), data: parsedData }));
+    }).fail(() => {
+      setData({ loaded: true, error: true });
+    });
+  }
+
   useEffect(() => {
     const cached = JSON.parse(window.localStorage.getItem(name));
     let updateHook = -1;
-
-    const update = () => {
-      $.get(url, (data) => {
-        console.log(`Got ${name}`);
-        console.log(data);
-  
-        const parsedData = {
-          loaded: true,
-          error: false,
-          data: data
-        }
-  
-        setData(parsedData);
-  
-        //save data so we don't always reload
-        window.localStorage.setItem(name, JSON.stringify({ timestamp: Date.now(), data: parsedData }));
-      }).fail(() => {
-        setData({ loaded: true, error: true });
-      });
-    }
 
     if(ready && (!cached || cached.timestamp + updateInterval <= Date.now())) {
       update();
@@ -34,7 +34,7 @@ export default function(name, url, ready, updateInterval) {
       setData(cached.data);
     }
 
-    if(ready) {
+    if(ready && updateInterval) {
       //schedule update
       updateHook = setInterval(update, updateInterval);
     }
@@ -45,6 +45,6 @@ export default function(name, url, ready, updateInterval) {
 
   }, [ready, name, url, updateInterval]);
 
-  return [ data.loaded, data.error, data.data ];
+  return [ data.loaded, data.error, update, data.data ];
   
 }

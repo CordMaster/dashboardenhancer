@@ -1,14 +1,14 @@
 import React, { useState, useContext, useMemo, Fragment } from 'react';
 import { MainContext } from '../contexts/MainContextProvider';
-import { Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Button, withMobileDialog } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Button, withMobileDialog, Typography } from '@material-ui/core';
 
 export default function() {
-  const { locked, setLocked } = useContext(MainContext);
+  const { locked, setLocked, save } = useContext(MainContext);
 
   const [open, setOpen] = useState(false);
   const openDialog = () => setOpen(true);
   
-  const provided = <LockDialog locked={locked} setLocked={setLocked} open={open} setOpen={setOpen} />
+  const provided = <LockDialog locked={locked} setLocked={setLocked} open={open} setOpen={setOpen} save={save} />
   
 
   return [locked, openDialog, provided];
@@ -28,22 +28,23 @@ function LockDialogM({ open, setOpen, fullScreen, ...props }) {
   );
 }
 
-function LockDialogContent({ locked, setLocked, exiting, closeDialog }) {
+function LockDialogContent({ locked, setLocked, exiting, closeDialog, save }) {
   const isLocked = locked !== -1;
 
   const [tempCode, setTempCode] = useState(false);
   const [error, setError] = useState(false);
 
   const handleSubmit = () => {
-    if(tempCode) {
-      if(isLocked) {
-        if(tempCode === locked) {
-          setLocked(-1);
-          closeDialog();
-        }
-        else setError(true);
-      } else {
-        setLocked(tempCode);
+    if(isLocked) {
+      if(tempCode === locked) {
+        setLocked(false);
+        closeDialog();
+      }
+      else setError(true);
+    } else {
+      if(!setLocked(true)) setError(true);
+      else {
+        save();
         closeDialog();
       }
     }
@@ -52,13 +53,13 @@ function LockDialogContent({ locked, setLocked, exiting, closeDialog }) {
   if(!exiting) {
     return (
       <Fragment>
-        <DialogTitle>{isLocked ? "Enter lock code" : "Set lock code"}</DialogTitle>
+        <DialogTitle>{isLocked ? "Enter lock code" : "Lock HubiPanel?"}</DialogTitle>
         <DialogContent>
-          <TextField fullWidth type="number" label="Code" error={error} value={tempCode} onChange={(e) => setTempCode(parseInt(e.target.value))} />
+          {isLocked ? <TextField fullWidth type="number" label="Code" error={error} value={tempCode} onChange={(e) => setTempCode(parseInt(e.target.value))} /> : (error ? <Typography color="error">Please set a code in settings first</Typography> : <Typography color="error">Locking will save your settings</Typography>) }
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Cancel</Button>
-          <Button onClick={handleSubmit}>{isLocked ? "Validate" : "Set Code"}</Button>
+          <Button onClick={handleSubmit}>{isLocked ? "Validate" : "Lock"}</Button>
         </DialogActions>
       </Fragment>
     );

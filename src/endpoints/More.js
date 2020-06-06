@@ -5,6 +5,7 @@ import Icons, { getIcon } from '../Icons';
 import { useHistory } from 'react-router';
 import { pushHistoryPreserve } from '../Utils';
 import useLock from '../components/useLock';
+import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -20,7 +21,8 @@ function More({ index }) {
   const classes = useStyles();
   const history = useHistory();
 
-  const { dashboards, lockSettings, lockFully } = useContext(MainContext);
+  const { dashboards, config } = useContext(MainContext);
+  const { sync } = useContext(OpenWeatherContext);
 
   const [locked, openDialog, providedDialog] = useLock();
 
@@ -29,7 +31,7 @@ function More({ index }) {
   if(dashboards.length > 3) {
     for(let i = 3; i < dashboards.length; i++) {
       const dashboard = dashboards[i];
-      uiDashboards.push(<ImprovedListItem key={dashboard.id} label={dashboard.label} disabled={locked !== -1 && lockFully && dashboard.lock} Icon={getIcon(dashboard.iconName)} onClick={() => pushHistoryPreserve(history, `/${i}/`)} />);
+      uiDashboards.push(<ImprovedListItem key={dashboard.id} label={dashboard.label} disabled={locked !== -1 && config.lockFully && dashboard.lock} Icon={getIcon(dashboard.iconName)} onClick={() => pushHistoryPreserve(history, `/${i}/`)} />);
     }
   } else uiDashboards.push(<Fragment key={"none"}><ListItem key={"none"} className={classes.listItem} disabled><ListItemText>No other panels</ListItemText></ListItem><Divider /></Fragment>);
 
@@ -48,7 +50,8 @@ function More({ index }) {
         <ListSubheader>Settings</ListSubheader>
         <Divider />
 
-        <ImprovedListItem label="Settings" Icon={Icons.mdiCog} disabled={locked !== -1 && lockSettings} onClick={() => pushHistoryPreserve(history, '/settings/')} />
+        <ImprovedListItem label="Reload Weather" Icon={Icons.mdiSync} onClick={sync} />
+        <ImprovedListItem label="Settings" Icon={Icons.mdiCog} disabled={locked !== -1 && config.lockSettings} onClick={() => pushHistoryPreserve(history, '/settings/')} />
       </List>
     </Paper>
   );

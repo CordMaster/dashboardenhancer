@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 function AppBar({ location, iconsOnly }) {
   const classes = useStyles();
 
-  const { dashboards, locked, lockFully } = useContext(MainContext);
+  const { dashboards, locked, config } = useContext(MainContext);
 
   const subLocation = location.pathname.substr(1);
   const history = useHistory();
@@ -37,7 +37,7 @@ function AppBar({ location, iconsOnly }) {
   for(let i = 0; i < Math.min(dashboards.length, 3); i++) {
     const dashboard = dashboards[i];
     const Icon = getIcon(dashboard.iconName);
-    uiDashboards[i] = <BottomNavigationAction key={dashboard.id} disabled={locked !== -1 && lockFully && dashboard.lock} icon={<Icon />} />
+    uiDashboards[i] = <BottomNavigationAction key={dashboard.id} disabled={locked !== -1 && config.lockFully && dashboard.lock} icon={<Icon />} />
   }
   uiDashboards[3] = <BottomNavigationAction key={"more"} icon={<Icons.mdiDotsHorizontal />} />
 

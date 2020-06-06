@@ -30,7 +30,8 @@ const useStyles = makeStyles(theme => ({
   },
 
   drawer: {
-    width: 300
+    width: 300,
+    boxShadow: `0 0 16px 0 ${theme.palette.grey[900]}`
   },
 
   drawerIconsOnly: {
@@ -78,7 +79,8 @@ const useStyles = makeStyles(theme => ({
 function AppDrawer({ location }) {
   const classes = useStyles();
 
-  const { dashboards, config, lockSettings } = useContext(MainContext);
+  const { dashboards, config } = useContext(MainContext);
+  const { sync } = useContext(OpenWeatherContext);
 
   const subLocation = location.pathname.substr(1);
 
@@ -135,12 +137,12 @@ function AppDrawer({ location }) {
 
         <ListItem className={classes.bottomListContainer}>
           <List className={classes.bottomList}>
-              <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
+              <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} disabled={locked !== -1 && config.lockSettings}>
                 <Icons.mdiCog color="action" />
               </ListItem>
               
               <div>
-                <ListItem button className={`${classes.bottomListItem}  ${!config.iconsOnly ? 'left' : 'bottom'}`}>
+                <ListItem button className={`${classes.bottomListItem}  ${!config.iconsOnly ? 'left' : 'bottom'}`} onClick={sync}>
                   <Icons.mdiSync color="action" />
                 </ListItem>
 
@@ -197,7 +199,7 @@ function ClockDrawerItem() {
 }
 
 function DashboardDrawerItem({ index, dashboard, location, ...props }) {
-  const { locked, lockFully } = useContext(MainContext);
+  const { locked, config } = useContext(MainContext);
 
     const Icon = getIcon(dashboard.iconName);
 
@@ -205,7 +207,7 @@ function DashboardDrawerItem({ index, dashboard, location, ...props }) {
 
     return (
       <Fragment>
-        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} disabled={locked !== -1 && lockFully && dashboard.lock} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
+        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} disabled={locked !== -1 && config.lockFully && dashboard.lock} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
         <Divider />
       </Fragment>
     );

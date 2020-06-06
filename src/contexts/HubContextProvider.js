@@ -4,10 +4,19 @@ import Immutable, { Map } from 'immutable';
 import { hubIp, endpoint, access_token } from '../Constants';
 import { LoadingContext } from './LoadingContextProvider';
 import { devLog } from '../Utils';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export const HubContext = React.createContext();
 
-const websocket = new WebSocket(`ws://${hubIp}/eventsocket`);
+const websocket = new ReconnectingWebSocket(`ws://${hubIp}/eventsocket`);
+
+websocket.addEventListener('open', () => {
+  devLog('Websocket opened');
+});
+
+websocket.addEventListener('error', () => {
+  devLog('Websocket closed. Reconnecting...');
+});
 
 //util for devices
 function useHub() {
@@ -63,18 +72,22 @@ function useHub() {
   //attach websocket
   useEffect(() => {
     //if loaded
-    if(loading === 0 && Object.keys(objDevices).length > 0) {
-      websocket.onmessage = (resp) => {
-        const data = JSON.parse(resp.data);
+    const onMessage = (resp) => {
+      const data = JSON.parse(resp.data);
 
-        devLog(data);
+      devLog(data);
 
-        //update our cache
-        if(data.source === 'DEVICE' && data.deviceId && data.name && data.value) {
-          preStateUpdate = preStateUpdate.updateIn([ '' + data.deviceId, 'attr', data.name ], value => { return { ...value, value: data.value } }); //eslint-disable-line
-          setDevices(preStateUpdate);
-        }
-      };
+      //update our cache
+      if(data.source === 'DEVICE' && data.deviceId && data.name && data.value) {
+        preStateUpdate = preStateUpdate.updateIn([ '' + data.deviceId, 'attr', data.name, 'value' ], props => data.value); //eslint-disable-line
+        setDevices(preStateUpdate);
+      }
+    }
+
+    if(loading === 0 && Object.keys(objDevices).length > 0) websocket.addEventListener('message', onMessage);
+
+    return () => {
+      websocket.removeEventListener('message', onMessage);
     }
   }, [loading, devices, objDevices]);
 

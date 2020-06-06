@@ -34,7 +34,7 @@ function Settings() {
   const classes = useStyles();
 
   const { allDashboards } = useContext(HubContext);
-  const { config, setConfig, save } = useContext(MainContext);
+  const { config, setConfig, save, ...state } = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
 
@@ -49,7 +49,7 @@ function Settings() {
   const compiledSettings = useMemo(() => { 
     return Object.entries(settings).map(([sectionName, section]) => {
       if(!section.noShow) {
-        return <DerrivedSettingsSection sectionName={sectionName} section={section} config={config} setConfig={setConfig} />
+        return <DerrivedSettingsSection key={sectionName} sectionName={sectionName} section={section} config={config} setConfig={setConfig} state={state} />
       } else {
         return null;
       }
@@ -127,7 +127,7 @@ const useDSSStyles = makeStyles(theme => ({
   }
 }));
 
-const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setConfig }) => {
+const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setConfig, state }) => {
   const classes = useDSSStyles();
 
   const [cachedValues, setCachedValues] = useState(() => {
@@ -142,7 +142,7 @@ const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setC
       for(let i = 0; i < dependsOn.length; i++) {
         const dependency = dependsOn[i];
         if(typeof(dependency.name) === 'function') {
-          if(dependency.name() !== dependency.value) return true;
+          if(dependency.name(state) !== dependency.value) return true;
         }
         else if(dependency.name && config[dependency.name] !== dependency.value) return true;
       }
@@ -152,7 +152,6 @@ const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setC
 
   const handleChange = (name, value) => {
     if(section.saveBuffer) {
-      console.log({ ...cachedValues, [name]: value })
       setCachedValues({ ...cachedValues, [name]: value });
     } else {
       setConfig[name](value);
@@ -223,7 +222,7 @@ const TextType = React.memo(({ label, value, setValue, ...props }) => {
 const NumberType = React.memo(({ label, value, setValue, ...props }) => {
   return (
     <FormControl fullWidth margin="dense">
-      <TextField type="number" label={label} value={value} onChange={(e) => setValue(e.target.value)} {...props} />
+      <TextField type="number" label={label} value={value} onChange={(e) => setValue(parseFloat(e.target.value))} {...props} />
     </FormControl>
   );
 });

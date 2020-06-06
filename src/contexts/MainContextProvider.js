@@ -25,8 +25,9 @@ export const settings = {
 
   'lock': {
     sectionLabel: 'Lock Settings',
+    dependsOn: [{ name: ({ locked }) => locked === -1, value: true }],
     sectionOptions: [
-      { name: 'lockCode', label: 'Lock code', type: 'number', default: '' },
+      { name: 'lockCode', label: 'Lock code', type: 'number', default: 0 },
       { name: 'lockSettings', label: 'Disable settings when locked', type: 'boolean', default: false },
       { name: 'lockFully', label: 'Disable viewing selected dashboards when locked', type: 'boolean', default: false }
     ]
@@ -69,6 +70,7 @@ export const settings = {
     sectionLabel: 'Weather Settings',
     dependsOn: [{ name: 'showWeather', value: true }],
     sectionOptions: [
+      { name: 'weatherUpdateIntervalInMin', label: 'Weather update interval (in minutes)', type: 'number', default: 5 },
       { name: 'useHubDeviceForIndoorTemp', label: 'Use a hub device for the indoor temperature', type: 'boolean', default: false },
       { name: 'indoorTempHubDevice', label: 'Indoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'useHubDeviceForIndoorTemp', value: true }] },
       { name: 'useHubDeviceForOutdoorTemp', label: 'Use a hub device for the outdoor temperature', type: 'boolean', default: false },
@@ -102,6 +104,13 @@ export const settings = {
       { name: 'overrideFG', label: 'Foreground Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } },
       { name: 'overridePrimary', label: 'Primary Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } },
       { name: 'overrideSecondary', label: 'Secondary Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }
+    ]
+  },
+
+  'experimental': {
+    sectionLabel: 'Experimental Options',
+    sectionOptions: [
+      { name: 'overridePanelView', label: '[WIP] [FASTER] Override panel view to match your theme', type: 'boolean', default: false },
     ]
   },
 
@@ -191,9 +200,18 @@ function MainContextProvider(props) {
   //locally stored lock
   const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? -1 : parseInt(window.localStorage.getItem('locked')));
 
-  const setLocked = code => {
-    _setLocked(code);
-    window.localStorage.setItem('locked', code);
+  const setLocked = (desired) => {
+    const code = config.lockCode;
+    if (desired === false) {
+      _setLocked(-1);
+      window.localStorage.setItem('locked', -1);
+      return true;
+    }
+    else if(desired === true && code) {
+      _setLocked(code);
+      window.localStorage.setItem('locked', code);
+      return true;
+    }else return false;
   }
 
   const [genTheme, setGenTheme] = useState(createMuiTheme({}));
