@@ -1,6 +1,5 @@
-import React, { useContext, Fragment } from 'react';
+import React, { useContext, Fragment, useMemo } from 'react';
 import { ListItem, Grid, Typography, makeStyles, Divider, CircularProgress, SvgIcon } from '@material-ui/core';
-import * as Icons from '@material-ui/icons';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
 
 import * as MdiIcons from '@mdi/js';
@@ -60,6 +59,9 @@ export default function() {
   const { devices } = useContext(HubContext);
   const { loaded, error, current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
+  const indoorTemp = config.useHubDeviceForIndoorTemp && config.indoorTempHubDevice.device && config.indoorTempHubDevice.attribute ? Math.round(devices[config.indoorTempHubDevice.device].attr[config.indoorTempHubDevice.attribute].value) : false;
+  const outdoorTemp = Math.round(config.useHubDeviceForOutdoorTemp && config.outdoorTempHubDevice.device && config.outdoorTempHubDevice.attribute ? devices[config.outdoorTempHubDevice.device].attr[config.outdoorTempHubDevice.attribute].value : currentWeather.temp);
+
   const futureWeatherParsed = loaded && !error ? futureWeather.map((data) => {
     return {
       low: Math.round(data.temp.min),
@@ -83,7 +85,7 @@ export default function() {
               <Grid container direction ="row" alignItems="center">
                 
                 <Grid item xs={4}>
-                  { config.useHubDeviceForIndoorTemp && <CurrentOverview current={72} low={70} high={75} /> }
+                  { config.useHubDeviceForIndoorTemp && <CurrentOverview current={indoorTemp} /> }
                 </Grid>
 
                 <Grid item xs={4}>
@@ -91,7 +93,7 @@ export default function() {
                 </Grid>
 
                 <Grid item xs={4}>
-                  <CurrentOverview current={Math.round(currentWeather.temp)} low={futureWeatherParsed[0].low} high={futureWeatherParsed[0].high} />
+                  <CurrentOverview current={outdoorTemp} low={futureWeatherParsed[0].low} high={futureWeatherParsed[0].high} />
                 </Grid>
               </Grid>
             </Grid>
@@ -197,11 +199,13 @@ function CurrentOverview({ current, low, high }) {
         </Typography>
       </Grid>
 
-      <Grid item>
-        <Typography align="center" variant="subtitle2">
-          {low}{"\u00B0"} / {high}{"\u00B0"}
-        </Typography>
-      </Grid>
+      {low && high ? 
+        <Grid item>
+          <Typography align="center" variant="subtitle2">
+            {low}{"\u00B0"} / {high}{"\u00B0"}
+          </Typography>
+        </Grid>
+      : null}
     </Grid>
   );
 }

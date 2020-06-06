@@ -11,11 +11,11 @@ import { makeStyles } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
 
 import { withRouter } from 'react-router';
-import Clock from './Clock';
+import ClockWidget from '../Widgets/ClockWidget';
 import { endpoint, access_token, devMode } from '../Constants';
 import { devLog } from '../Utils';
 import useLock from './useLock';
-import WeatherWidget from './WeatherWidget';
+import WeatherWidget from '../Widgets/WeatherWidget';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
 import { HubContext } from '../contexts/HubContextProvider';
 
@@ -190,7 +190,7 @@ function ClockDrawerItem() {
   return (
     <ListItem>
       <ListItemText disableTypography>
-        <Clock />
+        <ClockWidget />
       </ListItemText>
     </ListItem>
   )
