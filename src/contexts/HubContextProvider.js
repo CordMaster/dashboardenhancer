@@ -35,8 +35,20 @@ function useHub() {
     }
     else if(loading === 1) {
       $.get(`${endpoint}getDashboardDevices/${allDashboards[0].id}/?access_token=${access_token}`, (data) => {
-        //map devices to device id
+        //map devices to device id and attrs
         const cleanData = {};
+        data.map(device => {
+          console.log(device);
+          if(device.attr) device.attr = device.attr.reduce((sum, obj) => {
+            const parts = Object.entries(obj);
+            const [name, value] = parts[0];
+
+            sum[name] = { name, value, unit: obj.unit };
+
+            return sum;
+          }, {});
+          return device;
+        });
         data.forEach(it => cleanData[it.id] = it);
         setDevices(Immutable.fromJS(cleanData));
 
@@ -59,9 +71,8 @@ function useHub() {
         devLog(data);
 
         //update our cache
-        if(data.deviceId && data.name && data.value) {
-          const attrIndex = objDevices[data.deviceId].attr.findIndex(it => it[data.name]);
-          preStateUpdate = preStateUpdate.updateIn([ '' + data.deviceId, 'attr', attrIndex ], value => { return { ...value, [data.name]: data.value } }); //eslint-disable-line
+        if(data.source === 'DEVICE' && data.deviceId && data.name && data.value) {
+          preStateUpdate = preStateUpdate.updateIn([ '' + data.deviceId, 'attr', data.name ], value => { return { ...value, value: data.value } }); //eslint-disable-line
           setDevices(preStateUpdate);
         }
       };

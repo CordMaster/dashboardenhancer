@@ -70,7 +70,9 @@ export const settings = {
     dependsOn: [{ name: 'showWeather', value: true }],
     sectionOptions: [
       { name: 'useHubDeviceForIndoorTemp', label: 'Use a hub device for the indoor temperature', type: 'boolean', default: false },
+      { name: 'indoorTempHubDevice', label: 'Indoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'useHubDeviceForIndoorTemp', value: true }] },
       { name: 'useHubDeviceForOutdoorTemp', label: 'Use a hub device for the outdoor temperature', type: 'boolean', default: false },
+      { name: 'outdoorTempHubDevice', label: 'Outdoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'useHubDeviceForOutdoorTemp', value: true }] },
     ]
   },
 

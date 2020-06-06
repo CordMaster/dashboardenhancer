@@ -180,7 +180,7 @@ function useNotifications(dashboardId) {
   const notifications = useMemo(() => {
     return layout.map(it => it.device).filter(it => {
       return devices[it] && (devices[it].t === 'switch' || devices[it].t === 'fan' || devices[it].t === 'bulb-color' || devices[it].t === 'button' || devices[it].t === 'dimmer');
-    }).map(it => devices[it].attr.find(it => it['switch'])).filter(it => it && it.switch === 'on').length;
+    }).map(it => devices[it]).filter(it => it.attr && it.attr.switch && it.attr.switch.value === 'on').length;
   }, [devices, layout]);
 
   return notifications;

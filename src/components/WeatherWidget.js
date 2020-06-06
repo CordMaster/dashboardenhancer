@@ -4,6 +4,8 @@ import * as Icons from '@material-ui/icons';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
 
 import * as MdiIcons from '@mdi/js';
+import { MainContext } from '../contexts/MainContextProvider';
+import { HubContext } from '../contexts/HubContextProvider';
 
 const useStyles = makeStyles(theme => ({
   listItem: {
@@ -54,6 +56,8 @@ function TypeToIcon(type) {
 export default function() {
   const classes = useStyles();
 
+  const { config } = useContext(MainContext);
+  const { devices } = useContext(HubContext);
   const { loaded, error, current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
   const futureWeatherParsed = loaded && !error ? futureWeather.map((data) => {
@@ -77,8 +81,9 @@ export default function() {
           <Fragment>
             <Grid item xs={12} className={classes.dividerBottom}>
               <Grid container direction ="row" alignItems="center">
+                
                 <Grid item xs={4}>
-                  <CurrentOverview current={72} low={70} high={75} />
+                  { config.useHubDeviceForIndoorTemp && <CurrentOverview current={72} low={70} high={75} /> }
                 </Grid>
 
                 <Grid item xs={4}>

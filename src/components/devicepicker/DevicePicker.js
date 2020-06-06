@@ -13,7 +13,7 @@ export default function({ value, onChange, disabled }) {
     onChange({ ...value, attribute: val });
   }
 
-  const uiDevices = useMemo(() => Object.entries(devices).map(([id, device]) => <MenuItem key={id} value={id}>{device.label}</MenuItem>), [devices]);
+  const uiDevices = useMemo(() => Object.entries(devices).sort(([idA, a], [idB, b]) => a.label < b.label ? -1 : 1).map(([id, device]) => <MenuItem key={id} value={id}>{device.label}</MenuItem>), [devices]);
   const uiAttrs = useMemo(() => value.device ? devices[value.device].attr.map((it) => <MenuItem key={Object.keys(it)[0]} value={Object.keys(it)[0]}>{Object.keys(it)[0]}</MenuItem>) : [], [devices, value.device]);
 
   return (

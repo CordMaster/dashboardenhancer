@@ -25,8 +25,8 @@ function Clock() {
     }
   }, [setTime]);
 
-  const attr1 = config.clockAttr1.device && config.clockAttr1.attribute && devices[config.clockAttr1.device].attr.find((e) => Object.keys(e).findIndex(i => i  === config.clockAttr1.attribute) !== -1);
-  const attr2 = config.clockAttr2.device && config.clockAttr2.attribute && devices[config.clockAttr2.device].attr.find((e) => Object.keys(e).findIndex(i => i  === config.clockAttr2.attribute) !== -1);
+  const attr1 = config.clockAttr1.device && config.clockAttr1.attribute && devices[config.clockAttr1.device].attr[config.clockAttr1.attribute].value;
+  const attr2 = config.clockAttr2.device && config.clockAttr2.attribute && devices[config.clockAttr2.device].attr[config.clockAttr2.attribute].value;
   return (
     <Fragment>
       <Typography>{config.showDate && time.toLocaleDateString()}</Typography>
@@ -35,11 +35,11 @@ function Clock() {
       {config.showClockAttributes &&
         <Grid container direction="row" spacing={3}>
           <Grid item>
-            <Typography variant="caption">{config.clockAttr1Label}: {attr1 ? attr1[config.clockAttr1.attribute] : false}</Typography>
+            <Typography variant="caption">{config.clockAttr1Label}: {attr1}</Typography>
           </Grid>
 
           <Grid item>
-            <Typography variant="caption">{config.clockAttr2Label}: {attr2 ? attr2[config.clockAttr2.attribute] : false}</Typography>
+            <Typography variant="caption">{config.clockAttr2Label}: {attr2}</Typography>
           </Grid>
         </Grid>
       }
