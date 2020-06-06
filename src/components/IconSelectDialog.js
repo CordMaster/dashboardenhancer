@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { Dialog, withMobileDialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@material-ui/core';
 
-import * as Icons from '@material-ui/icons';
+import Icons from '../Icons';
 import { makeStyles } from '@material-ui/core';
 import IconSelect from './IconSelect.js';
 

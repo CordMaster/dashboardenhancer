@@ -2,7 +2,7 @@ import React, { useContext, Fragment, useMemo } from 'react';
 import { ListItem, Grid, Typography, makeStyles, Divider, CircularProgress, SvgIcon } from '@material-ui/core';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
 
-import * as MdiIcons from '@mdi/js';
+import Icons from '../Icons';
 import { MainContext } from '../contexts/MainContextProvider';
 import { HubContext } from '../contexts/HubContextProvider';
 
@@ -27,28 +27,28 @@ const useStyles = makeStyles(theme => ({
 function TypeToIcon(type) {
   switch(type) {
     case 'Clear':
-    return MdiIcons.mdiWeatherSunny;
+    return Icons.mdiWeatherSunny;
 
     case 'Clouds':
-    return MdiIcons.mdiWeatherCloudy;
+    return Icons.mdiWeatherCloudy;
 
     case 'Drizzle':
-    return MdiIcons.mdiWeatherRainy;
+    return Icons.mdiWeatherRainy;
 
     case 'Rain':
-    return MdiIcons.mdiWeatherPouring;
+    return Icons.mdiWeatherPouring;
 
     case 'Thunderstorm':
-    return MdiIcons.mdiWeatherLightning;
+    return Icons.mdiWeatherLightning;
 
     case 'Snow':
-    return MdiIcons.mdiWeatherSnowy;
+    return Icons.mdiWeatherSnowy;
 
     case 'Atmosphere':
-    return MdiIcons.mdiWeatherFog;
+    return Icons.mdiWeatherFog;
 
     default:
-    return MdiIcons.mdiAlertCircle;
+    return Icons.mdiAlertCircle;
   }
 }
 
@@ -124,7 +124,7 @@ const useDayStyles = makeStyles(theme => ({
 
 function Day({ label, low, high, precip, type }) {
   const classes = useDayStyles();
-  const icon = TypeToIcon(type);
+  const Icon = TypeToIcon(type);
 
   return (
     <Grid container className={classes.container} direction="column" alignItems="center">
@@ -135,9 +135,7 @@ function Day({ label, low, high, precip, type }) {
       </Grid>
 
       <Grid itemRef>
-        <SvgIcon>
-          <path d={icon} />
-        </SvgIcon>
+        <Icon />
       </Grid>
 
       <Grid itemType>
@@ -169,14 +167,12 @@ const useCWStyles = makeStyles(theme => ({
 function CurrentWeather({ precip, type }) {
   const classes = useCWStyles();
 
-  const icon = TypeToIcon(type);
+  const Icon = TypeToIcon(type);
 
   return (
     <Grid container direction="column" alignItems="center">
       <Grid item xs={12}>
-        <SvgIcon className={classes.bigIcon}>
-          <path d={icon} />
-        </SvgIcon>
+        <Icon className={classes.bigIcon} />
       </Grid>
 
       <Grid item xs={12}>

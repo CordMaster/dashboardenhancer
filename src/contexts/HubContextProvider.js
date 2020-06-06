@@ -38,7 +38,6 @@ function useHub() {
         //map devices to device id and attrs
         const cleanData = {};
         data.map(device => {
-          console.log(device);
           if(device.attr) device.attr = device.attr.reduce((sum, obj) => {
             const parts = Object.entries(obj);
             const [name, value] = parts[0];

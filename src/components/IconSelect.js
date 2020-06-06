@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { List, ListItem, ListItemIcon, ListItemText, DialogContent, DialogActions, Button, TextField, Typography } from '@material-ui/core';
 
 import Error from '@material-ui/icons/Error';
-import * as Icons from '@material-ui/icons';
+import Icons from '../Icons';
 import { makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({

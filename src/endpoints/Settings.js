@@ -9,7 +9,7 @@ import { Grid, Paper, Typography, TextField, MenuItem, Button, Switch, FormContr
 
 import { Alert, ToggleButton } from '@material-ui/lab';
 
-import * as Icons from '@material-ui/icons';
+import Icons, { getIcon } from '../Icons';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { MainContext, settings } from '../contexts/MainContextProvider';
@@ -403,7 +403,7 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
     modifyDashboard({type: 'modify', data: { lock: !dashboard.lock } });
   }
   
-  const Icon = Icons[dashboard.iconName];
+  const Icon = getIcon(dashboard.iconName);
 
   return (
     <Fragment>
@@ -413,7 +413,7 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
             <ListItem className={classes.listItem}>
               <ListItemIcon className={classes.listItemIcon}>
                 <div {...provided.dragHandleProps} >
-                  <Icons.Reorder  />
+                  <Icons.mdiReorderHorizontal />
                 </div>
               </ListItemIcon>
               
@@ -428,7 +428,7 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
                 <ToggleButton size="small" selected={dashboard.lock} onChange={() => handleToggleLock()}>Child Lock</ToggleButton>
 
                 <IconButton disabled={editMode} onClick={() => setEditMode(true)}>
-                  <Icons.Edit />
+                  <Icons.mdiPencil />
                 </IconButton>
 
                 <IconButton onClick={() => setSelectIconOpen(true)}>
@@ -457,7 +457,7 @@ function DisabledDashboardListItem({ dashboardInfo, index }) {
             <ListItem className={classes.listItem}>
               <ListItemIcon className={classes.listItemIcon}>
                 <div {...provided.dragHandleProps} >
-                  <Icons.Reorder  />
+                  <Icons.mdiReorderHorizontal />
                 </div>
               </ListItemIcon>
               <ListItemText primary={dashboardInfo.label} />

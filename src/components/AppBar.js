@@ -5,7 +5,7 @@ import { Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Drawer
 
 import { Link } from 'react-router-dom';
 
-import * as Icons from '@material-ui/icons';
+import Icons, { getIcon } from '../Icons';
 
 import { makeStyles } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
@@ -36,10 +36,10 @@ function AppBar({ location, iconsOnly }) {
 
   for(let i = 0; i < Math.min(dashboards.length, 3); i++) {
     const dashboard = dashboards[i];
-    const Icon = Icons[dashboard.iconName];
+    const Icon = getIcon(dashboard.iconName);
     uiDashboards[i] = <BottomNavigationAction key={dashboard.id} disabled={locked !== -1 && lockFully && dashboard.lock} icon={<Icon />} />
   }
-  uiDashboards[3] = <BottomNavigationAction key={"more"} icon={<Icons.MoreHoriz />} />
+  uiDashboards[3] = <BottomNavigationAction key={"more"} icon={<Icons.mdiDotsHorizontal />} />
 
   return (
     <BottomNavigation value={!isNaN(parseInt(subLocation)) ? Math.min(parseInt(subLocation), 3) : 3} onChange={handleChange}>

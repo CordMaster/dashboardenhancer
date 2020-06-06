@@ -5,7 +5,7 @@ import { Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Drawer
 
 import { Link } from 'react-router-dom';
 
-import * as Icons from '@material-ui/icons';
+import Icons, { getIcon } from '../Icons';
 
 import { makeStyles } from '@material-ui/core';
 import { MainContext } from '../contexts/MainContextProvider';
@@ -136,16 +136,16 @@ function AppDrawer({ location }) {
         <ListItem className={classes.bottomListContainer}>
           <List className={classes.bottomList}>
               <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'}>
-                <Icons.Settings color="action" />
+                <Icons.mdiCog color="action" />
               </ListItem>
               
               <div>
                 <ListItem button className={`${classes.bottomListItem}  ${!config.iconsOnly ? 'left' : 'bottom'}`}>
-                  <Icons.Refresh color="action" />
+                  <Icons.mdiSync color="action" />
                 </ListItem>
 
                 <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly && 'left'}`} onClick={openDialog}>
-                  {locked !== -1 ? <Icons.LockOpen color="action" /> : <Icons.Lock color="action" />}
+                  {locked !== -1 ? <Icons.mdiLockOpen color="action" /> : <Icons.mdiLock color="action" />}
                 </ListItem>
               </div>
           </List>
@@ -199,7 +199,7 @@ function ClockDrawerItem() {
 function DashboardDrawerItem({ index, dashboard, location, ...props }) {
   const { locked, lockFully } = useContext(MainContext);
 
-    const Icon = Icons[dashboard.iconName];
+    const Icon = getIcon(dashboard.iconName);
 
     const notifications = useNotifications(dashboard.id);
 
