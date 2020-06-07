@@ -23,11 +23,21 @@ export default function({ index }) {
   const { dashboards } = useContext(MainContext);
   const { allDashboards } = useContext(HubContext);
 
+  const layout = dashboards[index];
+
+  const containerStyles = {
+    flexSpacing: 16
+  }
+
+  const itemStyles = {
+    width: `calc(100% / ${layout.cols}`
+  }
+
   return (
-    <Paper className={classes.container} square elevation={0}>
-      <div className={classes.item}>
+    <Paper className={classes.container} style={containerStyles} square elevation={0}>
+      <Paper className={classes.itemStyles}>
         {index}
-      </div>
+      </Paper>
     </Paper>
   );
 }
