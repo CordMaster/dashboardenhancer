@@ -74,12 +74,7 @@ function Settings() {
             <Button variant="contained" color="primary" onClick={handleSave} className={classes.saveBtn}>Save</Button>
           </Typography>
           
-          {allDashboards.length > 0 ? 
-            <DashboardsSettings allDashboards={allDashboards} /> :
-            <SettingsSection title="Dashboards Loading">
-              <CircularProgress />
-            </SettingsSection>
-          }
+          <DashboardsSettings allDashboards={allDashboards} />
 
           {compiledSettings}
 
@@ -268,9 +263,11 @@ const usePSStyles = makeStyles(theme => ({
 function DashboardsSettings({ allDashboards }) {
   const classes = usePSStyles();
 
-  const { dashboards, modifyDashboards, defaultDashboard, setDefaultDashboard } = useContext(MainContext);
-
-  const disabledDashboards = allDashboards.filter((val) => dashboards.findIndex((val2) => val2.id === val.id) === -1);
+  const { dashboards, modifyDashboards, config, setConfig } = useContext(MainContext);
+  const defaultDashboard = config.defaultDashboard;
+  const setDefaultDashboard = setConfig.defaultDashboard;
+  
+  const disabledDashboards = Object.values(allDashboards).filter((val) => dashboards.findIndex((val2) => val2.id === val.id) === -1);
 
   const handleEnd = (result) => {
     const {source, destination} = result;
@@ -290,11 +287,11 @@ function DashboardsSettings({ allDashboards }) {
         if(defaultDashboard === source.index) {
           if(dashboards.length > 1) setDefaultDashboard(0);
           else setDefaultDashboard(-1);
-          
         }
       }
       else if(destination.droppableId === "dashboards-enabled") {
-        modifyDashboards({ type: 'new', index: destination.index, data: { id: disabledDashboards[source.index].id } });
+        const newDashboard = Object.values(disabledDashboards)[source.index];
+        modifyDashboards({ type: 'new', index: destination.index, data: { id: newDashboard.id, label: newDashboard.label } });
 
         //update the default too
         if(defaultDashboard === -1) setDefaultDashboard(0);

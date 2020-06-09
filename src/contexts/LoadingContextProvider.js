@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 export const LoadingContext = React.createContext();
 
 export default function({ children }) {
-  //go down loading by 1 til we get to 0
-  const [loading, setLoading] = useState(3);
+  //loading progress 0 through 100
+  const [loading, setLoading] = useState(0);
 
   return (
     <LoadingContext.Provider value={{ loading, setLoading }}>

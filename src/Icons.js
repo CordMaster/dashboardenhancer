@@ -2,6 +2,7 @@ import React from 'react';
 import * as OldIcons from '@material-ui/icons';
 import * as MdiIcons from '@mdi/js';
 import { SvgIcon } from '@material-ui/core';
+import IconAliases from './IconAliases.json';
 
 const Icons = Object.entries(MdiIcons).reduce((sum, [name, val]) => {
   sum[name] = (props) => {
@@ -17,5 +18,11 @@ const Icons = Object.entries(MdiIcons).reduce((sum, [name, val]) => {
 export default Icons;
 
 export function getIcon(name) {
-  return Icons[name] ? Icons[name] : (OldIcons[name] ? OldIcons[name] : OldIcons.Error);
+  if(Icons[name]) return Icons[name];
+  else if(OldIcons[name]) return OldIcons[name];
+  else {
+    const foundIconByAlias = IconAliases.find(elem => elem.aliases.includes(name));
+    if(foundIconByAlias)  return Icons[foundIconByAlias.name];
+    else return OldIcons.Error;
+  }
 }

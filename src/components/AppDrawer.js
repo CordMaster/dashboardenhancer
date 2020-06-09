@@ -161,23 +161,9 @@ function AppDrawer({ location }) {
 
 //util for tracking dashboard state to handle notifications
 function useNotifications(dashboardId) {
-  const { config } = useContext(MainContext);
-  const { devices } = useContext(HubContext);
+  const { allDashboards, devices } = useContext(HubContext);
 
-  const [layout, setLayout] = useState([]);
-
-  useEffect(() => {
-    //get layout if we are showing badges
-    if(config.showBadges) {
-      $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
-        setLayout(data.tiles);
-        devLog(`Got layout for: ${dashboardId}`);
-        devLog(data);
-      });
-    } else {
-      setLayout([]);
-    }
-  }, [config.showBadges, dashboardId]);
+  const layout = allDashboards[dashboardId].layout.tiles;
 
   const notifications = useMemo(() => {
     return layout.map(it => it.device).filter(it => {

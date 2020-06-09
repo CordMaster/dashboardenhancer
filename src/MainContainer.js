@@ -66,9 +66,8 @@ function MainContainer({ width }) {
   const { genTheme, config } = useContext(MainContext);
 
   const isSmall = width === 'sm' || width === 'xs';
-
   return (
-    loading === 0 ?
+    loading >= 100 ?
       <ThemeProvider theme={genTheme}>
         <div className={classes.root}>
           { !isSmall ? <AppDrawer /> : null }
@@ -92,7 +91,7 @@ function MainContainer({ width }) {
         </div>
       </ThemeProvider> :
       <div className={classes.loader}>
-        <CircularProgress size={100} />
+        <CircularProgress size={100} variant="static" value={loading} />
       </div>
   );
 }

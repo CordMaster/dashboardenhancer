@@ -276,7 +276,7 @@ function MainContextProvider(props) {
   useEffect(() => {
     //allow using no access token
     if(access_token) {
-      if(loading === 3) {
+      if(loading === 0) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
           if(!data.error) {
             if(data.state) setState(Immutable.fromJS(data.state));
@@ -286,11 +286,11 @@ function MainContextProvider(props) {
             devLog(`Got config`);
           }
         }).always(() => {
-          setLoading(2);
+          setLoading(10);
         });
       }
     } else {
-      if(loading !== 0) setLoading(0);
+      if(loading < 10) setLoading(10);
     }
   }, [loading]);
 

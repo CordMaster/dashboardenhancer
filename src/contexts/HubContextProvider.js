@@ -22,7 +22,7 @@ websocket.addEventListener('error', () => {
 function useHub() {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [allDashboards, setAllDashboards] = useState([]);
+  const [allDashboards, setAllDashboards] = useState({});
 
   const [devices, setDevices] = useState(new Map());
   const objDevices = useMemo(() => devices.toJS(), [devices]);
@@ -33,17 +33,47 @@ function useHub() {
   //for the first load
   useEffect(() => {
     //load last
-    if(loading === 2) {
+    if(loading === 10) {
       $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
-        setAllDashboards(data.dashboards);
+        let tempDashboards = data.dashboards.reduce((sum, dashboard) => {
+          sum[dashboard.id] = dashboard;
+          return sum;
+        }, {});
 
         devLog(`Got all dashboards`);
+        devLog(tempDashboards);
+
+        setAllDashboards(tempDashboards);
       }).always(() => {
-        setLoading(1);
+        setLoading(20);
       });
     }
-    else if(loading === 1) {
-      $.get(`${endpoint}getDashboardDevices/${allDashboards[0].id}/?access_token=${access_token}`, (data) => {
+
+    else if(loading === 20) {
+      let loadedLayouts = 0;
+      const tempDashboards = Object.assign({}, allDashboards);
+
+      Object.values(allDashboards).forEach((dashboard) => {
+        const dashboardId = dashboard.id;
+  
+        $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
+          tempDashboards[dashboardId].layout = data;
+          devLog(`Got layout for: ${dashboardId}`);
+          devLog(data);
+        }).always(() => {
+          loadedLayouts++;
+          if(loadedLayouts === Object.keys(tempDashboards).length) {
+            setLoading(80);
+            setAllDashboards(tempDashboards);
+          } else {
+            setLoading(Math.max(loading, 20 + 60 / Object.keys(tempDashboards).length * loadedLayouts));
+          }
+        });
+      }); 
+    }
+
+    else if(loading >= 80) {
+      $.get(`${endpoint}getDevices/${Object.values(allDashboards)[0].id}/?access_token=${access_token}`, (data) => {
         //map devices to device id and attrs
         const cleanData = {};
         data.map(device => {
@@ -63,7 +93,7 @@ function useHub() {
         devLog(`Got devices:`);
         devLog(cleanData);
       }).always(() => {
-        setLoading(0);
+        setLoading(100);
       });
     }
   }, [loading]);
@@ -84,7 +114,7 @@ function useHub() {
       }
     }
 
-    if(loading === 0 && Object.keys(objDevices).length > 0) websocket.addEventListener('message', onMessage);
+    if(loading >= 100 && Object.keys(objDevices).length > 0) websocket.addEventListener('message', onMessage);
 
     return () => {
       websocket.removeEventListener('message', onMessage);
@@ -94,11 +124,21 @@ function useHub() {
   return [objDevices, allDashboards];
 }
 
+const sendCommand = (dashboardId, deviceId, command) => {
+  $.post({
+    url: `${endpoint}sendCommand/${dashboardId}/?access_token=${access_token}`,
+    data: JSON.stringify({id: parseInt(deviceId), cmd: command, secondary: '' }),
+    contentType: 'multipart/form-data',
+    success: (data) => {
+
+  }});
+}
+
 export default function({ children }) {
   const [devices, allDashboards] = useHub();
 
   return (
-    <HubContext.Provider value={{ devices, allDashboards }}>
+    <HubContext.Provider value={{ devices, allDashboards, sendCommand }}>
       {children}
     </HubContext.Provider>
   )
