@@ -130,8 +130,9 @@ const sendCommand = (dashboardId, deviceId, command) => {
     data: JSON.stringify({id: parseInt(deviceId), cmd: command, secondary: '' }),
     contentType: 'multipart/form-data',
     success: (data) => {
-
-  }});
+      
+    }
+  });
 }
 
 export default function({ children }) {

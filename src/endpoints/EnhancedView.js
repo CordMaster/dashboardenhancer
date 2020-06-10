@@ -1,4 +1,4 @@
-import React, { useContext, Fragment } from 'react';
+import React, { useContext, Fragment, useState } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
@@ -22,11 +22,6 @@ const useStyles = makeStyles(theme => ({
     position: 'relative'
   },
 
-  '@keyframes zoom': {
-    from: { transform: 'scale(1)' },
-    to: { transform: 'scale(1.2)' }
-  },
-
   item: {
     boxSizing: 'border-box',
     position: 'absolute',
@@ -36,10 +31,19 @@ const useStyles = makeStyles(theme => ({
 
     cursor: 'pointer',
 
-    transition: 'transform 100ms linear',
+    transition: ['transform 100ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'z-index 250ms 250ms'],
 
-    '&:hover': {
+    '&:hover:not(.popped)': {
       transform: 'scale(1.05)',
+      zIndex: 2
+    },
+
+    '&.popped': {
+      top: 'calc(calc(0% / 1) / 1) !important',
+      left: 'calc(calc(0% / 1) / 1) !important',
+      width: 'calc(100% - 16px) !important',
+      height: 'calc(100% - 16px) !important',
+
       zIndex: 2
     }
   },
@@ -62,6 +66,11 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis'
+  },
+
+  iframeAttribute: {
+    width: '100%',
+    height: '100%'
   }
 }));
 
@@ -83,8 +92,8 @@ export default function({ index }) {
     const tileStyles = {
       width: `calc(${colPercentStr} - 16px)`,
       height: `calc(${rowPercentStr} - 16px)`,
-      top: `calc(${rowPercentStr} * ${tile.row - 1})`,
-      left: `calc(${colPercentStr} * ${tile.col - 1})`,
+      top: `calc(calc(100% / ${layout.rows}) * ${tile.row - 1})`,
+      left: `calc(calc(100% / ${layout.cols}) * ${tile.col - 1})`,
     }
 
     let Inner = BaseTile;
@@ -93,11 +102,29 @@ export default function({ index }) {
       case 'switch':
         Inner = SwitchTile;
         break;
+      case 'dimmer':
+        Inner = SwitchTile;
+        break;
       case 'motion':
         Inner = MotionTile;
         break;
       case 'window':
-        IconOverride = Icons.mdiWindowClosedVariant;
+        Inner = WindowTile;
+        break;
+      case 'contact':
+        Inner = ContactTile;
+        break;
+      case 'bulb':
+        Inner = SwitchTile;
+        break;
+      case 'attribute':
+        Inner = AttributeTile;
+        break;
+      case 'temperature':
+        Inner = AttributeTile;
+        break;
+      case 'humidity':
+        Inner = AttributeTile;
         break;
       default:
         IconOverride = false;
@@ -115,8 +142,9 @@ export default function({ index }) {
 
       IconOverride = getIcon(fixedSearch);
     }
-    return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} device={device} IconOverride={IconOverride} style={tileStyles} />
 
+    if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} />
+    else return <Inner key={`${tile.id}_${device.id}`} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} />
   });
 
   return (
@@ -128,7 +156,7 @@ export default function({ index }) {
   );
 }
 
-function SwitchTile({ dashboardId, device, IconOverride, ...props }) {
+function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = device.attr.switch.value;
 
   const { sendCommand } = useContext(HubContext);
@@ -147,11 +175,11 @@ function SwitchTile({ dashboardId, device, IconOverride, ...props }) {
   )
 }
 
-function MotionTile({ dashboardId, device, IconOverride, ...props }) {
+function MotionTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = device.attr.motion.value;
 
   const DefaultIcon = Icons.mdiMotionSensor;
-  const iconColor = state === 'active' ? 'primary' : 'default';
+  const iconColor = state === 'active' ? 'secondary' : 'default';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
 
@@ -164,15 +192,81 @@ function MotionTile({ dashboardId, device, IconOverride, ...props }) {
   )
 }
 
-function BaseTile({ Icon, iconColor, label, onClick, ...props }) {
-  const classes = useStyles();
+function WindowTile({ dashboardId, tile, device, IconOverride, ...props }) {
+  const state = device.attr.contact.value;
+
+  const DefaultIcon = state === 'open' ? Icons.mdiWindowOpenVariant : Icons.mdiWindowClosedVariant;
+  const iconColor = state === 'open' ? 'secondary' : 'default';
+
+  const Icon = IconOverride ? IconOverride : DefaultIcon;
+
+  const handleClick = () => {
+    
+  }
 
   return (
-    <Paper className={classes.item} elevation={8} onClick={onClick} {...props}>
+    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} {...props} />
+  )
+}
+
+function ContactTile({ dashboardId, tile, device, IconOverride, ...props }) {
+  const state = device.attr.contact.value;
+
+  const DefaultIcon = state === 'open' ? Icons.mdiDoorOpen : Icons.mdiDoorClosed;
+  const iconColor = state === 'open' ? 'secondary' : 'default';
+
+  const Icon = IconOverride ? IconOverride : DefaultIcon;
+
+  const handleClick = () => {
+    
+  }
+
+  return (
+    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} {...props} />
+  )
+}
+
+function AttributeTile({ dashboardId, tile, device, IconOverride, ...props }) {
+  const state = tile.templateExtra ? device.attr[tile.templateExtra].value : device.attr[tile.template].value;
+
+  return (
+    <BaseTile content={state} label={device.label} {...props} />
+  )
+}
+
+function BaseTile({ label, Icon, iconColor, content, onClick, ...props }) {
+  const classes = useStyles();
+
+  const [hoverHandle, setHoverHandle] = useState(-1);
+  const [popped, setPopped] = useState(false);
+
+  const handleClick = (e) => {
+    if(onClick) onClick(e);
+  }
+
+  const handleEnter = () => {
+    setHoverHandle(setTimeout(() => {
+      setPopped(true);
+    }, 1000));
+  }
+
+  const handleLeave = () => {
+    if(hoverHandle) {
+      clearInterval(hoverHandle);
+    }
+  }
+
+  return (
+    <Paper className={`${classes.item} ${popped && '.popped'}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
         <div className={classes.flexCenter}>
-          <div className={`${classes.flexCenter} ${classes.iconContainer}`} style={{ fontSize: 60 }}>
-            { Icon && <Icon fontSize="inherit" color={iconColor} />}
-          </div>
+          { Icon && 
+            <div className={`${classes.flexCenter} ${classes.iconContainer}`} style={{ fontSize: 60 }}>
+              <Icon fontSize="inherit" color={iconColor} />
+            </div>
+          }
+          { content && 
+            content.includes('iframe') ? <div className={classes.iframeAttribute} dangerouslySetInnerHTML={{__html: content}}></div> : <Typography variant="subtitle1" className={classes.overflowText}>{content}</Typography>
+          }
           <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
         </div>
     </Paper>
