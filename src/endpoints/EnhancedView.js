@@ -148,12 +148,12 @@ export default function({ index }) {
       case 'motion':
         Inner = MotionTile;
         break;
-      case 'window':
+      /*case 'window':
         Inner = WindowTile;
-        break;
-      case 'contact':
+        break;*/
+      /*case 'contact':
         Inner = ContactTile;
-        break;
+        break;*/
       case 'bulb':
         Inner = SwitchTile;
         break;
