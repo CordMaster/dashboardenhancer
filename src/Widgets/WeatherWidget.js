@@ -21,6 +21,21 @@ const useStyles = makeStyles(theme => ({
 
   dividerBottom: {
     borderBottom: `1px solid ${theme.palette.divider}`
+  },
+
+  dividerTop: {
+    borderTop: `1px solid ${theme.palette.divider}`
+  },
+
+  disclaimerText: {
+    display: 'inline-block',
+    width: '100%',
+    boxSizing: 'border-box',
+
+    paddingRight: 2,
+
+    textAlign: 'right',
+    
   }
 }));
 
@@ -108,6 +123,10 @@ export default function() {
 
             <Grid item xs={4}>
               <Day label={futureWeatherParsed[3].day} low={futureWeatherParsed[3].low} high={futureWeatherParsed[3].high} precip={futureWeatherParsed[3].clouds} type={futureWeatherParsed[3].main} />
+            </Grid>
+
+            <Grid item xs={12} className={classes.dividerTop}>
+              <Typography variant="caption" className={classes.disclaimerText}>Data from OpenWeatherMap.com</Typography>
             </Grid>
           </Fragment>
         }

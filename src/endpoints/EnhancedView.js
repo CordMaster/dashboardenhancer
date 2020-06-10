@@ -1,4 +1,4 @@
-import React, { useContext, Fragment, useState } from 'react';
+import React, { useContext, Fragment, useState, useEffect } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
@@ -31,7 +31,8 @@ const useStyles = makeStyles(theme => ({
 
     cursor: 'pointer',
 
-    transition: ['transform 100ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'z-index 250ms 250ms'],
+    //for the way back
+    transition: ['transform 100ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear', 'z-index 0ms step-end 250ms'],
 
     '&:hover:not(.popped)': {
       transform: 'scale(1.05)',
@@ -39,12 +40,38 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.popped': {
-      top: 'calc(calc(0% / 1) / 1) !important',
-      left: 'calc(calc(0% / 1) / 1) !important',
-      width: 'calc(100% - 16px) !important',
-      height: 'calc(100% - 16px) !important',
+      top: 'calc(25% / 2) !important',
+      left: 'calc(25% / 2) !important',
+      width: 'calc(75% - 16px) !important',
+      height: 'calc(75% - 16px) !important',
 
-      zIndex: 2
+      zIndex: 4,
+
+      //for the way up
+      transition: ['transform 100ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear', 'z-index 0ms step-end 0ms']
+    }
+  },
+
+  popCover: {
+    position: 'absolute',
+
+    top: '-16px',
+    left: '-16px',
+    right: 0,
+    bottom: 0,
+
+    zIndex: 3,
+
+    display: 'none',
+    opacity: 0,
+
+
+    backgroundColor: 'black',
+    transition: ['opacity 250ms linear'],
+
+    '&.popped': {
+      display: 'block',
+      opacity: 0.5
     }
   },
 
@@ -79,6 +106,19 @@ export default function({ index }) {
 
   const { dashboards } = useContext(MainContext);
   const { allDashboards, devices, sendCommand } = useContext(HubContext);
+
+  //tile popping
+  const [popped, setPopped] = useState(-1);
+
+  useEffect(() => {
+    const unPop = () => {
+      setPopped(-1);
+    }
+
+    window.addEventListener('click', unPop);
+    return () => window.removeEventListener('click', unPop);
+  }, []);
+  //tile popping
 
   const layout = allDashboards[dashboards[index].id].layout;
   console.log(layout);
@@ -143,7 +183,7 @@ export default function({ index }) {
       IconOverride = getIcon(fixedSearch);
     }
 
-    if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} />
+    if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
     else return <Inner key={`${tile.id}_${device.id}`} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} />
   });
 
@@ -151,6 +191,7 @@ export default function({ index }) {
     <Paper className={classes.container} square elevation={0}>
       <div className={classes.intContainer}>
         {tiles}
+        <div className={`${classes.popCover} ${popped !== -1 && 'popped'}`}></div>
       </div>
     </Paper>
   );
@@ -234,30 +275,30 @@ function AttributeTile({ dashboardId, tile, device, IconOverride, ...props }) {
   )
 }
 
-function BaseTile({ label, Icon, iconColor, content, onClick, ...props }) {
+function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped, ...props }) {
   const classes = useStyles();
 
   const [hoverHandle, setHoverHandle] = useState(-1);
-  const [popped, setPopped] = useState(false);
 
   const handleClick = (e) => {
     if(onClick) onClick(e);
+
+    //don't exit the popup
+    e.stopPropagation();
   }
 
   const handleEnter = () => {
     setHoverHandle(setTimeout(() => {
-      setPopped(true);
+      setPopped();
     }, 1000));
   }
 
   const handleLeave = () => {
-    if(hoverHandle) {
-      clearInterval(hoverHandle);
-    }
+    if(hoverHandle) clearInterval(hoverHandle);
   }
 
   return (
-    <Paper className={`${classes.item} ${popped && '.popped'}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
+    <Paper className={`${classes.item} ${popped && 'popped'}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
         <div className={classes.flexCenter}>
           { Icon && 
             <div className={`${classes.flexCenter} ${classes.iconContainer}`} style={{ fontSize: 60 }}>
