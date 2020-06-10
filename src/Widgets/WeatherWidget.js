@@ -97,6 +97,10 @@ export default function() {
         {loaded && !error &&
           <Fragment>
             <Grid item xs={12} className={classes.dividerBottom}>
+              <Typography variant="h5">Weather</Typography>
+            </Grid>
+
+            <Grid item xs={12} className={classes.dividerBottom}>
               <Grid container direction ="row" alignItems="center">
                 
                 <Grid item xs={4}>

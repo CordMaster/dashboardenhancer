@@ -202,7 +202,7 @@ function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
 
   const { sendCommand } = useContext(HubContext);
 
-  const DefaultIcon = state === 'on' ? Icons.mdiToggleSwitch : Icons.mdiToggleSwitchOff;
+  const DefaultIcon = state === 'on' ? Icons.mdiToggleSwitch : Icons.mdiToggleSwitchOffOutline;
   const iconColor = state === 'on' ? 'primary' : 'default';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
