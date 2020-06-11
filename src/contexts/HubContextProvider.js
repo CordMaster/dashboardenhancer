@@ -139,10 +139,10 @@ function useHub() {
   return [objDevices, allDashboards, ensureLayoutLoaded];
 }
 
-const sendCommand = (dashboardId, deviceId, command) => {
+const sendCommand = (dashboardId, deviceId, command, secondary = '') => {
   $.post({
     url: `${endpoint}sendCommand/${dashboardId}/?access_token=${access_token}`,
-    data: JSON.stringify({id: parseInt(deviceId), cmd: command, secondary: '' }),
+    data: JSON.stringify({id: parseInt(deviceId), cmd: command, secondary: secondary }),
     contentType: 'multipart/form-data',
     success: (data) => {
       

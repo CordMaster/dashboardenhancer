@@ -5,6 +5,7 @@ import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
+import FullSlider from '../components/FullSlider';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -30,14 +31,13 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     position: 'absolute',
 
-    padding: theme.spacing(1),
+    padding: theme.spacing(2),
 
     zIndex: 1,
 
     cursor: 'pointer',
 
-    //back
-    transition: ['transform 100ms linear 0ms', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear'],
+    transition: 'transform 100ms linear',
 
     '&:hover:not(.popped)': {
       transform: 'scale(1.05)',
@@ -45,16 +45,21 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.popped': {
-      top: 'calc(75% / 2) !important',
-      left: 'calc(25% / 2) !important',
+      top: '50% !important',
+      left: '50% !important',
       width: 'calc(75% - 16px) !important',
-      height: 'calc(25% - 16px) !important',
+      minHeight: 'calc(25% - 16px) !important',
+      height: 'auto !important',
+
+      transform: 'translate(-50%, -50%)',
 
       cursor: 'initial',
     },
 
     '&[class*="popped-"]:not(.popped-exit-done)': {
-      zIndex: 4
+      zIndex: 4,
+
+      transition: ['transform 250ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear']
     }
   },
 
@@ -81,12 +86,7 @@ const useStyles = makeStyles(theme => ({
     }
   },
 
-  contentContainer: {
-    width: '100%',
-    height: '100%'
-  },
-
-  iconContainer: {
+  featuredContainer: {
     display: 'inline-block',
 
     position: 'absolute',
@@ -109,18 +109,25 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.popped-enter-done': {
-      position: 'initial',
+      boxSizing: 'border-box',
+
       display: 'flex',
       flexFlow: 'row nowrap',
       alignItems: 'center',
 
-      height: '100%',
+      top: theme.spacing(2),
+      left: theme.spacing(2),
+      bottom: theme.spacing(2),
+      right: theme.spacing(2),
 
-      top: 0,
-      left: 0,
+      padding: `${theme.spacing(2)}px 0`,
 
       transform: 'none',
-      transition: 'none'
+      transition: 'none',
+
+      '&>*': {
+        marginRight: theme.spacing(2)
+      }
     }
   },
 
@@ -137,10 +144,19 @@ const useStyles = makeStyles(theme => ({
     textOverflow: 'ellipsis'
   },
 
+  contentText: {
+    fontSize: 'inherit'
+  },
+
   advancedContainer: {
     animation: '250ms $fadein',
 
-    height: 'auto'
+    height: '100%',
+    flexGrow: 1,
+
+    display: 'flex',
+    flexFlow: 'column nowrap',
+    justifyContent: 'center'
   },
 
   iframeAttribute: {
@@ -244,7 +260,7 @@ export default function({ index }) {
     }
 
     if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
-    else return <Inner key={`${tile.id}_${device.id}`} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
+    else return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={{}} device={{ attr: {} }} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
   });
 
   return (
@@ -273,14 +289,8 @@ function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
     sendCommand(dashboardId, device.id, state === 'on' ? 'off' : 'on');
   }
 
-  const advancedOptions = (
-    <FormControl fullWidth margin="dense">
-      <FormControlLabel control={<Switch />} label={"switch"} checked={isOn} onChange={handleClick} {...props} />
-    </FormControl>
-  );
-
   return (
-    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} advancedOptions={advancedOptions} {...props} />
+    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
@@ -297,7 +307,7 @@ function MotionTile({ dashboardId, tile, device, IconOverride, ...props }) {
   }
 
   return (
-    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} {...props} />
+    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
@@ -314,7 +324,7 @@ function WindowTile({ dashboardId, tile, device, IconOverride, ...props }) {
   }
 
   return (
-    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} {...props} />
+    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
@@ -331,7 +341,7 @@ function ContactTile({ dashboardId, tile, device, IconOverride, ...props }) {
   }
 
   return (
-    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} {...props} />
+    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
@@ -339,12 +349,51 @@ function AttributeTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = tile.templateExtra ? device.attr[tile.templateExtra].value : device.attr[tile.template].value;
 
   return (
-    <BaseTile content={state} label={device.label} {...props} />
+    <BaseTile dashboardId={dashboardId} content={state} label={device.label} device={device} {...props} />
   )
 }
 
-function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped, advancedOptions, ...props }) {
+//attr function types
+const attrInfos = {
+  'switch' : {
+    type: 'boolean',
+    trueStr: 'on',
+    falseStr: 'off'
+  },
+
+  'level' : {
+    type: 'range',
+    min: 0,
+    max: 100,
+    step: 5
+  },
+
+  'saturation' : {
+    type: 'range',
+    min: 0,
+    max: 100,
+    step: 5
+  },
+
+  'hue' : {
+    type: 'range',
+    min: 0,
+    max: 100,
+    step: 5
+  },
+
+  'colorTemperature' : {
+    type: 'range',
+    min: 0,
+    max: 6536,
+    step: 100
+  }
+}
+
+function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, popped, setPopped, device, ...props }) {
   const classes = useStyles();
+
+  const { sendCommand } = useContext(HubContext);
 
   const [hoverHandle, setHoverHandle] = useState(-1);
 
@@ -365,32 +414,47 @@ function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped,
     if(hoverHandle) clearInterval(hoverHandle);
   }
 
+  const advancedOptions = Object.values(device.attr).sort((a, b) => a.name > b.name ? 1 : -1).map(attr => {
+    const attrInfo = attrInfos[attr.name];
+    if(attrInfo) {
+      switch(attrInfo.type) {
+        case 'boolean':
+          const isTrue = attr.value === attrInfo.trueStr;
+
+          return (
+            <FormControl key={attr.name}>
+              <FormControlLabel control={<Switch />} label={attr.name} checked={isTrue} onChange={() => sendCommand(dashboardId, device.id, isTrue ? attrInfo.falseStr : attrInfo.trueStr) } />
+            </FormControl>
+          );
+        case 'range':
+          return <FullSlider style={{ marginLeft: -16 }} label={attr.name} min={attrInfo.min} max={attrInfo.max} step={attrInfo.step} value={attr.value} onChange={(value) => sendCommand(dashboardId, device.id, `set${attr.name.charAt(0).toUpperCase() + attr.name.substring(1)}`, value) } bufferChange />
+        default:
+          return false;
+        }
+      } else return <Typography gutterBottom variant="subtitle1">{attr.name}: {attr.value}</Typography>;
+  });
+
   return (
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
           <Paper className={`${classes.item} ${popped ? 'popped' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
-            <div className={classes.contentContainer}>
-              { Icon && 
-                <CSSTransition in={popped} timeout={250} classNames="popped">
-                  <div className={`${classes.iconContainer} ${popped ? 'popped' : ''}`}>
-                    <Icon fontSize="inherit" color={iconColor} />
-                      { outerTransitionState === 'entered' &&
-                        <div className={classes.advancedContainer}>
-                          {advancedOptions}
-                        </div>
-                      }
-                  </div>
-                </CSSTransition>
-              }
-              { content && 
-                content.includes('iframe') ? <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> : <Typography variant="subtitle1" className={classes.overflowText}>{content}</Typography>
-              }
-
+              <CSSTransition in={popped} timeout={250} classNames="popped">
+                <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
+                    { Icon && <Icon fontSize="inherit" color={iconColor} /> }
+                    { content && 
+                      content.includes('iframe') ? <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> : <Typography variant="subtitle1" className={classes.contentText}>{content}</Typography>
+                    }
+                    { outerTransitionState === 'entered' &&
+                      <div className={classes.advancedContainer}>
+                        {advancedOptions}
+                      </div>
+                    }
+                </div>
+              </CSSTransition>
               <div className={classes.textContainer}>
                 <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
               </div>
-            </div>
           </Paper>
         </CSSTransition>
       }

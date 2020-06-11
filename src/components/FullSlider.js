@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import { Grid, TextField, Slider, Typography } from '@material-ui/core';
@@ -6,7 +6,9 @@ import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles(theme => ({
   container: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+
+    fontSize: 'initial'
   },
 
   itemGrow: {
@@ -53,35 +55,47 @@ const useSliderOverrides = makeStyles(theme => ({
   }
 }));
 
-function FullSlider({ label, onChange, ...props }) {
+function FullSlider({ label, value, onChange, bufferChange, style, ...props }) {
   const classes = useStyles();
   const sliderOverrides = useSliderOverrides();
+
+  const [buffer, setBuffer] = useState(value);
+
+  //update the buffer
+  useEffect(() => {
+    setBuffer(value);
+  }, [value]);
+
+  const handleChange = value => {
+    setBuffer(value);
+    if(!bufferChange) onChange(value);
+  }
 
   const handleTextFieldChange = (e) => {
     const val = parseInt(e.target.value);
     if(!val || val < props.min) {
-      onChange(props.min);
+      handleChange(props.min);
     } else if(val > props.max) {
-      onChange(props.max);
+      handleChange(props.max);
     } else {
-      onChange(val);
+      handleChange(val);
     }
   }
 
   return (
-    <Grid container className={classes.container} direction="row" wrap="nowrap" alignItems="center">
-      <Grid item xs={1}>
+    <Grid container className={classes.container} style={style} direction="row" wrap="nowrap" alignItems="center">
+      <Grid item>
         <Typography>{label}</Typography>
       </Grid>
 
       <Grid item className={classes.itemGrow}>
         <div className={classes.sliderContainer}>
-          <Slider classes={sliderOverrides} {...props} onChange={(e, value) => onChange(value)} />
+          <Slider classes={sliderOverrides} value={buffer} onChange={(e, value) => handleChange(value)} onChangeCommitted={() => onChange(buffer)} {...props} />
         </div>
       </Grid>
 
       <Grid item xs={2}>
-        <TextField fullWidth type="number" value={props.value} onChange={handleTextFieldChange} />
+        <TextField fullWidth type="number" value={buffer} onChange={handleTextFieldChange} onKeyPress={(e) => { bufferChange && e.key === 'Enter' && onChange(buffer) }} onBlur={() => bufferChange && onChange(buffer) } />
       </Grid>
     </Grid>
   );
