@@ -1,4 +1,5 @@
 import React, { useContext, Fragment, useState, useEffect } from 'react';
+import $ from 'jquery';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
@@ -12,7 +13,9 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
 
     paddingTop: 16,
-    paddingLeft: 16
+    paddingLeft: 16,
+
+    overflow: 'hidden'
   },
 
   intContainer: {
@@ -25,18 +28,21 @@ const useStyles = makeStyles(theme => ({
   item: {
     boxSizing: 'border-box',
     position: 'absolute',
-    zIndex: 1,
 
     padding: theme.spacing(1),
 
+    zIndex: 1,
+
     cursor: 'pointer',
 
-    //for the way back
-    transition: ['transform 100ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear', 'z-index 0ms step-end 250ms'],
+    '--transitions': ,
+
+    //back
+    transition: ['transform 100ms linear 0ms', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear'],
 
     '&:hover:not(.popped)': {
       transform: 'scale(1.05)',
-      zIndex: 2
+      zIndex: 2,
     },
 
     '&.popped': {
@@ -45,11 +51,10 @@ const useStyles = makeStyles(theme => ({
       width: 'calc(75% - 16px) !important',
       height: 'calc(75% - 16px) !important',
 
-      zIndex: 4,
+      cursor: 'initial',
 
-      //for the way up
-      transition: ['transform 100ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear', 'z-index 0ms step-end 0ms']
-    }
+      zIndex: 4,
+    },
   },
 
   popCover: {
@@ -67,7 +72,7 @@ const useStyles = makeStyles(theme => ({
 
 
     backgroundColor: 'black',
-    transition: ['opacity 250ms linear'],
+    transition: 'opacity 250ms linear',
 
     '&.popped': {
       display: 'block',
@@ -75,29 +80,56 @@ const useStyles = makeStyles(theme => ({
     }
   },
 
-  flexCenter: {
-    display: 'flex',
-    flexFlow: 'column nowrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-
+  contentContainer: {
+    width: '100%',
     height: '100%'
   },
 
   iconContainer: {
-    flexGrow: 1
+    display: 'inline-block',
+
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+
+    transform: 'translate(-50%, -50%)',
+
+    fontSize: 60,
+
+    transition:  ['transform 250ms linear', 'top 250ms linear', 'left 250ms linear', 'font-size 250ms linear'],
+
+    '&.popped': {
+      top: 16,
+      left: 16,
+
+      transform: 'none',
+
+      fontSize: 100,
+    },
   },
 
-  overflowText: {
+  textContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: '50%',
+
+    transform: 'translateX(-50%)',
+
     maxWidth: '100%',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis'
   },
 
+  overflowText: {
+    
+  },
+
   iframeAttribute: {
     width: '100%',
-    height: '100%'
+    height: '100%',
+
+    border: 'none'
   }
 }));
 
@@ -184,7 +216,7 @@ export default function({ index }) {
     }
 
     if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
-    else return <Inner key={`${tile.id}_${device.id}`} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} />
+    else return <Inner key={`${tile.id}_${device.id}`} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
   });
 
   return (
@@ -281,7 +313,7 @@ function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped,
   const [hoverHandle, setHoverHandle] = useState(-1);
 
   const handleClick = (e) => {
-    if(onClick) onClick(e);
+    if(onClick && !popped) onClick(e);
 
     //don't exit the popup
     e.stopPropagation();
@@ -299,16 +331,19 @@ function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped,
 
   return (
     <Paper className={`${classes.item} ${popped && 'popped'}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
-        <div className={classes.flexCenter}>
+        <div className={classes.contentContainer}>
           { Icon && 
-            <div className={`${classes.flexCenter} ${classes.iconContainer}`} style={{ fontSize: 60 }}>
+            <div className={`${classes.iconContainer} ${popped && 'popped'}`}>
               <Icon fontSize="inherit" color={iconColor} />
             </div>
           }
           { content && 
-            content.includes('iframe') ? <div className={classes.iframeAttribute} dangerouslySetInnerHTML={{__html: content}}></div> : <Typography variant="subtitle1" className={classes.overflowText}>{content}</Typography>
+            content.includes('iframe') ? <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> : <Typography variant="subtitle1" className={classes.overflowText}>{content}</Typography>
           }
-          <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
+
+          <div className={classes.textContainer}>
+            <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
+          </div>
         </div>
     </Paper>
   )

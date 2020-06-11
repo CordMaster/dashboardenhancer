@@ -264,6 +264,7 @@ function DashboardsSettings({ allDashboards }) {
   const classes = usePSStyles();
 
   const { dashboards, modifyDashboards, config, setConfig } = useContext(MainContext);
+  const { ensureLayoutLoaded } = useContext(HubContext);
   const defaultDashboard = config.defaultDashboard;
   const setDefaultDashboard = setConfig.defaultDashboard;
   
@@ -292,6 +293,7 @@ function DashboardsSettings({ allDashboards }) {
       else if(destination.droppableId === "dashboards-enabled") {
         const newDashboard = Object.values(disabledDashboards)[source.index];
         modifyDashboards({ type: 'new', index: destination.index, data: { id: newDashboard.id, label: newDashboard.label } });
+        ensureLayoutLoaded(newDashboard.id);
 
         //update the default too
         if(defaultDashboard === -1) setDefaultDashboard(0);

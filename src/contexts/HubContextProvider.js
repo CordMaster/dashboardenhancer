@@ -5,6 +5,7 @@ import { hubIp, endpoint, access_token } from '../Constants';
 import { LoadingContext } from './LoadingContextProvider';
 import { devLog } from '../Utils';
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import { MainContext } from './MainContextProvider';
 
 export const HubContext = React.createContext();
 
@@ -21,6 +22,7 @@ websocket.addEventListener('error', () => {
 //util for devices
 function useHub() {
   const { loading, setLoading } = useContext(LoadingContext);
+  const { dashboards } = useContext(MainContext);
 
   const [allDashboards, setAllDashboards] = useState({});
 
@@ -29,6 +31,23 @@ function useHub() {
 
   //so we can update multiple items in the state at once
   let preStateUpdate = devices;
+
+  //loadLayout function
+  const loadLayout = dashboardId => {
+    const tempDashboards = Object.assign({}, allDashboards);
+
+    return $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
+      tempDashboards[dashboardId].layout = data;
+      devLog(`Got layout for: ${dashboardId}`);
+      devLog(data);
+
+      setAllDashboards(tempDashboards);
+    });
+  }
+
+  const ensureLayoutLoaded = dashboardId => {
+    if(!allDashboards.layout) loadLayout(dashboardId); 
+  }
   
   //for the first load
   useEffect(() => {
@@ -37,6 +56,8 @@ function useHub() {
       $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
         let tempDashboards = data.dashboards.reduce((sum, dashboard) => {
           sum[dashboard.id] = dashboard;
+          //empty layout for loading
+          sum[dashboard.id].layout = { tiles: [] };
           return sum;
         }, {});
 
@@ -51,22 +72,16 @@ function useHub() {
 
     else if(loading === 20) {
       let loadedLayouts = 0;
-      const tempDashboards = Object.assign({}, allDashboards);
 
-      Object.values(allDashboards).forEach((dashboard) => {
+      Object.values(dashboards).forEach((dashboard) => {
         const dashboardId = dashboard.id;
   
-        $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
-          tempDashboards[dashboardId].layout = data;
-          devLog(`Got layout for: ${dashboardId}`);
-          devLog(data);
-        }).always(() => {
+        loadLayout(dashboardId).always(() => {
           loadedLayouts++;
-          if(loadedLayouts === Object.keys(tempDashboards).length) {
+          if(loadedLayouts === Object.keys(allDashboards).length) {
             setLoading(80);
-            setAllDashboards(tempDashboards);
           } else {
-            setLoading(Math.max(loading, 20 + 60 / Object.keys(tempDashboards).length * loadedLayouts));
+            setLoading(Math.max(loading, 20 + 60 / Object.keys(dashboards).length * loadedLayouts));
           }
         });
       }); 
@@ -121,7 +136,7 @@ function useHub() {
     }
   }, [loading, devices, objDevices]);
 
-  return [objDevices, allDashboards];
+  return [objDevices, allDashboards, ensureLayoutLoaded];
 }
 
 const sendCommand = (dashboardId, deviceId, command) => {
@@ -136,10 +151,10 @@ const sendCommand = (dashboardId, deviceId, command) => {
 }
 
 export default function({ children }) {
-  const [devices, allDashboards] = useHub();
+  const [devices, allDashboards, ensureLayoutLoaded] = useHub();
 
   return (
-    <HubContext.Provider value={{ devices, allDashboards, sendCommand }}>
+    <HubContext.Provider value={{ devices, allDashboards, ensureLayoutLoaded, sendCommand }}>
       {children}
     </HubContext.Provider>
   )
