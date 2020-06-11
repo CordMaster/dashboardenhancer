@@ -1,9 +1,10 @@
 import React, { useContext, Fragment, useState, useEffect } from 'react';
 import $ from 'jquery';
-import { Paper, makeStyles, Typography } from '@material-ui/core';
+import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration } from '@material-ui/core';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
+import { CSSTransition, Transition } from 'react-transition-group';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -35,8 +36,6 @@ const useStyles = makeStyles(theme => ({
 
     cursor: 'pointer',
 
-    '--transitions': ,
-
     //back
     transition: ['transform 100ms linear 0ms', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear'],
 
@@ -46,15 +45,17 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.popped': {
-      top: 'calc(25% / 2) !important',
+      top: 'calc(75% / 2) !important',
       left: 'calc(25% / 2) !important',
       width: 'calc(75% - 16px) !important',
-      height: 'calc(75% - 16px) !important',
+      height: 'calc(25% - 16px) !important',
 
       cursor: 'initial',
-
-      zIndex: 4,
     },
+
+    '&[class*="popped-"]:not(.popped-exit-done)': {
+      zIndex: 4
+    }
   },
 
   popCover: {
@@ -99,13 +100,28 @@ const useStyles = makeStyles(theme => ({
     transition:  ['transform 250ms linear', 'top 250ms linear', 'left 250ms linear', 'font-size 250ms linear'],
 
     '&.popped': {
-      top: 16,
+      top: '50%',
       left: 16,
 
-      transform: 'none',
+      transform: 'translateY(-50%)',
 
       fontSize: 100,
     },
+
+    '&.popped-enter-done': {
+      position: 'initial',
+      display: 'flex',
+      flexFlow: 'row nowrap',
+      alignItems: 'center',
+
+      height: '100%',
+
+      top: 0,
+      left: 0,
+
+      transform: 'none',
+      transition: 'none'
+    }
   },
 
   textContainer: {
@@ -121,8 +137,10 @@ const useStyles = makeStyles(theme => ({
     textOverflow: 'ellipsis'
   },
 
-  overflowText: {
-    
+  advancedContainer: {
+    animation: '250ms $fadein',
+
+    height: 'auto'
   },
 
   iframeAttribute: {
@@ -130,6 +148,16 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
 
     border: 'none'
+  },
+
+  '@keyframes fadein': {
+    from: {
+      opacity: 0
+    },
+
+    to: {
+      opacity: 1
+    }
   }
 }));
 
@@ -232,10 +260,12 @@ export default function({ index }) {
 function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = device.attr.switch.value;
 
+  const isOn = state === 'on';
+
   const { sendCommand } = useContext(HubContext);
 
-  const DefaultIcon = state === 'on' ? Icons.mdiToggleSwitch : Icons.mdiToggleSwitchOffOutline;
-  const iconColor = state === 'on' ? 'primary' : 'default';
+  const DefaultIcon = isOn ? Icons.mdiToggleSwitch : Icons.mdiToggleSwitchOffOutline;
+  const iconColor = isOn ? 'primary' : 'default';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
 
@@ -243,8 +273,14 @@ function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
     sendCommand(dashboardId, device.id, state === 'on' ? 'off' : 'on');
   }
 
+  const advancedOptions = (
+    <FormControl fullWidth margin="dense">
+      <FormControlLabel control={<Switch />} label={"switch"} checked={isOn} onChange={handleClick} {...props} />
+    </FormControl>
+  );
+
   return (
-    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} {...props} />
+    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} advancedOptions={advancedOptions} {...props} />
   )
 }
 
@@ -307,7 +343,7 @@ function AttributeTile({ dashboardId, tile, device, IconOverride, ...props }) {
   )
 }
 
-function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped, ...props }) {
+function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped, advancedOptions, ...props }) {
   const classes = useStyles();
 
   const [hoverHandle, setHoverHandle] = useState(-1);
@@ -330,21 +366,34 @@ function BaseTile({ label, Icon, iconColor, content, onClick, popped, setPopped,
   }
 
   return (
-    <Paper className={`${classes.item} ${popped && 'popped'}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
-        <div className={classes.contentContainer}>
-          { Icon && 
-            <div className={`${classes.iconContainer} ${popped && 'popped'}`}>
-              <Icon fontSize="inherit" color={iconColor} />
-            </div>
-          }
-          { content && 
-            content.includes('iframe') ? <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> : <Typography variant="subtitle1" className={classes.overflowText}>{content}</Typography>
-          }
+    <Transition in={popped} timeout={250}>
+      { outerTransitionState =>
+        <CSSTransition in={popped} timeout={250} classNames="popped">
+          <Paper className={`${classes.item} ${popped ? 'popped' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
+            <div className={classes.contentContainer}>
+              { Icon && 
+                <CSSTransition in={popped} timeout={250} classNames="popped">
+                  <div className={`${classes.iconContainer} ${popped ? 'popped' : ''}`}>
+                    <Icon fontSize="inherit" color={iconColor} />
+                      { outerTransitionState === 'entered' &&
+                        <div className={classes.advancedContainer}>
+                          {advancedOptions}
+                        </div>
+                      }
+                  </div>
+                </CSSTransition>
+              }
+              { content && 
+                content.includes('iframe') ? <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> : <Typography variant="subtitle1" className={classes.overflowText}>{content}</Typography>
+              }
 
-          <div className={classes.textContainer}>
-            <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
-          </div>
-        </div>
-    </Paper>
+              <div className={classes.textContainer}>
+                <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
+              </div>
+            </div>
+          </Paper>
+        </CSSTransition>
+      }
+    </Transition>
   )
 }
