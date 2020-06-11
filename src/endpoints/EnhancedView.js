@@ -47,13 +47,23 @@ const useStyles = makeStyles(theme => ({
     '&.popped': {
       top: '50% !important',
       left: '50% !important',
-      width: 'calc(75% - 16px) !important',
+      minWidth: 'calc(25% - 16px) !important',
       minHeight: 'calc(25% - 16px) !important',
+
+      width: 'auto !important',
       height: 'auto !important',
+
+      //weird min-height fix
+      display: 'flex',
 
       transform: 'translate(-50%, -50%)',
 
       cursor: 'initial',
+    },
+
+    '&.popped-big': {
+      width: 'calc(75% - 16px) !important',
+      height: 'calc(75% - 16px) !important',
     },
 
     '&[class*="popped-"]:not(.popped-exit-done)': {
@@ -103,22 +113,18 @@ const useStyles = makeStyles(theme => ({
       top: '50%',
       left: 16,
 
-      transform: 'translateY(-50%)',
+      transform: 'translate(0, -50%)',
 
       fontSize: 100,
     },
 
     '&.popped-enter-done': {
       boxSizing: 'border-box',
+      position: 'initial',
 
       display: 'flex',
       flexFlow: 'row nowrap',
       alignItems: 'center',
-
-      top: theme.spacing(2),
-      left: theme.spacing(2),
-      bottom: theme.spacing(2),
-      right: theme.spacing(2),
 
       padding: `${theme.spacing(2)}px 0`,
 
@@ -177,7 +183,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function({ index }) {
+export default function({ index, className, ...props }) {
   const classes = useStyles();
 
   const { dashboards } = useContext(MainContext);
@@ -224,12 +230,12 @@ export default function({ index }) {
       case 'motion':
         Inner = MotionTile;
         break;
-      /*case 'window':
+      case 'window':
         Inner = WindowTile;
-        break;*/
-      /*case 'contact':
+        break;
+      case 'contact':
         Inner = ContactTile;
-        break;*/
+        break;
       case 'bulb':
         Inner = SwitchTile;
         break;
@@ -260,11 +266,11 @@ export default function({ index }) {
     }
 
     if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
-    else return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={{}} device={{ attr: {} }} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
+    else return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
   });
 
   return (
-    <Paper className={classes.container} square elevation={0}>
+    <Paper className={`${classes.container} ${className}`} square elevation={0} {...props}>
       <div className={classes.intContainer}>
         {tiles}
         <div className={`${classes.popCover} ${popped !== -1 && 'popped'}`}></div>
@@ -281,7 +287,7 @@ function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const { sendCommand } = useContext(HubContext);
 
   const DefaultIcon = isOn ? Icons.mdiToggleSwitch : Icons.mdiToggleSwitchOffOutline;
-  const iconColor = isOn ? 'primary' : 'default';
+  const iconColor = isOn ? 'primary' : 'inherit';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
 
@@ -298,7 +304,7 @@ function MotionTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = device.attr.motion.value;
 
   const DefaultIcon = Icons.mdiMotionSensor;
-  const iconColor = state === 'active' ? 'secondary' : 'default';
+  const iconColor = state === 'active' ? 'secondary' : 'inherit';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
 
@@ -315,7 +321,7 @@ function WindowTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = device.attr.contact.value;
 
   const DefaultIcon = state === 'open' ? Icons.mdiWindowOpenVariant : Icons.mdiWindowClosedVariant;
-  const iconColor = state === 'open' ? 'secondary' : 'default';
+  const iconColor = state === 'open' ? 'secondary' : 'inherit';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
 
@@ -332,7 +338,7 @@ function ContactTile({ dashboardId, tile, device, IconOverride, ...props }) {
   const state = device.attr.contact.value;
 
   const DefaultIcon = state === 'open' ? Icons.mdiDoorOpen : Icons.mdiDoorClosed;
-  const iconColor = state === 'open' ? 'secondary' : 'default';
+  const iconColor = state === 'open' ? 'secondary' : 'inherit';
 
   const Icon = IconOverride ? IconOverride : DefaultIcon;
 
@@ -434,24 +440,27 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
       } else return <Typography gutterBottom variant="subtitle1">{attr.name}: {attr.value}</Typography>;
   });
 
+  const isiframe = content && content.includes('iframe');
+
   return (
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.item} ${popped ? 'popped' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
-              <CSSTransition in={popped} timeout={250} classNames="popped">
-                <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
-                    { Icon && <Icon fontSize="inherit" color={iconColor} /> }
-                    { content && 
-                      content.includes('iframe') ? <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> : <Typography variant="subtitle1" className={classes.contentText}>{content}</Typography>
-                    }
-                    { outerTransitionState === 'entered' &&
-                      <div className={classes.advancedContainer}>
-                        {advancedOptions}
-                      </div>
-                    }
-                </div>
-              </CSSTransition>
+          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
+              { isiframe && <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> }
+              { !isiframe &&
+                <CSSTransition in={popped} timeout={250} classNames="popped">
+                  <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
+                      { Icon && <Icon fontSize="inherit" color={iconColor} /> }
+                      { content && <Typography className={classes.contentText}>{content}</Typography> }
+                      { outerTransitionState === 'entered' &&
+                        <div className={classes.advancedContainer}>
+                          {advancedOptions}
+                        </div>
+                      }
+                  </div>
+                </CSSTransition>
+              }
               <div className={classes.textContainer}>
                 <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
               </div>
