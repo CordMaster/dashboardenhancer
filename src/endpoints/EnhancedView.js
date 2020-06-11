@@ -47,7 +47,7 @@ const useStyles = makeStyles(theme => ({
     '&.popped': {
       top: '50% !important',
       left: '50% !important',
-      minWidth: 'calc(25% - 16px) !important',
+      minWidth: 'calc(50% - 16px) !important',
       minHeight: 'calc(25% - 16px) !important',
 
       width: 'auto !important',
