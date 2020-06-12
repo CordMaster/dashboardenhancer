@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 //only render if we have an index
-function View({ index, preload }) {
+function View({ index, preload, isSmall }) {
   const { dashboards, locked, config } = useContext(MainContext);
 
   const blockingStyles = {
@@ -25,18 +25,18 @@ function View({ index, preload }) {
     touchAction: locked !== -1 && !config.lockFully ? 'none' : 'initial'
   }
 
-  if(config.overridePanelView) return <EnhancedViewAll dashboards={dashboards} index={index} blockingStyles={blockingStyles} preload={preload} />
+  if(config.overridePanelView) return <EnhancedViewAll dashboards={dashboards} index={index} blockingStyles={blockingStyles} preload={preload} isSmall={isSmall} />
   else return <ClassicView dashboards={dashboards} index={index} blockingStyles={blockingStyles} preload={preload} />
 }
 
-function EnhancedViewAll({ dashboards, index, blockingStyles, preload }) {
+function EnhancedViewAll({ dashboards, index, blockingStyles, preload, isSmall }) {
   const classes = useStyles();
 
-  const frames = dashboards.map((dashboard, i) => <EnhancedView key={dashboard.id} index={i} className={classes.fullFrame} style={{ display: index === i ? 'block' : 'none', ...(dashboard.lock ? blockingStyles : null) }} />);
+  const frames = dashboards.map((dashboard, i) => <EnhancedView key={dashboard.id} index={i} className={classes.fullFrame} style={{ display: index === i ? 'block' : 'none', ...(dashboard.lock ? blockingStyles : null), overflowY: isSmall ? 'auto' : 'initial' }} isSmall={isSmall} />);
 
   return (
     <Fragment>
-      {preload ? frames : !isNaN(index) && <EnhancedView className={classes.fullFrame} index={index} /> }
+      {preload ? frames : !isNaN(index) && <EnhancedView className={classes.fullFrame} index={index} style={{ ...(dashboards[index].lock ? blockingStyles : null), overflowY: isSmall ? 'auto' : 'initial' }} isSmall={isSmall} /> }
     </Fragment>
   );
 }

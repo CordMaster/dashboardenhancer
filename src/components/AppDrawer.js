@@ -39,6 +39,10 @@ const useStyles = makeStyles(theme => ({
     overflowX: 'hidden'
   },
 
+  scrollContainer: {
+    overflowY: 'auto'
+  },
+
   listItemSpacer: {
     flex: '1 0 0'
   },
@@ -115,7 +119,9 @@ function AppDrawer({ location }) {
           : null
         }
 
-        {uiDashboards}
+        <div className={classes.scrollContainer}>
+          {uiDashboards}
+        </div>
 
         <div className={classes.listItemSpacer} />
         <Divider />

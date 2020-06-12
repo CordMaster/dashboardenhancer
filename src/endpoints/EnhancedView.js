@@ -6,6 +6,7 @@ import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
+import { devLog } from '../Utils';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -33,6 +34,9 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     position: 'absolute',
 
+    width: 'auto',
+    height: 'auto',
+
     padding: theme.spacing(2),
 
     zIndex: 1,
@@ -52,9 +56,6 @@ const useStyles = makeStyles(theme => ({
       minWidth: 'calc(50% - 16px) !important',
       minHeight: 'calc(25% - 16px) !important',
 
-      width: 'auto !important',
-      height: 'auto !important',
-
       //weird min-height fix
       display: 'flex',
 
@@ -71,7 +72,7 @@ const useStyles = makeStyles(theme => ({
     '&[class*="popped-"]:not(.popped-exit-done)': {
       zIndex: 4,
 
-      transition: ['transform 250ms linear', 'width 250ms linear', 'height 250ms linear', 'top 250ms linear', 'left 250ms linear']
+      transition: ['transform 250ms linear', 'min-width 250ms linear', 'min-height 250ms linear', 'top 250ms linear', 'left 250ms linear']
     }
   },
 
@@ -107,7 +108,7 @@ const useStyles = makeStyles(theme => ({
 
     transform: 'translate(-50%, -50%)',
 
-    fontSize: 60,
+    fontSize: '3em',
 
     transition:  ['transform 250ms linear', 'top 250ms linear', 'left 250ms linear', 'font-size 250ms linear'],
 
@@ -117,7 +118,7 @@ const useStyles = makeStyles(theme => ({
 
       transform: 'translate(0, -50%)',
 
-      fontSize: 100,
+      fontSize: '5em'
     },
 
     '&.popped-enter-done': {
@@ -171,7 +172,8 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     height: '100%',
 
-    border: 'none'
+    border: 'none',
+    userSelect: 'none'
   },
 
   '@keyframes fadein': {
@@ -185,7 +187,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function({ index, className, ...props }) {
+export default function({ index, className, isSmall, ...props }) {
   const classes = useStyles();
 
   const { dashboards } = useContext(MainContext);
@@ -205,70 +207,95 @@ export default function({ index, className, ...props }) {
   //tile popping
 
   const layout = allDashboards[dashboards[index].id].layout;
-  console.log(layout);
+  devLog(layout);
+
+  const rows = isSmall ? 5 : layout.rows;
+  const cols = isSmall ? 3 : layout.cols;
 
   //rows and cols are 1-indexed
+  let smallCol = 1;
+  let smallRow = 1;
+
   const tiles = layout.tiles.map(tile => {
+    let ret = false;
+
     const device = devices[tile.device];
 
-    const colPercentStr = `calc(100% / ${layout.cols / tile.colSpan})`;
-    const rowPercentStr = `calc(100% / ${layout.rows / tile.rowSpan})`;
-    const tileStyles = {
-      width: `calc(${colPercentStr} - 16px)`,
-      height: `calc(${rowPercentStr} - 16px)`,
-      top: `calc(calc(100% / ${layout.rows}) * ${tile.row - 1})`,
-      left: `calc(calc(100% / ${layout.cols}) * ${tile.col - 1})`,
-    }
+    const col = isSmall ? smallCol : tile.col;
+    const row = isSmall ? smallRow : tile.row;
 
-    let Inner = BaseTile;
-    let IconOverride;
-    switch (tile.template) {
-      case 'switch':
-        Inner = SwitchTile;
-        break;
-      case 'dimmer':
-        Inner = SwitchTile;
-        break;
-      case 'motion':
-        Inner = MotionTile;
-        break;
-      case 'window':
-        Inner = WindowTile;
-        break;
-      case 'contact':
-        Inner = ContactTile;
-        break;
-      case 'bulb':
-        Inner = SwitchTile;
-        break;
-      case 'attribute':
-        Inner = AttributeTile;
-        break;
-      case 'temperature':
-        Inner = AttributeTile;
-        break;
-      case 'humidity':
-        Inner = AttributeTile;
-        break;
-      default:
-        IconOverride = false;
-        break;
-    }
+    const rowSpan = isSmall ? 1 : tile.rowSpan;
+    const colSpan = isSmall ? 1 : tile.colSpan;
 
-    if(tile.customIcon) {
-      const preProcIcon = tile.customIcon.replace('he-', '').replace(/_[0-9]/g, '').replace(/[0-9]/g, '');
-      const regExpr = /_([a-z])/g;
-      let match;
-      let fixedSearch = preProcIcon;
-      while((match = regExpr.exec(preProcIcon)) !== null) {
-        fixedSearch = fixedSearch.replace(match[0], match[1].toUpperCase());
+    if(device) {
+      const colPercentStr = `calc(100% / ${cols / colSpan})`;
+      const rowPercentStr = `calc(100% / ${rows / rowSpan})`;
+      
+      const tileStyles = {
+        minWidth: `calc(${colPercentStr} - 16px)`,
+        minHeight: `calc(${rowPercentStr} - 16px)`,
+        top: `calc(calc(100% / ${rows}) * ${row - 1})`,
+        left: `calc(calc(100% / ${cols}) * ${col - 1})`,
       }
 
-      IconOverride = getIcon(fixedSearch);
+      let Inner = BaseTile;
+      let IconOverride;
+      switch (tile.template) {
+        case 'switch':
+          Inner = SwitchTile;
+          break;
+        case 'dimmer':
+          Inner = SwitchTile;
+          break;
+        case 'motion':
+          Inner = MotionTile;
+          break;
+        case 'window':
+          Inner = WindowTile;
+          break;
+        case 'contact':
+          Inner = ContactTile;
+          break;
+        case 'bulb':
+          Inner = SwitchTile;
+          break;
+        case 'attribute':
+          Inner = AttributeTile;
+          break;
+        case 'temperature':
+          Inner = AttributeTile;
+          break;
+        case 'humidity':
+          Inner = AttributeTile;
+          break;
+        default:
+          IconOverride = false;
+          break;
+      }
+
+      if(tile.customIcon) {
+        const preProcIcon = tile.customIcon.replace('he-', '').replace(/_[0-9]/g, '').replace(/[0-9]/g, '');
+        const regExpr = /_([a-z])/g;
+        let match;
+        let fixedSearch = preProcIcon;
+        while((match = regExpr.exec(preProcIcon)) !== null) {
+          fixedSearch = fixedSearch.replace(match[0], match[1].toUpperCase());
+        }
+
+        IconOverride = getIcon(fixedSearch);
+      }
+
+      if(Inner !== BaseTile) ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
+      else ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
     }
 
-    if(Inner !== BaseTile) return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
-    else return <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
+    smallCol++;
+    if(smallCol > 3) {
+      smallRow++;
+      smallCol = 1;
+    }
+
+    return ret;
   });
 
   return (
@@ -417,7 +444,7 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
     if(e.nativeEvent.type === 'touchstart' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
       setHoverHandle(setTimeout(() => {
         setPopped();
-      }, 1500));
+      }, 1000));
     }
   }
 

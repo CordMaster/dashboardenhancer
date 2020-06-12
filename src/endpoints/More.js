@@ -28,8 +28,8 @@ function More({ index }) {
 
   let uiDashboards = [];
 
-  if(dashboards.length > 3) {
-    for(let i = 3; i < dashboards.length; i++) {
+  if(dashboards.length > 4) {
+    for(let i = 4; i < dashboards.length; i++) {
       const dashboard = dashboards[i];
       uiDashboards.push(<ImprovedListItem key={dashboard.id} label={dashboard.label} disabled={locked !== -1 && config.lockFully && dashboard.lock} Icon={getIcon(dashboard.iconName)} onClick={() => pushHistoryPreserve(history, `/${i}/`)} />);
     }

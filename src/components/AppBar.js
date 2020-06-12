@@ -26,7 +26,7 @@ function AppBar({ location, iconsOnly }) {
   const history = useHistory();
 
   const handleChange = (e, value) => {
-    if(value < 3) pushHistoryPreserve(history, `/${value}/`);
+    if(value < 4) pushHistoryPreserve(history, `/${value}/`);
     else {
       pushHistoryPreserve(history, '/more/');
     }
@@ -34,15 +34,15 @@ function AppBar({ location, iconsOnly }) {
 
   let uiDashboards = new Array(4);
 
-  for(let i = 0; i < Math.min(dashboards.length, 3); i++) {
+  for(let i = 0; i < Math.min(dashboards.length, 4); i++) {
     const dashboard = dashboards[i];
     const Icon = getIcon(dashboard.iconName);
     uiDashboards[i] = <BottomNavigationAction key={dashboard.id} disabled={locked !== -1 && config.lockFully && dashboard.lock} icon={<Icon />} />
   }
-  uiDashboards[3] = <BottomNavigationAction key={"more"} icon={<Icons.mdiDotsHorizontal />} />
+  uiDashboards[4] = <BottomNavigationAction key={"more"} icon={<Icons.mdiDotsHorizontal />} />
 
   return (
-    <BottomNavigation value={!isNaN(parseInt(subLocation)) ? Math.min(parseInt(subLocation), 3) : 3} onChange={handleChange}>
+    <BottomNavigation value={!isNaN(parseInt(subLocation)) ? Math.min(parseInt(subLocation), 4) : 4} onChange={handleChange}>
       {uiDashboards}
     </BottomNavigation>
   );

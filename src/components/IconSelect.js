@@ -1,4 +1,5 @@
 import React, { Fragment, useState, useEffect, useMemo } from 'react';
+
 import PropTypes from 'prop-types';
 
 import { List, ListItem, ListItemIcon, ListItemText, DialogContent, DialogActions, Button, TextField, Typography } from '@material-ui/core';
@@ -39,7 +40,7 @@ const useDataListStyle = makeStyles(theme => ({
   list: {
     overflowY: 'auto',
 
-    height: 300
+    height: 350
   }
 }));
 
