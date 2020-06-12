@@ -17,7 +17,9 @@ const useStyles = makeStyles(theme => ({
     paddingTop: 16,
     paddingLeft: 16,
 
-    overflow: 'hidden'
+    overflow: 'hidden',
+
+    userSelect: 'none'
   },
 
   intContainer: {
@@ -413,7 +415,7 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
   const handleEnter = () => {
     setHoverHandle(setTimeout(() => {
       setPopped();
-    }, 1000));
+    }, 1500));
   }
 
   const handleLeave = () => {
@@ -446,7 +448,7 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...props}>
+          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props}>
               { isiframe && <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> }
               { !isiframe &&
                 <CSSTransition in={popped} timeout={250} classNames="popped">

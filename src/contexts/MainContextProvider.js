@@ -183,7 +183,7 @@ function useConfig() {
 }
 
 function MainContextProvider(props) {
-  const { loading, setLoading } = useContext(LoadingContext);
+  const { loading, setLoading, inLoadingStage, setInLoadingStage } = useContext(LoadingContext);
 
   const [state, setState] = useState(Map({
     dashboards: List([])
@@ -275,8 +275,10 @@ function MainContextProvider(props) {
   //state save/load
   useEffect(() => {
     //allow using no access token
-    if(access_token) {
+    if(access_token && !inLoadingStage) {
       if(loading === 0) {
+        setInLoadingStage(true);
+
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
           if(!data.error) {
             if(data.state) setState(Immutable.fromJS(data.state));
@@ -287,6 +289,7 @@ function MainContextProvider(props) {
           }
         }).always(() => {
           setLoading(10);
+          setInLoadingStage(false);
         });
       }
     } else {

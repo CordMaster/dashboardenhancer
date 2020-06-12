@@ -21,7 +21,7 @@ websocket.addEventListener('error', () => {
 
 //util for devices
 function useHub() {
-  const { loading, setLoading } = useContext(LoadingContext);
+  const { loading, setLoading, inLoadingStage, setInLoadingStage } = useContext(LoadingContext);
   const { dashboards } = useContext(MainContext);
 
   const [allDashboards, setAllDashboards] = useState({});
@@ -35,7 +35,7 @@ function useHub() {
   //loadLayout function
   const loadLayout = dashboardId => {
     const tempDashboards = Object.assign({}, allDashboards);
-
+    
     return $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
       tempDashboards[dashboardId].layout = data;
       devLog(`Got layout for: ${dashboardId}`);
@@ -52,66 +52,77 @@ function useHub() {
   //for the first load
   useEffect(() => {
     //load last
-    if(loading === 10) {
-      $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
-        let tempDashboards = data.dashboards.reduce((sum, dashboard) => {
-          sum[dashboard.id] = dashboard;
-          //empty layout for loading
-          sum[dashboard.id].layout = { tiles: [] };
-          return sum;
-        }, {});
+    if(!inLoadingStage) {
+      if(loading === 10) {
+        setInLoadingStage(true);
 
-        devLog(`Got all dashboards`);
-        devLog(tempDashboards);
-
-        setAllDashboards(tempDashboards);
-      }).always(() => {
-        setLoading(20);
-      });
-    }
-
-    else if(loading === 20) {
-      let loadedLayouts = 0;
-
-      Object.values(dashboards).forEach((dashboard) => {
-        const dashboardId = dashboard.id;
-  
-        loadLayout(dashboardId).always(() => {
-          loadedLayouts++;
-          if(loadedLayouts === Object.keys(allDashboards).length) {
-            setLoading(80);
-          } else {
-            setLoading(Math.max(loading, 20 + 60 / Object.keys(dashboards).length * loadedLayouts));
-          }
-        });
-      }); 
-    }
-
-    else if(loading >= 80) {
-      $.get(`${endpoint}getDevices/${Object.values(allDashboards)[0].id}/?access_token=${access_token}`, (data) => {
-        //map devices to device id and attrs
-        const cleanData = {};
-        data.map(device => {
-          if(device.attr) device.attr = device.attr.reduce((sum, obj) => {
-            const parts = Object.entries(obj);
-            const [name, value] = parts[0];
-
-            sum[name] = { name, value, unit: obj.unit };
-
+        $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
+          let tempDashboards = data.dashboards.reduce((sum, dashboard) => {
+            sum[dashboard.id] = dashboard;
+            //empty layout for loading
+            sum[dashboard.id].layout = { tiles: [] };
             return sum;
           }, {});
-          return device;
-        });
-        data.forEach(it => cleanData[it.id] = it);
-        setDevices(Immutable.fromJS(cleanData));
 
-        devLog(`Got devices:`);
-        devLog(cleanData);
-      }).always(() => {
-        setLoading(100);
-      });
+          devLog(`Got all dashboards`);
+          devLog(tempDashboards);
+
+          setAllDashboards(tempDashboards);
+        }).always(() => {
+          setLoading(20);
+          setInLoadingStage(false);
+        });
+      }
+
+      else if(loading === 20 && Object.keys(allDashboards).length > 0) {
+        setInLoadingStage(true);
+
+        let loadedLayouts = 0;
+
+        Object.values(dashboards).forEach((dashboard) => {
+          const dashboardId = dashboard.id;
+    
+          loadLayout(dashboardId).always(() => {
+            loadedLayouts++;
+            if(loadedLayouts === Object.keys(allDashboards).length) {
+              setLoading(80);
+              setInLoadingStage(false);
+            } else {
+              setLoading(Math.max(loading, 20 + 60 / Object.keys(dashboards).length * loadedLayouts));
+            }
+          });
+        }); 
+      }
+
+      else if(loading >= 80) {
+        setInLoadingStage(true);
+
+        $.get(`${endpoint}getDevices/${Object.values(allDashboards)[0].id}/?access_token=${access_token}`, (data) => {
+          //map devices to device id and attrs
+          const cleanData = {};
+          data.map(device => {
+            if(device.attr) device.attr = device.attr.reduce((sum, obj) => {
+              const parts = Object.entries(obj);
+              const [name, value] = parts[0];
+
+              sum[name] = { name, value, unit: obj.unit };
+
+              return sum;
+            }, {});
+            return device;
+          });
+          data.forEach(it => cleanData[it.id] = it);
+          setDevices(Immutable.fromJS(cleanData));
+
+          devLog(`Got devices:`);
+          devLog(cleanData);
+        }).always(() => {
+          setLoading(100);
+          setInLoadingStage(false);
+        });
+      }
     }
-  }, [loading]);
+  }, [loading, inLoadingStage, allDashboards]);
 
 
   //attach websocket
