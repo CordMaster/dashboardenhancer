@@ -412,14 +412,20 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
     e.stopPropagation();
   }
 
-  const handleEnter = () => {
-    setHoverHandle(setTimeout(() => {
-      setPopped();
-    }, 1500));
+  const handleEnter = (e) => {
+    //really hacky
+    if(e.nativeEvent.type === 'touchstart' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
+      setHoverHandle(setTimeout(() => {
+        setPopped();
+      }, 1500));
+    }
   }
 
-  const handleLeave = () => {
-    if(hoverHandle) clearInterval(hoverHandle);
+  const handleLeave = (e) => {
+    //really hacky
+    if(e.nativeEvent.type === 'touchend' || e.nativeEvent.type === 'touchcancel' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
+      if(hoverHandle) clearInterval(hoverHandle);
+    }
   }
 
   const advancedOptions = Object.values(device.attr).sort((a, b) => a.name > b.name ? 1 : -1).map(attr => {
@@ -448,7 +454,7 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props}>
+          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props}>
               { isiframe && <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> }
               { !isiframe &&
                 <CSSTransition in={popped} timeout={250} classNames="popped">
