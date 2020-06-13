@@ -1,4 +1,4 @@
-import React, { useContext, Fragment, useState, useEffect } from 'react';
+import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
 import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration } from '@material-ui/core';
 import { HubContext } from '../contexts/HubContextProvider';
@@ -51,10 +51,7 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.popped': {
-      top: '50% !important',
-      left: '50% !important',
-      minWidth: 'calc(50% - 16px) !important',
-      minHeight: 'calc(25% - 16px) !important',
+      //position computed with scroll
 
       //weird min-height fix
       display: 'flex',
@@ -79,10 +76,9 @@ const useStyles = makeStyles(theme => ({
   popCover: {
     position: 'absolute',
 
-    top: '-16px',
+    //top and bottom computed with scroll
     left: '-16px',
     right: 0,
-    bottom: 0,
 
     zIndex: 3,
 
@@ -187,11 +183,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function({ index, className, isSmall, ...props }) {
+export default function({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
   const { dashboards } = useContext(MainContext);
-  const { allDashboards, devices, sendCommand } = useContext(HubContext);
+  const { allDashboards, devices } = useContext(HubContext);
+
+  const containerRef = useRef({ scrollTop: 0 });
 
   //tile popping
   const [popped, setPopped] = useState(-1);
@@ -231,11 +229,11 @@ export default function({ index, className, isSmall, ...props }) {
       const colPercentStr = `calc(100% / ${cols / colSpan})`;
       const rowPercentStr = `calc(100% / ${rows / rowSpan})`;
       
-      const tileStyles = {
-        minWidth: `calc(${colPercentStr} - 16px)`,
-        minHeight: `calc(${rowPercentStr} - 16px)`,
-        top: `calc(calc(100% / ${rows}) * ${row - 1})`,
-        left: `calc(calc(100% / ${cols}) * ${col - 1})`,
+      const dimensions = {
+        w: `calc(${colPercentStr} - 16px)`,
+        h: `calc(${rowPercentStr} - 16px)`,
+        x: `calc(calc(100% / ${cols}) * ${col - 1})`,
+        y: `calc(calc(100% / ${rows}) * ${row - 1})`
       }
 
       let Inner = BaseTile;
@@ -285,8 +283,8 @@ export default function({ index, className, isSmall, ...props }) {
         IconOverride = getIcon(fixedSearch);
       }
 
-      if(Inner !== BaseTile) ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
-      else ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} label={device.label} Icon={Icons.mdiAlertCircle} style={tileStyles} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} />
+      if(Inner !== BaseTile) ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
+      else ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} label={device.label} Icon={Icons.mdiAlertCircle} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
     }
 
     smallCol++;
@@ -298,11 +296,20 @@ export default function({ index, className, isSmall, ...props }) {
     return ret;
   });
 
+  const mergedStyles = Object.assign({}, style, {
+    overflowY: popped !== -1 ? 'hidden' : style.overflowY
+  });
+
+  const popCoverStyles = {
+    top: `calc(-16px + ${containerRef.current.scrollTop}px)`,
+    bottom: `-${containerRef.current.scrollTop}px`
+  }
+
   return (
-    <Paper className={`${classes.container} ${className}`} square elevation={0} {...props}>
+    <Paper className={`${classes.container} ${className}`} ref={containerRef} square elevation={0} style={mergedStyles} {...props}>
       <div className={classes.intContainer}>
         {tiles}
-        <div className={`${classes.popCover} ${popped !== -1 && 'popped'}`}></div>
+        <div className={`${classes.popCover} ${popped !== -1 && 'popped'}`} style={popCoverStyles}></div>
       </div>
     </Paper>
   );
@@ -329,7 +336,7 @@ function SwitchTile({ dashboardId, tile, device, IconOverride, ...props }) {
   )
 }
 
-function MotionTile({ dashboardId, tile, device, IconOverride, ...props }) {
+function MotionTile({ tile, device, IconOverride, ...props }) {
   const state = device.attr.motion.value;
 
   const DefaultIcon = Icons.mdiMotionSensor;
@@ -342,11 +349,11 @@ function MotionTile({ dashboardId, tile, device, IconOverride, ...props }) {
   }
 
   return (
-    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
+    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
-function WindowTile({ dashboardId, tile, device, IconOverride, ...props }) {
+function WindowTile({ device, IconOverride, ...props }) {
   const state = device.attr.contact.value;
 
   const DefaultIcon = state === 'open' ? Icons.mdiWindowOpenVariant : Icons.mdiWindowClosedVariant;
@@ -359,11 +366,11 @@ function WindowTile({ dashboardId, tile, device, IconOverride, ...props }) {
   }
 
   return (
-    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
+    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
-function ContactTile({ dashboardId, tile, device, IconOverride, ...props }) {
+function ContactTile({ device, IconOverride, ...props }) {
   const state = device.attr.contact.value;
 
   const DefaultIcon = state === 'open' ? Icons.mdiDoorOpen : Icons.mdiDoorClosed;
@@ -376,15 +383,15 @@ function ContactTile({ dashboardId, tile, device, IconOverride, ...props }) {
   }
 
   return (
-    <BaseTile dashboardId={dashboardId} Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
+    <BaseTile Icon={Icon} iconColor={iconColor} label={device.label} onClick={handleClick} device={device} {...props} />
   )
 }
 
-function AttributeTile({ dashboardId, tile, device, IconOverride, ...props }) {
+function AttributeTile({ tile, device, IconOverride, ...props }) {
   const state = tile.templateExtra ? device.attr[tile.templateExtra].value : device.attr[tile.template].value;
 
   return (
-    <BaseTile dashboardId={dashboardId} content={state} label={device.label} device={device} {...props} />
+    <BaseTile content={state} label={device.label} device={device} {...props} />
   )
 }
 
@@ -425,7 +432,7 @@ const attrInfos = {
   }
 }
 
-function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, popped, setPopped, device, ...props }) {
+function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, popped, setPopped, device, containerRef, x, y, w, h, ...props }) {
   const classes = useStyles();
 
   const { sendCommand } = useContext(HubContext);
@@ -477,11 +484,27 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
 
   const isiframe = content && content.includes('iframe');
 
+  const tileStyles = {
+    top: y,
+    left: x,
+    minWidth: w,
+    minHeight: h
+  }
+
+  const poppedStyles = {
+    top: `calc(50% + ${containerRef.current.scrollTop}px)`,
+    left: '50%',
+    minWidth: 'calc(50% - 16px)',
+    minHeight: 'calc(25% - 16px)',
+  }
+
+  const styles = popped ? poppedStyles : tileStyles;
+
   return (
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props}>
+          <Paper className={`${classes.item} ${popped ? 'popped' : ''} ${popped && isiframe ? 'popped-big' : ''}`} elevation={8} style={styles} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props}>
               { isiframe && <iframe className={classes.iframeAttribute} title={$.parseHTML(content)[1].src} src={$.parseHTML(content)[1].src}></iframe> }
               { !isiframe &&
                 <CSSTransition in={popped} timeout={250} classNames="popped">
