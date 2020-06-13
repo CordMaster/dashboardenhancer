@@ -259,6 +259,9 @@ export default function({ index, className, isSmall, style, ...props }) {
         case 'contact':
           Inner = ContactTile;
           break;
+        case 'door':
+          Inner = ContactTile;
+          break;
         case 'bulb':
           Inner = SwitchTile;
           break;
