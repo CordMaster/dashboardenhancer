@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import $ from 'jquery';
+import { devLog } from '../Utils';
 
 export default function(name, url, ready, updateInterval) {
-  const [data, setData] = useState({ loaded: false, error: false });
+  const [data, setData] = useState({ loaded: false, error: true });
 
   const update = () => {
     $.get(url, (data) => {
-      console.log(`Got ${name}`);
-      console.log(data);
+      devLog(`Got ${name}`);
+      devLog(data);
 
       const parsedData = {
         loaded: true,
@@ -42,7 +43,6 @@ export default function(name, url, ready, updateInterval) {
     return () => {
       if(updateHook !== -1) clearInterval(updateInterval);
     }
-
   }, [ready, name, url, updateInterval]);
 
   return [ data.loaded, data.error, update, data.data ];

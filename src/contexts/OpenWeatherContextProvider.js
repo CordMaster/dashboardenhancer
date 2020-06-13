@@ -16,7 +16,7 @@ export default function(props) {
     navigator.geolocation.getCurrentPosition((gotPosition) => setPosition(gotPosition));
   }, []);*/
 
-  const [loaded, error, sync, data] = openWeatherToken ? useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, position.coords.latitude && position.coords.longitude, 1000 * 60 * config.weatherUpdateIntervalInMin) : [true, true, () => null, null];
+  const [loaded, error, sync, data] = useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, openWeatherToken && position.coords.latitude && position.coords.longitude, 1000 * 60 * config.weatherUpdateIntervalInMin);
   const parsedWeather = useMemo(() => {
     return data ? {
       loaded: true,

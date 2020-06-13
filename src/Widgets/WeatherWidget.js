@@ -75,7 +75,7 @@ export default function() {
   const { loaded, error, current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
   const indoorTemp = config.useHubDeviceForIndoorTemp && config.indoorTempHubDevice.device && config.indoorTempHubDevice.attribute ? Math.round(devices[config.indoorTempHubDevice.device].attr[config.indoorTempHubDevice.attribute].value) : false;
-  const outdoorTemp = Math.round(config.useHubDeviceForOutdoorTemp && config.outdoorTempHubDevice.device && config.outdoorTempHubDevice.attribute ? devices[config.outdoorTempHubDevice.device].attr[config.outdoorTempHubDevice.attribute].value : currentWeather.temp);
+  const outdoorTemp = Math.round(config.useHubDeviceForOutdoorTemp && config.outdoorTempHubDevice.device && config.outdoorTempHubDevice.attribute ? devices[config.outdoorTempHubDevice.device].attr[config.outdoorTempHubDevice.attribute].value : (loaded && !error ? currentWeather.temp : 0));
 
   const futureWeatherParsed = loaded && !error ? futureWeather.map((data) => {
     return {
