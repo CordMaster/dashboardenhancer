@@ -5,14 +5,15 @@ import { hubIp, dashboardAppId, dashboardAccessToken } from '../Constants';
 import EnhancedView from './EnhancedView';
 
 const useStyles = makeStyles(theme => ({
-  fullFrame: {
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    border: 'none',
+  fullPaper: {
+    height: '100%'
+  },
 
-    position: 'absolute'
+  fullFrame: {
+    width: '100%',
+    height: '100%',
+
+    border: 'none',
   }
 }));
 
@@ -47,7 +48,7 @@ function ClassicView({ dashboards, index, blockingStyles, preload }) {
   const frames = dashboards.map((dashboard, i) => <iframe key={dashboard.id} style={{ display: index === i ? 'block' : 'none', ...(dashboard.lock ? blockingStyles : null) }} className={classes.fullFrame} src={`http://${hubIp}/apps/api/${dashboardAppId}/dashboard/${dashboard.id}?access_token=${dashboardAccessToken}`} title="Hubitat" />);
 
   return (
-    <Paper square elevation={0}>
+    <Paper square elevation={0} className={classes.fullPaper}>
       {preload ? frames : !isNaN(index) && <iframe style={{ ...(dashboards[index].lock && blockingStyles) }} className={classes.fullFrame} src={`http://${hubIp}/apps/api/${dashboardAppId}/dashboard/${dashboards[index].id}?access_token=${dashboardAccessToken}`} title="Hubitat" />}
     </Paper>
   );

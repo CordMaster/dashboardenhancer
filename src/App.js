@@ -12,7 +12,7 @@ import LoadingContextProvider from './contexts/LoadingContextProvider.js';
 
 function App() {
   return (
-    <Router basename={`${endpoint.substr(endpoint.indexOf('/', 7))}main`}>
+    <Router basename={`${endpoint.substr(endpoint.indexOf('/', 8))}main`}>
       <LoadingContextProvider>
         <MainContextProvider>
           <HubContextProvider>

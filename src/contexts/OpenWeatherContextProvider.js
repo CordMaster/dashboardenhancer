@@ -10,14 +10,13 @@ export const OpenWeatherContext = React.createContext({});
 export default function(props) {
   const { config } = useContext(MainContext);
 
-  const [ready, setReady] = useState(false);
-  const [position, setPosition] = useState({ coords: {} });
+  const position = useMemo(() => { return { coords: { latitude: config.latitude, longitude: config.longitude } } }, [config.latitude, config.longitude]);
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((gotPosition) => setPosition(gotPosition) & setReady(true));
-  }, []);
+  /*useEffect(() => {
+    navigator.geolocation.getCurrentPosition((gotPosition) => setPosition(gotPosition));
+  }, []);*/
 
-  const [loaded, error, sync, data] = openWeatherToken ? useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, ready, 1000 * 60 * config.weatherUpdateIntervalInMin) : [true, true, () => null, null];
+  const [loaded, error, sync, data] = openWeatherToken ? useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, position.coords.latitude !== null && position.coords.longitude !== null, 1000 * 60 * config.weatherUpdateIntervalInMin) : [true, true, () => null, null];
   const parsedWeather = useMemo(() => {
     return data ? {
       loaded: true,

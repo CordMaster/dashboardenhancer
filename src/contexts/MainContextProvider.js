@@ -78,6 +78,16 @@ export const settings = {
     ]
   },
 
+  'weatherLocation': {
+    sectionLabel: 'Weather Location Settings',
+    dependsOn: [{ name: 'showWeather', value: true }],
+    saveBuffer: true,
+    sectionOptions: [
+      { name: 'latitude', label: 'Latitude', type: 'number', default: '' },
+      { name: 'longitude', label: 'Longitude', type: 'number', default: '' },
+    
+    ]
+  },
 
   'font': {
     sectionLabel: 'Font Size',
