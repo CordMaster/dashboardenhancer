@@ -23,6 +23,6 @@ export function getIcon(name) {
   else {
     const foundIconByAlias = IconAliases.find(elem => elem.aliases.includes(name));
     if(foundIconByAlias)  return Icons[foundIconByAlias.name];
-    else return OldIcons.Error;
+    else return Icons.mdiAlertCircle;
   }
 }

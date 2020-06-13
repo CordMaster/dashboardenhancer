@@ -289,6 +289,7 @@ export default function({ index, className, isSmall, style, ...props }) {
         }
 
         IconOverride = getIcon(fixedSearch);
+        IconOverride = IconOverride !== Icons.mdiAlertCircle ? IconOverride : null
       }
 
       if(Inner !== BaseTile) ret = <Inner key={`${tile.id}_${device.id}`} dashboardId={dashboards[index].id} tile={tile} device={device} IconOverride={IconOverride} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
