@@ -169,7 +169,9 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
 
     border: 'none',
-    userSelect: 'none'
+    userSelect: 'none',
+    pointerEvents: 'none',
+    touchAction: 'none'
   },
 
   '@keyframes fadein': {
@@ -207,8 +209,11 @@ export default function({ index, className, isSmall, style, ...props }) {
   const layout = allDashboards[dashboards[index].id].layout;
   devLog(layout);
 
-  const rows = isSmall ? 5 : layout.rows;
-  const cols = isSmall ? 3 : layout.cols;
+  const smallRows = window.innerHeight > window.innerWidth ? 5 : 3;
+  const smallCols = window.innerHeight > window.innerWidth ? 3 : 5;
+
+  const rows = isSmall ? smallRows : layout.rows;
+  const cols = isSmall ? smallCols : layout.cols;
 
   //rows and cols are 1-indexed
   let smallCol = 1;
@@ -288,7 +293,7 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
 
     smallCol++;
-    if(smallCol > 3) {
+    if(smallCol > smallCols) {
       smallRow++;
       smallCol = 1;
     }
@@ -388,7 +393,8 @@ function ContactTile({ device, IconOverride, ...props }) {
 }
 
 function AttributeTile({ tile, device, IconOverride, ...props }) {
-  const state = tile.templateExtra ? device.attr[tile.templateExtra].value : device.attr[tile.template].value;
+  const attr = tile.templateExtra ? device.attr[tile.templateExtra] : device.attr[tile.template];
+  const state = attr ? attr.value : 'E';
 
   return (
     <BaseTile content={state} label={device.label} device={device} {...props} />
@@ -488,7 +494,9 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
     top: y,
     left: x,
     minWidth: w,
-    minHeight: h
+    minHeight: h,
+    width: w,
+    height: h
   }
 
   const poppedStyles = {
@@ -496,6 +504,9 @@ function BaseTile({ dashboardId, label, Icon, iconColor, content, onClick, poppe
     left: '50%',
     minWidth: 'calc(50% - 16px)',
     minHeight: 'calc(25% - 16px)',
+
+    width: 'auto',
+    height: 'auto'
   }
 
   const styles = popped ? poppedStyles : tileStyles;

@@ -72,25 +72,27 @@ function useHub() {
     }
 
     else if(loading === 20) {
+      if(Object.keys(dashboards).length === 0) setLoading(80);
 
-      let loadedLayouts = 0;
+      else {
+        let loadedLayouts = 0;
 
-      Object.values(dashboards).forEach((dashboard) => {
-        const dashboardId = dashboard.id;
-  
-        loadLayout(dashboardId).always(() => {
-          loadedLayouts++;
-          if(loadedLayouts === Object.keys(allDashboards).length) {
-            setLoading(80);
-          } else {
-            setLoading(Math.max(loading, 20 + 60 / Object.keys(dashboards).length * loadedLayouts));
-          }
+        Object.values(dashboards).forEach((dashboard) => {
+          const dashboardId = dashboard.id;
+    
+          loadLayout(dashboardId).always(() => {
+            loadedLayouts++;
+            if(loadedLayouts === Object.keys(allDashboards).length) {
+              setLoading(80);
+            } else {
+              setLoading(Math.max(loading, 20 + 60 / Object.keys(dashboards).length * loadedLayouts));
+            }
+          });
         });
-      }); 
+      }
     }
 
     else if(loading >= 80) {
-
       $.get(`${endpoint}getDevices/${Object.values(allDashboards)[0].id}/?access_token=${access_token}`, (data) => {
         //map devices to device id and attrs
         const cleanData = {};
