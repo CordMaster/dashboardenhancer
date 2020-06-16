@@ -72,7 +72,7 @@ function useHub() {
     }
 
     else if(loading === 20) {
-      if(Object.keys(dashboards).length === 0) setLoading(80);
+      if(Object.keys(dashboards).length === 0) setLoading(50);
 
       else {
         let loadedLayouts = 0;
@@ -83,36 +83,41 @@ function useHub() {
           loadLayout(dashboardId).always(() => {
             loadedLayouts++;
             if(loadedLayouts === Object.keys(allDashboards).length) {
-              setLoading(80);
+              setLoading(50);
             } else {
-              setLoading(Math.max(loading, 20 + 60 / Object.keys(dashboards).length * loadedLayouts));
+              setLoading(Math.max(loading, 20 + 30 / Object.keys(dashboards).length * loadedLayouts));
             }
           });
         });
       }
     }
 
-    else if(loading >= 80) {
-      $.get(`${endpoint}getDevices/${Object.values(allDashboards)[0].id}/?access_token=${access_token}`, (data) => {
-        //map devices to device id and attrs
-        const cleanData = {};
-        data.map(device => {
-          if(device.attr) device.attr = device.attr.reduce((sum, obj) => {
-            const parts = Object.entries(obj);
-            const [name, value] = parts[0];
+    else if(loading === 50) {
+      let devices = {};
+      let loadedDevices = 0;
 
-            sum[name] = { name, value, unit: obj.unit };
+      $.get(`${endpoint}getDevices/?access_token=${access_token}`, (devicesData) => {
+        devLog('Got device Ids');
+        devLog(devicesData);
 
-            return sum;
-          }, {});
-          return device;
+        devicesData.forEach(device => {
+          devices[device.id] = device;
+          $.get(`${endpoint}getDevice/${device.id}/?access_token=${access_token}`, (data) => {
+            devices[device.id]['attributes'] = data;
+
+            devLog('Got device data');
+            devLog(data);
+          }).always(() => {
+            loadedDevices++;
+            
+            if(loadedDevices === devicesData.length) {
+              setLoading(100);
+            } else {
+              setLoading(Math.max(loading, 50 + 50 / devicesData.length * loadedDevices));
+            }
+          });
         });
-        data.forEach(it => cleanData[it.id] = it);
-        setDevices(Immutable.fromJS(cleanData));
-
-        devLog(`Got devices:`);
-        devLog(cleanData);
-      }).always(() => {
+      }).fail(() => {
         setLoading(100);
       });
     }
