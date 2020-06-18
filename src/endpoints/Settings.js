@@ -25,6 +25,10 @@ const useStyles = makeStyles(theme => ({
     minHeight: '100%'
   },
 
+  settingsHeader: {
+    marginBottom: theme.spacing(2)
+  },
+
   saveBtn: {
     float: 'right'
   }
@@ -33,7 +37,6 @@ const useStyles = makeStyles(theme => ({
 function Settings() {
   const classes = useStyles();
 
-  const { allDashboards } = useContext(HubContext);
   const { config, setConfig, save, ...state } = useContext(MainContext);
 
   const [snackbarContent, setSnackbarContent] = useState({ value: '', type: '' });
@@ -69,12 +72,12 @@ function Settings() {
 
       <Grid container direction="row" wrap="nowrap" justify="center">
         <Grid item xs={11} sm={10}>
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h5" gutterBottom className={classes.settingsHeader}>
             Settings
             <Button variant="contained" color="primary" onClick={handleSave} className={classes.saveBtn}>Save</Button>
           </Typography>
           
-          <DashboardsSettings allDashboards={allDashboards} />
+          <DashboardsSettings />
 
           {compiledSettings}
 
@@ -264,99 +267,64 @@ function DashboardsSettings({ allDashboards }) {
   const classes = usePSStyles();
 
   const { dashboards, modifyDashboards, config, setConfig } = useContext(MainContext);
-  const { ensureLayoutLoaded } = useContext(HubContext);
   const defaultDashboard = config.defaultDashboard;
   const setDefaultDashboard = setConfig.defaultDashboard;
-  
-  const disabledDashboards = Object.values(allDashboards).filter((val) => dashboards.findIndex((val2) => val2.id === val.id) === -1);
 
-  const handleEnd = (result) => {
+  const [newText, setNewText] = useState('');
+
+  const handleAdd = () => {
+    modifyDashboards({ type: 'new', data: { label: newText } });
+  }
+
+  const handleEnd = result => {
     const {source, destination} = result;
     
-    if(source.droppableId === destination.droppableId && source.droppableId === "dashboards-enabled") {
+    if(source.droppableId === destination.droppableId) {
       modifyDashboards({ type: 'move', startIndex: source.index, destIndex: destination.index });
 
       //update the default too
       if(defaultDashboard === source.index) setDefaultDashboard(destination.index);
       else if(defaultDashboard === destination.index) setDefaultDashboard(source.index)
     }
-    else if(source.droppableId !== destination.droppableId) {
-      if(destination.droppableId === "dashboards-disabled") {
-        modifyDashboards({ type: 'delete', index: source.index });
-
-        //update the default too
-        if(defaultDashboard === source.index) {
-          if(dashboards.length > 1) setDefaultDashboard(0);
-          else setDefaultDashboard(-1);
-        }
-      }
-      else if(destination.droppableId === "dashboards-enabled") {
-        const newDashboard = Object.values(disabledDashboards)[source.index];
-        modifyDashboards({ type: 'new', index: destination.index, data: { id: newDashboard.id, label: newDashboard.label } });
-        ensureLayoutLoaded(newDashboard.id);
-
-        //update the default too
-        if(defaultDashboard === -1) setDefaultDashboard(0);
-      }
-    }
   }
 
-  const uiEnabledDashboards = dashboards.map((dashboard, index) => {
+  const uiDashboards = dashboards.map((dashboard, index) => {
     return (
       <DashboardListItem key={dashboard.id} dashboard={dashboard} modifyDashboard={(action) => modifyDashboards(Object.assign({ index, ...action }))} index={index} defaultDashboard={defaultDashboard} setDefaultDashboard={setDefaultDashboard} canDelete={dashboards.length > 1} />
     );
   });
 
-  const uiDisabledDashboards = disabledDashboards.map((dashboardInfo, index) => {
-    return (
-      <DisabledDashboardListItem key={dashboardInfo.id} dashboardInfo={dashboardInfo} index={index} />
-    );
-  });
-
   return (
     <DragDropContext onDragEnd={handleEnd}>
-      <SettingsSection title="Enabled Dashboards">
+      <SettingsSection title="Dashboards">
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={10}>
+              <TextField fullWidth label="Dashboard name" value={newText} onChange={e => setNewText(e.target.value)} />
+            </Grid>
+
+            <Grid item xs={2}>
+              <Button fullWidth variant="contained" onClick={handleAdd}>Add</Button>
+            </Grid>
+          </Grid>
           <div className={classes.listContainer}>
             <Droppable droppableId="dashboards-enabled">
               {(provided, snapshot) => (
                 <div className={classes.dropArea} ref={provided.innerRef}>
-                  {uiEnabledDashboards.length > 0 ?
+                  {uiDashboards.length > 0 ?
                     <List>
                       <Divider />
 
-                      {uiEnabledDashboards}
+                      {uiDashboards}
 
                       {provided.placeholder}
                     </List> :
-                    <Typography align="center" className={classes.helperText}>Drag a dashboard here</Typography>
+                    <Typography align="center" className={classes.helperText}>Create a dashboard above</Typography>
                   }
                 </div>
               )}
             </Droppable>
           </div>
         </SettingsSection>
-        
-        <SettingsSection title="Disabled Dashboards">
-          <div className={classes.listContainer}>
-            <Droppable droppableId="dashboards-disabled">
-              {(provided, snapshot) => (
-                <div className={classes.dropArea} ref={provided.innerRef}>
-                  {uiDisabledDashboards.length > 0 ?
-                    <List>
-                      <Divider />
-
-                      {uiDisabledDashboards}
-
-                      {provided.placeholder}
-                    </List> :
-                    <Typography align="center" className={classes.helperText}>No dashboards found</Typography>
-                  }
-                </div>
-              )}
-            </Droppable>
-          </div>
-        </SettingsSection>
-    
     </DragDropContext>
   );
 }

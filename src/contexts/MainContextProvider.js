@@ -195,9 +195,9 @@ function useConfig() {
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [dashboards, setDashboards = useState(new Array());
+  const [dashboards, setDashboards] = useState(new List());
 
-  const objState = useMemo(() => state.toJS(), [state]);
+  const objDashboards = useMemo(() => dashboards.toJS(), [dashboards]);
 
   //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
@@ -252,31 +252,29 @@ function MainContextProvider(props) {
     const type = obj.type;
     if(type === "move") {
       const { startIndex, destIndex } = obj;
-      const startObj = objState.dashboards[startIndex];
-      const newArr = state.get("dashboards").splice(startIndex, 1).insert(destIndex, startObj);
+      const startObj = objDashboards[startIndex];
+      const newArr = dashboards.splice(startIndex, 1).insert(destIndex, startObj);
 
-      setState(state.set("dashboards", newArr));
+      setDashboards(newArr);
     } else if(type === "delete") {
       const index = obj.index;
 
-      const newArr = state.get("dashboards").splice(index, 1);
+      const newArr = dashboards.splice(index, 1);
 
-      setState(state.set("dashboards", newArr));
+      setDashboards(newArr);
     } else if(type === "new") {
-      const index = obj.index;
       const newData = Map(Object.assign({ iconName: "Home", lock: false }, obj.data));
 
-      const newArr = state.get("dashboards").splice(index, 0, newData);
+      const newArr = dashboards.push(newData);
 
-      setState(state.set("dashboards", newArr));
+      setDashboards(newArr);
     } else if(type === "modify") {
       const index = obj.index;
       const newData = obj.data;
 
-      const newDashboard = state.get("dashboards").get(index).merge(newData);
-      const newArr = state.get("dashboards").set(index, newDashboard);
+      const newArr = dashboards.updateIn(index, val => Object.assign(val, newData));
 
-      setState(state.set("dashboards", newArr));
+      setDashboards(newArr);
     }
   }
 
@@ -287,8 +285,6 @@ function MainContextProvider(props) {
       if(loading === 0) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
           if(!data.error) {
-            if(data.state) setState(Immutable.fromJS(data.state));
-            delete data.state;
             mergeAllConfig(data);
 
             devLog(`Got config`);
@@ -306,12 +302,12 @@ function MainContextProvider(props) {
     return $.ajax(`${endpoint}options/?access_token=${access_token}`, {
       type: 'POST',
       contentType: "multipart/form-data",
-      data: JSON.stringify({ state: objState, ...config })
+      data: JSON.stringify(config)
     });
   }
 
   return (
-    <MainContext.Provider value={{ genTheme, ...objState, modifyDashboards, config, setConfig, locked, setLocked, save }}>
+    <MainContext.Provider value={{ genTheme, dashboards: objDashboards, modifyDashboards, config, setConfig, locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );
