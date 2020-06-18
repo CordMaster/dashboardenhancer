@@ -195,9 +195,7 @@ function useConfig() {
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [state, setState] = useState(Map({
-    dashboards: List([])
-  }));
+  const [dashboards, setDashboards = useState(new Array());
 
   const objState = useMemo(() => state.toJS(), [state]);
 

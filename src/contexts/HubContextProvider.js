@@ -22,77 +22,16 @@ websocket.addEventListener('error', () => {
 //util for devices
 function useHub() {
   const { loading, setLoading } = useContext(LoadingContext);
-  const { dashboards } = useContext(MainContext);
-
-  const [allDashboards, setAllDashboards] = useState({});
 
   const [devices, setDevices] = useState(new Map());
   const objDevices = useMemo(() => devices.toJS(), [devices]);
 
   //so we can update multiple items in the state at once
   let preStateUpdate = devices;
-
-  //loadLayout function
-  const loadLayout = dashboardId => {
-    const tempDashboards = Object.assign({}, allDashboards);
-    
-    return $.get(`${endpoint}getDashboardLayout/${dashboardId}/?access_token=${access_token}`, (data) => {
-      tempDashboards[dashboardId].layout = data;
-      devLog(`Got layout for: ${dashboardId}`);
-      devLog(data);
-
-      setAllDashboards(tempDashboards);
-    });
-  }
-
-  const ensureLayoutLoaded = dashboardId => {
-    if(!allDashboards.layout) loadLayout(dashboardId); 
-  }
   
   //for the first load
   useEffect(() => {
-    //load last
     if(loading === 10) {
-
-      $.get(`${endpoint}getDashboards/?access_token=${access_token}`, (data) => {
-        let tempDashboards = data.dashboards.reduce((sum, dashboard) => {
-          sum[dashboard.id] = dashboard;
-          //empty layout for loading
-          sum[dashboard.id].layout = { tiles: [] };
-          return sum;
-        }, {});
-
-        devLog(`Got all dashboards`);
-        devLog(tempDashboards);
-
-        setAllDashboards(tempDashboards);
-      }).always(() => {
-        setLoading(20);
-      });
-    }
-
-    else if(loading === 20) {
-      if(Object.keys(dashboards).length === 0) setLoading(50);
-
-      else {
-        let loadedLayouts = 0;
-
-        Object.values(dashboards).forEach((dashboard) => {
-          const dashboardId = dashboard.id;
-    
-          loadLayout(dashboardId).always(() => {
-            loadedLayouts++;
-            if(loadedLayouts === Object.keys(allDashboards).length) {
-              setLoading(50);
-            } else {
-              setLoading(Math.max(loading, 20 + 30 / Object.keys(dashboards).length * loadedLayouts));
-            }
-          });
-        });
-      }
-    }
-
-    else if(loading === 50) {
       let devices = {};
       let loadedDevices = 0;
 
@@ -113,7 +52,7 @@ function useHub() {
             if(loadedDevices === devicesData.length) {
               setLoading(100);
             } else {
-              setLoading(Math.max(loading, 50 + 50 / devicesData.length * loadedDevices));
+              setLoading(Math.max(loading, 10 + 90 / devicesData.length * loadedDevices));
             }
           });
         });
@@ -146,7 +85,7 @@ function useHub() {
     }
   }, [loading, devices, objDevices]);
 
-  return [objDevices, allDashboards, ensureLayoutLoaded];
+  return [objDevices];
 }
 
 const sendCommand = (dashboardId, deviceId, command, secondary = '') => {
@@ -161,10 +100,10 @@ const sendCommand = (dashboardId, deviceId, command, secondary = '') => {
 }
 
 export default function({ children }) {
-  const [devices, allDashboards, ensureLayoutLoaded] = useHub();
+  const [devices] = useHub();
 
   return (
-    <HubContext.Provider value={{ devices, allDashboards, ensureLayoutLoaded, sendCommand }}>
+    <HubContext.Provider value={{ devices }}>
       {children}
     </HubContext.Provider>
   )
