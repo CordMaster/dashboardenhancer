@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 import Immutable, { List, Map } from 'immutable';
+import { v4 as uuidv4 } from 'uuid';
 
 import $ from 'jquery';
 import Color from 'color';
@@ -195,7 +196,7 @@ function useConfig() {
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [dashboards, setDashboards] = useState(new List());
+  const [dashboards, setDashboards] = useState(List());
 
   const objDashboards = useMemo(() => dashboards.toJS(), [dashboards]);
 
@@ -252,7 +253,7 @@ function MainContextProvider(props) {
     const type = obj.type;
     if(type === "move") {
       const { startIndex, destIndex } = obj;
-      const startObj = objDashboards[startIndex];
+      const startObj = dashboards.get(startIndex);
       const newArr = dashboards.splice(startIndex, 1).insert(destIndex, startObj);
 
       setDashboards(newArr);
@@ -263,7 +264,7 @@ function MainContextProvider(props) {
 
       setDashboards(newArr);
     } else if(type === "new") {
-      const newData = Map(Object.assign({ iconName: "Home", lock: false }, obj.data));
+      const newData = Map(Object.assign({ id: uuidv4(), iconName: "Home", lock: false, tiles: Map() }, obj.data));
 
       const newArr = dashboards.push(newData);
 
@@ -272,7 +273,7 @@ function MainContextProvider(props) {
       const index = obj.index;
       const newData = obj.data;
 
-      const newArr = dashboards.updateIn(index, val => Object.assign(val, newData));
+      const newArr = dashboards.update(index, val => Map({ ...val.toJS(), ...newData }));
 
       setDashboards(newArr);
     }

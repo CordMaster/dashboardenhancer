@@ -274,6 +274,19 @@ function DashboardsSettings({ allDashboards }) {
 
   const handleAdd = () => {
     modifyDashboards({ type: 'new', data: { label: newText } });
+
+    if(defaultDashboard === -1) setDefaultDashboard(0);
+
+    setNewText('');
+  }
+
+  const handleDelete = (index) => {
+    if(defaultDashboard === index) {
+      if(dashboards.length > 1) setDefaultDashboard(0);
+      else setDefaultDashboard(-1);
+    }
+
+    modifyDashboards({ type: 'delete', index });
   }
 
   const handleEnd = result => {
@@ -290,7 +303,7 @@ function DashboardsSettings({ allDashboards }) {
 
   const uiDashboards = dashboards.map((dashboard, index) => {
     return (
-      <DashboardListItem key={dashboard.id} dashboard={dashboard} modifyDashboard={(action) => modifyDashboards(Object.assign({ index, ...action }))} index={index} defaultDashboard={defaultDashboard} setDefaultDashboard={setDefaultDashboard} canDelete={dashboards.length > 1} />
+      <DashboardListItem key={dashboard.id} dashboard={dashboard} modifyDashboard={(action) => modifyDashboards(Object.assign({ index, ...action }))} index={index} defaultDashboard={defaultDashboard} setDefaultDashboard={setDefaultDashboard} handleDelete={() => handleDelete(index)} />
     );
   });
 
@@ -344,7 +357,7 @@ const usePLItems = makeStyles(theme => ({
   }
 }));
 
-function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard, setDefaultDashboard }) {
+function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard, setDefaultDashboard, handleDelete }) {
   const classes = usePLItems();
 
   const [editMode, setEditMode] = useState(false);
@@ -400,6 +413,10 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
                 <IconButton onClick={() => setSelectIconOpen(true)}>
                   <Icon />
                 </IconButton>
+
+                <IconButton onClick={() => handleDelete()}>
+                  <Icons.mdiDelete color="secondary" />
+                </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
 
@@ -408,31 +425,6 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
         )}
       </Draggable>
       <IconSelectDialog open={selectIconOpen ? true : false} onApply={(selectedIcon) => handleIconChange(selectedIcon)} onClose={() => setSelectIconOpen(false)} />
-    </Fragment>
-  );
-}
-
-function DisabledDashboardListItem({ dashboardInfo, index }) {
-  const classes = usePLItems();
-
-  return (
-    <Fragment>
-      <Draggable draggableId={`dashboards-${dashboardInfo.id}`} index={index}>
-        {(provided, snapshot) => (
-          <Paper square={!snapshot.isDragging} elevation={snapshot.isDragging ? 2 : 0} {...provided.draggableProps} ref={provided.innerRef}>
-            <ListItem className={classes.listItem}>
-              <ListItemIcon className={classes.listItemIcon}>
-                <div {...provided.dragHandleProps} >
-                  <Icons.mdiReorderHorizontal />
-                </div>
-              </ListItemIcon>
-              <ListItemText primary={dashboardInfo.label} />
-            </ListItem>
-
-            <Divider />
-          </Paper>
-        )}
-      </Draggable>
     </Fragment>
   );
 }

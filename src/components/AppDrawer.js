@@ -167,7 +167,7 @@ function AppDrawer({ location }) {
 
 //util for tracking dashboard state to handle notifications
 function useNotifications(dashboardId) {
-  const { allDashboards, devices } = useContext(HubContext);
+  /*const { allDashboards, devices } = useContext(HubContext);
 
   const layout = allDashboards[dashboardId].layout.tiles;
 
@@ -177,7 +177,8 @@ function useNotifications(dashboardId) {
     }).map(it => devices[it]).filter(it => it.attr && it.attr.switch && it.attr.switch.value === 'on').length;
   }, [devices, layout]);
 
-  return notifications;
+  return notifications;*/
+  return 0;
 }
 
 function ClockDrawerItem() {

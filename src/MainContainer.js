@@ -5,7 +5,6 @@ import { makeStyles, ThemeProvider, CircularProgress, withWidth } from '@materia
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import Settings from './endpoints/Settings.js';
-import View from './endpoints/View.js';
 
 import AppDrawer from './components/AppDrawer.js';
 import AppBar from './components/AppBar.js';
@@ -78,7 +77,7 @@ function MainContainer({ width }) {
                 <Route path="/settings" component={Settings} />
                 <Route path="/more" component={More} />
                 <Route exact path="/" render={() => <Redirect to={config.defaultDashboard === -1 ? 'settings/' + window.location.search : '' + config.defaultDashboard + '/' + window.location.search} />} />
-                <Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} isSmall={isSmall} />} />
+                {/*<Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} isSmall={isSmall} />} />*/}
               </Switch>
             </main>
           </div>
