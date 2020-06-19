@@ -39,7 +39,7 @@ export default function(definitions) {
 
   let ret = {};
   let setRet = {};
-  Object.entries(definitions).forEach(([sectionName, section]) => {
+  Object.values(definitions).forEach((section) => {
     section.sectionOptions.forEach(field => {
     
     ret[field.name] = state[field.name];
