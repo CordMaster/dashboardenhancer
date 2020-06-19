@@ -15,13 +15,11 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { MainContext } from '../contexts/MainContextProvider';
 
 import IconSelectDialog from '../components/IconSelectDialog.js';
-import ColorPicker from '../components/colorpicker/ColorPicker.js';
-import DevicePicker from '../components/devicepicker/DevicePicker.js';
-import { HubContext } from '../contexts/HubContextProvider.js';
 import settingsDefinitons from '../definitions/settingsDefinitons';
 import { useSectionRenderer } from '../definitions/useSettingsDefinition';
 import useConfigDialog from '../components/useConfigDialog';
 import { PreviewTileType } from '../Tile/Tile';
+import defaultTileDefinitions from '../definitions/defaultTileDefinitions';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -286,6 +284,31 @@ function TileDefinitionsSettings() {
     }
   }
 
+  const uiDefaultTileDefinitions = defaultTileDefinitions.map((tileDefinition, index) => {
+    const Icon = getIcon(tileDefinition.iconName);
+
+    return (
+      <Fragment>
+        <ListItem key={tileDefinition.id}>
+          <ListItemIcon>
+            <Icon />
+          </ListItemIcon>
+
+          <ListItemText>
+            {tileDefinition.label}
+          </ListItemText>
+
+          <ListItemSecondaryAction>
+            <Typography variant="subtitle2" color="secondary">
+              Default Tile Type
+            </Typography>
+          </ListItemSecondaryAction>
+        </ListItem>
+        <Divider />
+      </Fragment>
+    );
+  });
+
   const uiTileDefinitions = tileDefinitions.map((tileDefinition, index) => {
     const handleEdit = () => {
       setDialogOpenOn(index);
@@ -316,16 +339,14 @@ function TileDefinitionsSettings() {
             <Droppable droppableId="dashboards-enabled">
               {(provided, snapshot) => (
                 <div className={classes.dropArea} ref={provided.innerRef}>
-                  {uiTileDefinitions.length > 0 ?
-                    <List>
-                      <Divider />
+                  <List>
+                    <Divider />
 
-                      {uiTileDefinitions}
+                    {uiDefaultTileDefinitions}
+                    {uiTileDefinitions}
 
-                      {provided.placeholder}
-                    </List> :
-                    <Typography align="center" className={classes.helperText}>Create a tile definition</Typography>
-                  }
+                    {provided.placeholder}
+                  </List>
                 </div>
               )}
             </Droppable>
@@ -343,7 +364,7 @@ const useLItems = makeStyles(theme => ({
   }
 }));
 
-function DraggableListItem({ index, data, modifyData, children, ...props }) {
+function DraggableListItem({ index, data, modifyData, viewOnly, children, ...props }) {
   const classes = useLItems();
 
   const [editMode, setEditMode] = useState(false);
@@ -389,21 +410,23 @@ function DraggableListItem({ index, data, modifyData, children, ...props }) {
                 <TextField autoFocus type="text" value={tempLabel} onBlur={() => handelLabelChange({ key: 'Enter', target: { value: tempLabel } })} onChange={(e) => setTempLabel(e.target.value) } onKeyPress={handelLabelChange} />
               }
 
-              <ListItemSecondaryAction>
-                <IconButton disabled={editMode} onClick={() => setEditMode(true)}>
-                  <Icons.mdiCursorText />
-                </IconButton>
+              { !viewOnly &&
+                <ListItemSecondaryAction>
+                  <IconButton disabled={editMode} onClick={() => setEditMode(true)}>
+                    <Icons.mdiCursorText />
+                  </IconButton>
 
-                {children}
+                  {children}
 
-                <IconButton onClick={() => setSelectIconOpen(true)}>
-                  <Icon />
-                </IconButton>
+                  <IconButton onClick={() => setSelectIconOpen(true)}>
+                    <Icon />
+                  </IconButton>
 
-                <IconButton onClick={() => handleDelete()}>
-                  <Icons.mdiDelete color="secondary" />
-                </IconButton>
-              </ListItemSecondaryAction>
+                  <IconButton onClick={() => handleDelete()}>
+                    <Icons.mdiDelete color="secondary" />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              }
             </ListItem>
 
             <Divider />
