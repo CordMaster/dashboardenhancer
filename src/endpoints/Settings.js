@@ -20,6 +20,8 @@ import DevicePicker from '../components/devicepicker/DevicePicker.js';
 import { HubContext } from '../contexts/HubContextProvider.js';
 import settingsDefinitons from '../definitions/settingsDefinitons';
 import { useSectionRenderer } from '../definitions/useSettingsDefinition';
+import useConfigDialog from '../components/useConfigDialog';
+import { PreviewTileType } from '../Tile/Tile';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -257,6 +259,19 @@ function TileDefinitionsSettings() {
 
   const [newText, setNewText] = useState('');
 
+  const [providedDialog, setDialogOpenOn] = useConfigDialog('Edit Tile Definition', (index) => {
+    const primaryContent = <Typography variant="h4">Primary</Typography>
+    const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
+
+    return (
+      <Grid container justify="center">
+        <Grid item xs={8}>
+          <PreviewTileType label="Label" primaryContent={primaryContent} secondaryContent={secondaryContent} />
+        </Grid>
+      </Grid>
+    );
+  });
+
   const handleAdd = () => {
     modifyTileDefinitions({ type: 'new', data: { label: newText } });
 
@@ -272,8 +287,15 @@ function TileDefinitionsSettings() {
   }
 
   const uiTileDefinitions = tileDefinitions.map((tileDefinition, index) => {
+    const handleEdit = () => {
+      setDialogOpenOn(index);
+    }
+
     return (
       <DraggableListItem key={tileDefinition.id} index={index} data={tileDefinition} modifyData={(action) => modifyTileDefinitions(Object.assign({ index, ...action }))}>
+        <IconButton onClick={() => handleEdit()}>
+          <Icons.mdiPencil />
+        </IconButton>
       </DraggableListItem>
     );
   });
@@ -308,6 +330,8 @@ function TileDefinitionsSettings() {
               )}
             </Droppable>
           </div>
+
+          {providedDialog}
         </SettingsSection>
     </DragDropContext>
   );
@@ -316,15 +340,6 @@ function TileDefinitionsSettings() {
 const useLItems = makeStyles(theme => ({
   listItem: {
     padding: theme.spacing(2)
-  },
-
-  listItemIcon: {
-    //marginRight: -theme.spacing.unit
-    //cursor: 'pointer'
-  },
-
-  editTextField: {
-    marginLeft: theme.spacing(2)
   }
 }));
 
@@ -363,7 +378,7 @@ function DraggableListItem({ index, data, modifyData, children, ...props }) {
         {(provided, snapshot) => (
           <Paper square={!snapshot.isDragging} elevation={snapshot.isDragging ? 2 : 0} {...provided.draggableProps} ref={provided.innerRef}>
             <ListItem className={classes.listItem}>
-              <ListItemIcon className={classes.listItemIcon}>
+              <ListItemIcon>
                 <div {...provided.dragHandleProps} >
                   <Icons.mdiReorderHorizontal />
                 </div>
@@ -371,15 +386,15 @@ function DraggableListItem({ index, data, modifyData, children, ...props }) {
               
               {!editMode ? 
                 <ListItemText primary={data.label} /> :
-                <TextField autoFocus className={classes.editTextField} type="text" value={tempLabel} onBlur={() => handelLabelChange({ key: 'Enter', target: { value: tempLabel } })} onChange={(e) => setTempLabel(e.target.value) } onKeyPress={handelLabelChange} />
+                <TextField autoFocus type="text" value={tempLabel} onBlur={() => handelLabelChange({ key: 'Enter', target: { value: tempLabel } })} onChange={(e) => setTempLabel(e.target.value) } onKeyPress={handelLabelChange} />
               }
 
               <ListItemSecondaryAction>
-                {children}
-
                 <IconButton disabled={editMode} onClick={() => setEditMode(true)}>
-                  <Icons.mdiPencil />
+                  <Icons.mdiCursorText />
                 </IconButton>
+
+                {children}
 
                 <IconButton onClick={() => setSelectIconOpen(true)}>
                   <Icon />
