@@ -12,7 +12,7 @@ import { devLog } from '../Utils.js';
 import { useContext } from 'react';
 import { LoadingContext } from './LoadingContextProvider.js';
 import useCollection from './useCollection.js';
-import usseSettingsDefinition from '../definitions/usseSettingsDefinition.js';
+import usseSettingsDefinition from '../definitions/useSettingsDefinition.js';
 import settingsDefinitons from '../definitions/settingsDefinitons.js';
 
 export const MainContext = React.createContext({});

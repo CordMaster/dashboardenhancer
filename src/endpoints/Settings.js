@@ -19,6 +19,7 @@ import ColorPicker from '../components/colorpicker/ColorPicker.js';
 import DevicePicker from '../components/devicepicker/DevicePicker.js';
 import { HubContext } from '../contexts/HubContextProvider.js';
 import settingsDefinitons from '../definitions/settingsDefinitons';
+import { useSectionRenderer } from '../definitions/useSettingsDefinition';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -129,114 +130,13 @@ const useDSSStyles = makeStyles(theme => ({
 const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setConfig, state }) => {
   const classes = useDSSStyles();
 
-  const [cachedValues, setCachedValues] = useState(() => {
-    return section.sectionOptions.reduce((sum, it) => {
-      sum[it.name] = config[it.name];
-      return sum;
-    }, {});
-  });
-
-  const evaluateDependsOn = dependsOn => {
-    if(dependsOn) {
-      for(let i = 0; i < dependsOn.length; i++) {
-        const dependency = dependsOn[i];
-        if(typeof(dependency.name) === 'function') {
-          if(dependency.name(state) !== dependency.value) return true;
-        }
-        else if(dependency.name && config[dependency.name] !== dependency.value) return true;
-      }
-    }
-    return false;
-  }
-
-  const handleChange = (name, value) => {
-    if(section.saveBuffer) {
-      setCachedValues({ ...cachedValues, [name]: value });
-    } else {
-      setConfig[name](value);
-    }
-  }
-
-  const children = section.sectionOptions.map((setting) => {
-    let Type;
-
-    switch(setting.type) {
-      case 'text':
-        Type = TextType;
-        break;
-      case 'number':
-        Type = NumberType;
-        break;
-      case 'boolean':
-        Type = BooleanType;
-        break;
-      case 'color':
-        Type = ColorType;
-        break;
-      case 'deviceattribute':
-        Type = DeviceAttributeType;
-        break;
-      default:
-        Type = Typography;
-        break;
-    }
-
-    const evaluatedDepends = evaluateDependsOn(setting.dependsOn);
-    const disabled = evaluatedDepends && setting.disableOnDepends;
-    const hidden = evaluatedDepends && !setting.disableOnDepends;
-    return !hidden && <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[setting.name]} disabled={disabled} setValue={value => handleChange(setting.name, value)} />;
-  });
-
-  const handleSave = () => {
-    section.sectionOptions.forEach(it => {
-      setConfig[it.name](cachedValues[it.name]);
-    });
-  }
-
-  const noShow = evaluateDependsOn(section.dependsOn);
+  const [children, handleSave, noShow] = useSectionRenderer(section, config, setConfig, state);
 
   return (
     <SettingsSection className={noShow && classes.noDisplay} key={sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={handleSave}>
       {children}
     </SettingsSection>
   );
-});
-
-const BooleanType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <FormControl fullWidth margin="dense">
-      <FormControlLabel control={<Switch />} label={label} checked={value} onChange={() => setValue(!value)} {...props} />
-    </FormControl>
-  );
-});
-
-const TextType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <FormControl fullWidth margin="dense">
-      <TextField label={label} value={value} onChange={(e) => setValue(e.target.value)} {...props} />
-    </FormControl>
-  );
-});
-
-const NumberType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <FormControl fullWidth margin="dense">
-      <TextField type="number" label={label} value={value} onChange={(e) => setValue(parseFloat(e.target.value))} {...props} />
-    </FormControl>
-  );
-});
-
-const ColorType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <Fragment>
-      <Typography variant="subtitle1">{label}</Typography>
-      <ColorPicker value={value} onChange={(value) => setValue(value)} {...props} />
-    </Fragment>
-  );
-});
-
-const DeviceAttributeType = React.memo(({ value, setValue, ...props }) => {
-  return <DevicePicker value={value} onChange={(value) => setValue(value)} {...props} />
 });
 
 const usePSStyles = makeStyles(theme => ({
