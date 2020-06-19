@@ -12,12 +12,13 @@ import { Alert, ToggleButton } from '@material-ui/lab';
 import Icons, { getIcon } from '../Icons';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { MainContext, settings } from '../contexts/MainContextProvider';
+import { MainContext } from '../contexts/MainContextProvider';
 
 import IconSelectDialog from '../components/IconSelectDialog.js';
 import ColorPicker from '../components/colorpicker/ColorPicker.js';
 import DevicePicker from '../components/devicepicker/DevicePicker.js';
 import { HubContext } from '../contexts/HubContextProvider.js';
+import settingsDefinitons from '../definitions/settingsDefinitons';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -50,7 +51,7 @@ function Settings() {
   }
 
   const compiledSettings = useMemo(() => { 
-    return Object.entries(settings).map(([sectionName, section]) => {
+    return Object.entries(settingsDefinitons).map(([sectionName, section]) => {
       if(!section.noShow) {
         return <DerrivedSettingsSection key={sectionName} sectionName={sectionName} section={section} config={config} setConfig={setConfig} state={state} />
       } else {

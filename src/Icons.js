@@ -2,7 +2,7 @@ import React from 'react';
 import * as OldIcons from '@material-ui/icons';
 import * as MdiIcons from '@mdi/js';
 import { SvgIcon } from '@material-ui/core';
-import IconAliases from './IconAliases.json';
+import IconAliases from './definitions/IconAliases.json';
 
 const Icons = Object.entries(MdiIcons).reduce((sum, [name, val]) => {
   sum[name] = (props) => {
