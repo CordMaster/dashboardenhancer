@@ -54,8 +54,8 @@ export default function(definitions) {
 
       setState(Object.assign({}, state, preStateUpdate));
     }
+    });
   });
-});
 
   const mergeAll = (other) => {
     setState(Object.assign({}, state, other));
