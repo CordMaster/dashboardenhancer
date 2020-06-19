@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-import Immutable, { List, Map } from 'immutable';
-import { v4 as uuidv4 } from 'uuid';
+import { List, Map } from 'immutable';
 
 import $ from 'jquery';
 import Color from 'color';
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
-import { endpoint, access_token, openWeatherToken } from '../Constants.js';
+import { endpoint, access_token } from '../Constants.js';
 import { devLog } from '../Utils.js';
 import { useContext } from 'react';
 import { LoadingContext } from './LoadingContextProvider.js';
@@ -20,9 +19,9 @@ export const MainContext = React.createContext({});
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [dashboards, modifyDashboards] = useCollection(List(), { iconName: "Home", lock: false, tiles: Map() });
+  const [dashboards, modifyDashboards] = useCollection(List(), { iconName: "mdiHome", lock: false, tiles: Map() });
 
-  const objDashboards = useMemo(() => dashboards.toJS(), [dashboards]);
+  const [tileDefinitions, modifyTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: Map() });
 
   //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
@@ -102,7 +101,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ genTheme, dashboards: objDashboards, modifyDashboards, config, setConfig, locked, setLocked, save }}>
+    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, tileDefinitions, modifyTileDefinitions, config, setConfig, locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );

@@ -36,5 +36,7 @@ export default function(initialState, newTemplate) {
     }
   }
 
-  return useReducer(reducer, initialState);
+  const [ret, setRet] = useReducer(reducer, initialState);
+
+  return [ret.toJS(), setRet];
 }

@@ -81,6 +81,8 @@ function Settings() {
           
           <DashboardsSettings />
 
+          <TileDefinitionsSettings />
+
           {compiledSettings}
 
           <SettingsSection title="Legal">
@@ -164,7 +166,7 @@ const usePSStyles = makeStyles(theme => ({
   }
 }));
 
-function DashboardsSettings({ allDashboards }) {
+function DashboardsSettings() {
   const classes = usePSStyles();
 
   const { dashboards, modifyDashboards, config, setConfig } = useContext(MainContext);
@@ -181,15 +183,6 @@ function DashboardsSettings({ allDashboards }) {
     setNewText('');
   }
 
-  const handleDelete = (index) => {
-    if(defaultDashboard === index) {
-      if(dashboards.length > 1) setDefaultDashboard(0);
-      else setDefaultDashboard(-1);
-    }
-
-    modifyDashboards({ type: 'delete', index });
-  }
-
   const handleEnd = result => {
     const {source, destination} = result;
     
@@ -203,8 +196,22 @@ function DashboardsSettings({ allDashboards }) {
   }
 
   const uiDashboards = dashboards.map((dashboard, index) => {
+    const onDelete = () => {
+      if(defaultDashboard === index) {
+        if(dashboards.length > 1) setDefaultDashboard(0);
+        else setDefaultDashboard(-1);
+      }
+    }
+
+    const handleToggleLock = () => {
+      modifyDashboards({type: 'modify', index, data: { lock: !dashboard.lock } });
+    }
+
     return (
-      <DashboardListItem key={dashboard.id} dashboard={dashboard} modifyDashboard={(action) => modifyDashboards(Object.assign({ index, ...action }))} index={index} defaultDashboard={defaultDashboard} setDefaultDashboard={setDefaultDashboard} handleDelete={() => handleDelete(index)} />
+      <DraggableListItem key={dashboard.id} index={index} data={dashboard} modifyData={(action) => modifyDashboards(Object.assign({ index, ...action }))} onDelete={onDelete} >
+        <Switch checked={defaultDashboard === index} onChange={() => setDefaultDashboard(index)} />
+        <ToggleButton size="small" selected={dashboard.lock} onChange={() => handleToggleLock()}>Child Lock</ToggleButton>
+      </DraggableListItem>
     );
   });
 
@@ -243,7 +250,70 @@ function DashboardsSettings({ allDashboards }) {
   );
 }
 
-const usePLItems = makeStyles(theme => ({
+function TileDefinitionsSettings() {
+  const classes = usePSStyles();
+
+  const { tileDefinitions, modifyTileDefinitions } = useContext(MainContext);
+
+  const [newText, setNewText] = useState('');
+
+  const handleAdd = () => {
+    modifyTileDefinitions({ type: 'new', data: { label: newText } });
+
+    setNewText('');
+  }
+
+  const handleEnd = result => {
+    const {source, destination} = result;
+    
+    if(source.droppableId === destination.droppableId) {
+      modifyTileDefinitions({ type: 'move', startIndex: source.index, destIndex: destination.index });
+    }
+  }
+
+  const uiTileDefinitions = tileDefinitions.map((tileDefinition, index) => {
+    return (
+      <DraggableListItem key={tileDefinition.id} index={index} data={tileDefinition} modifyData={(action) => modifyTileDefinitions(Object.assign({ index, ...action }))}>
+      </DraggableListItem>
+    );
+  });
+
+  return (
+    <DragDropContext onDragEnd={handleEnd}>
+      <SettingsSection title="Tile Defintions">
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={10}>
+              <TextField fullWidth label="Tile definition name" value={newText} onChange={e => setNewText(e.target.value)} />
+            </Grid>
+
+            <Grid item xs={2}>
+              <Button fullWidth variant="contained" onClick={handleAdd}>Add</Button>
+            </Grid>
+          </Grid>
+          <div className={classes.listContainer}>
+            <Droppable droppableId="dashboards-enabled">
+              {(provided, snapshot) => (
+                <div className={classes.dropArea} ref={provided.innerRef}>
+                  {uiTileDefinitions.length > 0 ?
+                    <List>
+                      <Divider />
+
+                      {uiTileDefinitions}
+
+                      {provided.placeholder}
+                    </List> :
+                    <Typography align="center" className={classes.helperText}>Create a tile definition</Typography>
+                  }
+                </div>
+              )}
+            </Droppable>
+          </div>
+        </SettingsSection>
+    </DragDropContext>
+  );
+}
+
+const useLItems = makeStyles(theme => ({
   listItem: {
     padding: theme.spacing(2)
   },
@@ -258,36 +328,38 @@ const usePLItems = makeStyles(theme => ({
   }
 }));
 
-function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard, setDefaultDashboard, handleDelete }) {
-  const classes = usePLItems();
+function DraggableListItem({ index, data, modifyData, children, ...props }) {
+  const classes = useLItems();
 
   const [editMode, setEditMode] = useState(false);
-  const [tempLabel, setTempLabel] = useState(dashboard.label);
+  const [tempLabel, setTempLabel] = useState(data.label);
   const [selectIconOpen, setSelectIconOpen] = useState(false);
   
 
   const handelLabelChange = (e) => {
     const value = e.target.value;
     if(e.key === 'Enter') {
-      modifyDashboard({ type: 'modify', data: { label: value } });
+      modifyData({ type: 'modify', data: { label: value } });
       setEditMode(false);
     }
   }
   
   const handleIconChange = (selectedIcon) => {
-    modifyDashboard({type: 'modify', data: { iconName: selectedIcon } });
+    modifyData({type: 'modify', data: { iconName: selectedIcon } });
     setSelectIconOpen('');
   }
 
-  const handleToggleLock = () => {
-    modifyDashboard({type: 'modify', data: { lock: !dashboard.lock } });
+  const handleDelete = (index) => {
+    modifyData({ type: 'delete' });
+
+    if(props.onDelete) props.onDelete();
   }
   
-  const Icon = getIcon(dashboard.iconName);
+  const Icon = getIcon(data.iconName);
 
   return (
     <Fragment>
-      <Draggable draggableId={`dashboards-${dashboard.id}`} index={index}>
+      <Draggable draggableId={`dashboards-${data.id}`} index={index}>
         {(provided, snapshot) => (
           <Paper square={!snapshot.isDragging} elevation={snapshot.isDragging ? 2 : 0} {...provided.draggableProps} ref={provided.innerRef}>
             <ListItem className={classes.listItem}>
@@ -298,14 +370,12 @@ function DashboardListItem({ dashboard, modifyDashboard, index, defaultDashboard
               </ListItemIcon>
               
               {!editMode ? 
-                <ListItemText primary={dashboard.label} /> :
+                <ListItemText primary={data.label} /> :
                 <TextField autoFocus className={classes.editTextField} type="text" value={tempLabel} onBlur={() => handelLabelChange({ key: 'Enter', target: { value: tempLabel } })} onChange={(e) => setTempLabel(e.target.value) } onKeyPress={handelLabelChange} />
               }
 
               <ListItemSecondaryAction>
-                <Switch checked={defaultDashboard === index} onChange={() => setDefaultDashboard(index)} />
-
-                <ToggleButton size="small" selected={dashboard.lock} onChange={() => handleToggleLock()}>Child Lock</ToggleButton>
+                {children}
 
                 <IconButton disabled={editMode} onClick={() => setEditMode(true)}>
                   <Icons.mdiPencil />
