@@ -9,6 +9,8 @@ import OpenWeatherContextProvider from './contexts/OpenWeatherContextProvider.js
 import MainContainer from './MainContainer.js';
 import HubContextProvider from './contexts/HubContextProvider.js';
 import LoadingContextProvider from './contexts/LoadingContextProvider.js';
+import { DndProvider } from 'react-dnd';
+import { TouchBackend } from 'react-dnd-touch-backend';
 
 function App() {
   return (
@@ -17,7 +19,9 @@ function App() {
         <MainContextProvider>
           <HubContextProvider>
             <OpenWeatherContextProvider>
-              <MainContainer />
+              <DndProvider backend={TouchBackend} options={{ enableMouseEvents: true }}>
+                <MainContainer />
+              </DndProvider>
             </OpenWeatherContextProvider>
           </HubContextProvider>
         </MainContextProvider>

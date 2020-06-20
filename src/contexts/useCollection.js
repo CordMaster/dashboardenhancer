@@ -1,6 +1,6 @@
 import React, { useReducer } from 'react';
 
-import { Map } from 'immutable';
+import Immutable, { Map } from 'immutable';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function(initialState, newTemplate) {
@@ -15,7 +15,7 @@ export default function(initialState, newTemplate) {
     } else if(type === "delete") {
       const index = obj.index;
 
-      const newArr = state.splice(index, 1);
+      const newArr = state.removeIn(obj.path);
 
       return newArr;
     } else if(type === "new") {
@@ -25,10 +25,9 @@ export default function(initialState, newTemplate) {
 
       return newArr;
     } else if(type === "modify") {
-      const index = obj.index;
       const newData = obj.data;
 
-      const newArr = state.update(index, val => Map({ ...val.toJS(), ...newData }));
+      const newArr = state.updateIn(obj.path, val => Immutable.fromJS({ ...val.toJS(), ...newData }));
 
       return newArr;
     } else {

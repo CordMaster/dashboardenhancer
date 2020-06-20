@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { CSSTransition, Transition } from 'react-transition-group';
+import { useDrag } from 'react-dnd';
+import { ContactsOutlined } from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
   tile: {
@@ -18,7 +20,9 @@ const useStyles = makeStyles(theme => ({
 
     transition: 'transform 100ms linear',
 
-    '&:hover:not(.popped)': {
+    overflow: 'hidden',
+
+    '&:hover:not(.popped):not(.preview)': {
       transform: 'scale(1.05)',
       zIndex: 2,
     },
@@ -43,7 +47,52 @@ const useStyles = makeStyles(theme => ({
       zIndex: 4,
 
       transition: ['transform 250ms linear', 'min-width 250ms linear', 'min-height 250ms linear', 'top 250ms linear', 'left 250ms linear']
+    },
+
+    '&.dragging': {
+      
+    },
+
+    '&.relative': {
+      position: 'relative',
+      height: 250,
+      margin: '16px 0',
+    },
+
+    '&.dragPreview': {
+      zIndex: 200,
+
+      opacity: 0.5,
+
+      pointerEvents: 'none',
+      touchAction: 'none'
     }
+  },
+
+  editCover: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+
+    backgroundColor: 'rgba(0, 0, 0, 0.25)'
+  },
+
+  resizeHandle: {
+    position: 'absolute',
+
+    right: -theme.spacing(2),
+    bottom: -theme.spacing(2),
+
+    width: theme.spacing(4),
+    height: theme.spacing(4),
+
+    borderRadius: theme.spacing(2),
+
+    backgroundColor: theme.palette.primary.main,
+
+    cursor: 'nwse-resize'
   },
 
   featuredContainer: {
@@ -99,29 +148,64 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function PopableTile({ popped, setPopped, ...props }) {
+export default function DragableTile({ index, canDrag, isEditing, x, y, ...props }) {
+  const [dragProps, dragRef] = useDrag({
+    item: {
+      type: 'tile',
+      index
+    },
+
+    canDrag,
+
+    collect: monitor => {
+      return {
+        isDragging: monitor.isDragging(),
+
+        delta: monitor.getDifferenceFromInitialOffset()
+      }
+    }
+  });
+
+  const dragPosition = {
+    x: dragProps.delta ? `calc(${x} + ${dragProps.delta.x}px)` : 0,
+    y: dragProps.delta ? `calc(${y} + ${dragProps.delta.y}px)` : 0,
+  }
+
+  return (
+    <Fragment>
+      <PopableTile ref={dragRef} x={x} y={y} showHandles={!dragProps.isDragging && isEditing} {...dragProps} {...props} />
+      { dragProps.isDragging && <BaseTile dragPreview {...dragPosition} {...props} /> }
+    </Fragment>
+  );
+}
+
+export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...props }, ref) => {
   const [hoverHandle, setHoverHandle] = useState(-1);
 
   const handleEnter = (e) => {
-    //really hacky
-    if(e.nativeEvent.type === 'touchstart' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
-      setHoverHandle(setTimeout(() => {
-        setPopped();
-      }, 1000));
+    if(!preview) {
+      //really hacky
+      if(e.nativeEvent.type === 'touchstart' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
+        setHoverHandle(setTimeout(() => {
+          setPopped();
+        }, 1000));
+      }
     }
   }
 
   const handleLeave = (e) => {
-    //really hacky
-    if(e.nativeEvent.type === 'touchend' || e.nativeEvent.type === 'touchcancel' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
-      if(hoverHandle) clearInterval(hoverHandle);
+    if(!preview) {
+      //really hacky
+      if(e.nativeEvent.type === 'touchend' || e.nativeEvent.type === 'touchcancel' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
+        if(hoverHandle) clearInterval(hoverHandle);
+      }
     }
   }
 
-  return <BaseTile popped={popped} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
-}
+  return <BaseTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
+});
 
-export function BaseTile({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, x, y, w, h, ...props }) {
+export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, dragPreview, relative, showHandles, isDragging, x, y, w, h, ...props }, ref) => {
   const classes = useStyles();
 
   const handleClick = (e) => {
@@ -131,13 +215,9 @@ export function BaseTile({ label, primaryContent, secondaryContent, onClick, pop
     e.stopPropagation();
   }
 
-  let styles = {
-    position: 'relative',
-    height: 250,
-    margin: '16px 0'
-  }
+  let styles = {};
 
-  if(!preview) {
+  if(!relative) {
     const tileStyles = {
       top: y,
       left: x,
@@ -164,7 +244,12 @@ export function BaseTile({ label, primaryContent, secondaryContent, onClick, pop
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+          <Paper ref={ref} className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''} ${dragPreview ? 'dragPreview' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+              { showHandles &&
+                <div className={classes.editCover}>
+                  <div className={classes.resizeHandle}></div>
+                </div>
+              }
               <CSSTransition in={popped} timeout={250} classNames="popped">
                 <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
                     { primaryContent }
@@ -184,7 +269,7 @@ export function BaseTile({ label, primaryContent, secondaryContent, onClick, pop
       }
     </Transition>
   )
-}
+});
 
 export function PreviewTileType(props) {
   return <BaseTile preview {...props} />

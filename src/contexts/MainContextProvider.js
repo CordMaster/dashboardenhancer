@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-import { List, Map } from 'immutable';
+import Immutable, { List, Map } from 'immutable';
 
 import $ from 'jquery';
 import Color from 'color';
@@ -19,7 +19,25 @@ export const MainContext = React.createContext({});
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [dashboards, modifyDashboards] = useCollection(List(), { iconName: "mdiHome", lock: false, tiles: Map() });
+  const dev = Immutable.fromJS([
+    {
+      id: '1234',
+      iconName: "mdiHome",
+      label: '1234',
+      lock: false,
+      tiles: [
+        {
+          id: 't1',
+          x: 1,
+          y: 1,
+          w: 4,
+          h: 4
+        }
+      ]
+    }
+  ]);
+
+  const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, tiles: List() });
 
   const [tileDefinitions, modifyTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: Map() });
 

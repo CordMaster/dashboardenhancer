@@ -11,7 +11,7 @@ import AppBar from './components/AppBar.js';
 import { MainContext } from './contexts/MainContextProvider.js';
 import More from './endpoints/More.js';
 import { LoadingContext } from './contexts/LoadingContextProvider.js';
-import EnhancedView from './endpoints/EnhancedView.js';
+import View from './endpoints/View';
 
 
 const useStyles = makeStyles(theme => ({
@@ -77,7 +77,7 @@ function MainContainer({ width }) {
                 <Route path="/settings" component={Settings} />
                 <Route path="/more" component={More} />
                 <Route exact path="/" render={() => <Redirect to={config.defaultDashboard === -1 ? 'settings/' + window.location.search : '' + config.defaultDashboard + '/' + window.location.search} />} />
-                {/*<Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} isSmall={isSmall} />} />*/}
+                <Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} isSmall={isSmall} />} />
               </Switch>
             </main>
           </div>
