@@ -75,10 +75,18 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+//prevent tile intersection
+const validateTilePosition = (panelCols, panelRows, tiles, desired) => {
+  return true;
+}
+
 export default function({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
   const { dashboards, modifyDashboards, config } = useContext(MainContext);
+
+  const tiles = dashboards[index].tiles;
+  devLog(tiles);
 
   const modifyTile = modifyImmutableCollection(dashboards[index].tiles, {}, (state) => {
     modifyDashboards({ type: 'modify', index, data: { tiles: state } });
@@ -100,23 +108,45 @@ export default function({ index, className, isSmall, style, ...props }) {
   const [editMode, setEditMode] = useState(false);
 
   const [dropProps, dropRef] = useDrop({
-    accept: 'tile',
+    accept: ['tile', 'tile-resize'],
 
     drop: (item, monitor) => {
       if(!monitor.didDrop()) {
-        const tileIndex = item.index;
-        const delta = monitor.getDifferenceFromInitialOffset();
-        const tile = dashboards[index].tiles[tileIndex];
+        const type = item.type;
 
-        modifyTile({ type: 'modify', index: tileIndex, data: { x: tile.x + Math.round((delta.x / containerRef.current.clientWidth) * cols), y: tile.y + Math.round((delta.y / containerRef.current.clientHeight) * rows) }});
+        if(type === 'tile') {
+          const tileIndex = item.index;
+          const delta = monitor.getDifferenceFromInitialOffset();
+          const tile = dashboards[index].tiles[tileIndex];
 
-        return {};
+          const newPosition = {
+            x: tile.x + Math.round((delta.x / containerRef.current.clientWidth) * cols),
+            y: tile.y + Math.round((delta.y / containerRef.current.clientHeight) * rows),
+            w: tile.w,
+            h: tile.h
+          }
+
+          if(validateTilePosition(cols, rows, tiles, newPosition)) {
+            modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
+
+            return {};
+          }
+        } else if(type === 'tile-resize') {
+          const tileIndex = item.index;
+          const delta = monitor.getDifferenceFromInitialOffset();
+          const tile = dashboards[index].tiles[tileIndex];
+
+          modifyTile({ type: 'modify', index: tileIndex, data: { w: tile.w + Math.round((delta.x / containerRef.current.clientWidth) * cols), h: tile.h + Math.round((delta.y / containerRef.current.clientHeight) * rows) }});
+
+          return {};
+        }
       }
     },
 
     collect: monitor => {
       return {
-        canDrop: monitor.canDrop()
+        canDrop: monitor.canDrop(),
+        item: monitor.getItem()
       }
     }
   });
@@ -166,14 +196,11 @@ export default function({ index, className, isSmall, style, ...props }) {
   }, []);
   //tile popping
 
-  const layout = dashboards[index].tiles;
-  devLog(layout);
-
   //rows and cols are 1-indexed
   let smallCol = 1;
   let smallRow = 1;
 
-  const uiTiles = layout.map(tile => {
+  const uiTiles = tiles.map((tile, tileIndex) => {
     let ret = false;
 
     //const device = devices[tile.device];
@@ -181,8 +208,8 @@ export default function({ index, className, isSmall, style, ...props }) {
     const col = isSmall ? smallCol : tile.x;
     const row = isSmall ? smallRow : tile.y;
 
-    const rowSpan = isSmall ? 1 : tile.w;
-    const colSpan = isSmall ? 1 : tile.h;
+    const rowSpan = isSmall ? 1 : tile.h;
+    const colSpan = isSmall ? 1 : tile.w;
 
     const colPercentStr = `calc(100% / ${cols / colSpan})`;
     const rowPercentStr = `calc(100% / ${rows / rowSpan})`;
@@ -194,7 +221,7 @@ export default function({ index, className, isSmall, style, ...props }) {
       y: `calc(calc(100% / ${rows}) * ${row})`
     }
 
-    ret = <Tile key={tile.id} index={index} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
+    ret = <Tile key={tile.id} index={tileIndex} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {
@@ -219,36 +246,38 @@ export default function({ index, className, isSmall, style, ...props }) {
       {uiTiles}
       <div className={`${classes.popCover} ${popped !== -1 && 'popped'}`} style={popCoverStyles}></div>
 
-      <div className={classes.fabContainer}>
-        { dropProps.canDrop &&
-          <Fragment>
-            <Fab ref={duplicateDropRef} className={`${classes.fab} ${duplicateDropProps.isOver ? 'dropHover' : ''}`} variant="extended" disableRipple>
-              <Icons.mdiContentCopy />
-              Duplicate
-            </Fab>
-
-            <Fab ref={deleteDropRef} className={`${classes.fab} ${deleteDropProps.isOver ? 'dropHover' : ''}`} variant="extended" color="secondary" disableRipple>
-              <Icons.mdiDelete />
-              Delete
-            </Fab>
-          </Fragment>
-        }
-
-        { !dropProps.canDrop &&
-          <Fragment>
-            { editMode &&
-              <Fab ref={deleteDropRef} className={classes.fab} variant="extended" color="primary">
-                <Icons.mdiPlus />
-                Add
+      { !isSmall &&
+        <div className={classes.fabContainer}>
+          { dropProps.canDrop && dropProps.item.type === 'tile' &&
+            <Fragment>
+              <Fab ref={duplicateDropRef} className={`${classes.fab} ${duplicateDropProps.isOver ? 'dropHover' : ''}`} variant="extended" disableRipple>
+                <Icons.mdiContentCopy />
+                Duplicate
               </Fab>
-            }
 
-            <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
-              { !editMode ? <Icons.mdiPencil /> : <Icons.mdiCheck /> }
-            </Fab>
-          </Fragment>
-        }
-      </div>
+              <Fab ref={deleteDropRef} className={`${classes.fab} ${deleteDropProps.isOver ? 'dropHover' : ''}`} variant="extended" color="secondary" disableRipple>
+                <Icons.mdiDelete />
+                Delete
+              </Fab>
+            </Fragment>
+          }
+
+          { !(dropProps.canDrop && dropProps.item.type === 'tile') &&
+            <Fragment>
+              { editMode &&
+                <Fab className={classes.fab} variant="extended" color="primary">
+                  <Icons.mdiPlus />
+                  Add
+                </Fab>
+              }
+
+              <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
+                { !editMode ? <Icons.mdiPencil /> : <Icons.mdiCheck /> }
+              </Fab>
+            </Fragment>
+          }
+        </div>
+      }
     </Paper>
   );
 }

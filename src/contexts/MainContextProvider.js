@@ -32,6 +32,14 @@ function MainContextProvider(props) {
           y: 1,
           w: 4,
           h: 4
+        },
+
+        {
+          id: 't2',
+          x: 6,
+          y: 6,
+          w: 4,
+          h: 4
         }
       ]
     }

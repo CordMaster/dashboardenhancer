@@ -2,7 +2,6 @@ import React, { useState, Fragment } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { CSSTransition, Transition } from 'react-transition-group';
 import { useDrag } from 'react-dnd';
-import { ContactsOutlined } from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
   tile: {
@@ -72,7 +71,9 @@ const useStyles = makeStyles(theme => ({
     right: 0,
     bottom: 0,
 
-    backgroundColor: 'rgba(0, 0, 0, 0.25)'
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+
+    cursor: 'move'
   },
 
   resizeHandle: {
@@ -144,7 +145,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function DragableTile({ index, canDrag, isEditing, x, y, ...props }) {
+export default function DragableTile({ index, canDrag, isEditing, x, y, w, h, ...props }) {
   const [dragProps, dragRef] = useDrag({
     item: {
       type: 'tile',
@@ -162,12 +163,37 @@ export default function DragableTile({ index, canDrag, isEditing, x, y, ...props
     }
   });
 
-  const dragPosition = {
-    x: dragProps.delta ? `calc(${x} + ${dragProps.delta.x}px)` : x,
-    y: dragProps.delta ? `calc(${y} + ${dragProps.delta.y}px)` : y,
+  const [resizeDragProps, resizeDragRef] = useDrag({
+    item: {
+      type: 'tile-resize',
+      index
+    },
+
+    canDrag,
+
+    collect: monitor => {
+      return {
+        isDragging: monitor.isDragging(),
+
+        delta: monitor.getDifferenceFromInitialOffset()
+      }
+    }
+  });
+
+  const ref = {
+    dragRef,
+    resizeDragRef
   }
 
-  return <PopableTile ref={dragRef} x={x} y={y} showHandles={!dragProps.isDragging && isEditing} {...dragPosition} {...dragProps} {...props} />;
+  const dragPosition = {
+    x: dragProps.isDragging && dragProps.delta ? `calc(${x} + ${dragProps.delta.x}px)` : x,
+    y: dragProps.isDragging && dragProps.delta ? `calc(${y} + ${dragProps.delta.y}px)` : y,
+
+    w: resizeDragProps.isDragging && dragProps.delta ? `calc(${w} + ${resizeDragProps.delta.x}px)` : w,
+    h: resizeDragProps.isDragging && dragProps.delta ? `calc(${h} + ${resizeDragProps.delta.y}px)` : h,
+  }
+
+  return <PopableTile ref={ref} x={x} y={y} showHandles={isEditing && !(dragProps.isDragging || resizeDragProps.isDragging)} {...dragPosition} isDragging={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
 }
 
 export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...props }, ref) => {
@@ -235,11 +261,12 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper ref={ref} className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
               { showHandles &&
-                <div className={classes.editCover}>
-                  <div className={classes.resizeHandle}></div>
-                </div>
+                <Fragment>
+                  <div ref={ref.dragRef} className={classes.editCover}></div>
+                  <div className={classes.resizeHandle} ref={ref.resizeDragRef}></div>
+                </Fragment>
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">
                 <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
