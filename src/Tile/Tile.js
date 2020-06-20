@@ -86,6 +86,16 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexFlow: 'column nowrap',
     justifyContent: 'center'
+  },
+
+  '@keyframes fadein': {
+    from: {
+      opacity: 0
+    },
+
+    to: {
+      opacity: 1
+    }
   }
 }));
 

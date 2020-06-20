@@ -104,10 +104,11 @@ export default {
     ]
   },
 
-  'experimental': {
-    sectionLabel: 'Experimental Options',
+  'panel': {
+    sectionLabel: 'Panel Options',
     sectionOptions: [
-      { name: 'overridePanelView', label: '[WIP] [FASTER] Override panel view to match your theme', type: 'boolean', default: false },
+      { name: 'panelRows', label: 'Rows', type: 'number', default: 20 },
+      { name: 'panelCols', label: 'Columns', type: 'number', default: 20 }
     ]
   },
 
