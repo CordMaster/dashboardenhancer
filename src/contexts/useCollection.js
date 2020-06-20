@@ -1,41 +1,47 @@
-import React, { useReducer } from 'react';
+import React, { useState } from 'react';
 
 import Immutable, { Map } from 'immutable';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function(initialState, newTemplate) {
-  const reducer = (state, obj) => {
+  const [ret, setRetM] = useState(initialState);
+
+  const setRet = modifyImmutableCollection(ret, newTemplate, (state) => {
+    setRetM(state);
+  });
+
+  return [ret, setRet];
+}
+
+export function modifyImmutableCollection(objState, newTemplate, onChange) {
+  const state = Immutable.fromJS(objState);
+
+  return obj => {
     const type = obj.type;
-    if(type === "move") {
-      const { startIndex, destIndex } = obj;
-      const startObj = state.get(startIndex);
-      const newArr = state.splice(startIndex, 1).insert(destIndex, startObj);
+      if(type === "move") {
+        const { startIndex, destIndex } = obj;
+        const startObj = state.get(startIndex);
+        const newArr = state.splice(startIndex, 1).insert(destIndex, startObj);
 
-      return newArr;
-    } else if(type === "delete") {
-      const index = obj.index;
+        onChange(newArr.toJS());
+      } else if(type === "delete") {
+        const index = obj.index;
 
-      const newArr = state.removeIn(obj.path);
+        const newArr = state.splice(index, 1);
 
-      return newArr;
-    } else if(type === "new") {
-      const newData = Map(Object.assign({ id: uuidv4(), ...newTemplate }, obj.data));
+        onChange(newArr.toJS());
+      } else if(type === "new") {
+        const newData = Map(Object.assign({ id: uuidv4(), ...newTemplate }, obj.data));
 
-      const newArr = state.push(newData);
+        const newArr = state.push(newData);
 
-      return newArr;
-    } else if(type === "modify") {
-      const newData = obj.data;
+        onChange(newArr.toJS());
+      } else if(type === "modify") {
+        const newData = obj.data;
 
-      const newArr = state.updateIn(obj.path, val => Immutable.fromJS({ ...val.toJS(), ...newData }));
+        const newArr = state.update(obj.index, val => Immutable.fromJS({ ...val.toJS(), ...newData }));
 
-      return newArr;
-    } else {
-      return state;
+        onChange(newArr.toJS());
+      }
     }
-  }
-
-  const [ret, setRet] = useReducer(reducer, initialState);
-
-  return [ret.toJS(), setRet];
 }

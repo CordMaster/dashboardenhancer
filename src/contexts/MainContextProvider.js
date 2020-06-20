@@ -19,7 +19,7 @@ export const MainContext = React.createContext({});
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const dev = Immutable.fromJS([
+  const dev = [
     {
       id: '1234',
       iconName: "mdiHome",
@@ -35,7 +35,7 @@ function MainContextProvider(props) {
         }
       ]
     }
-  ]);
+  ];
 
   const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, tiles: List() });
 

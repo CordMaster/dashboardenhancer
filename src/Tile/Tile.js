@@ -50,22 +50,18 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.dragging': {
-      
-    },
-
-    '&.relative': {
-      position: 'relative',
-      height: 250,
-      margin: '16px 0',
-    },
-
-    '&.dragPreview': {
       zIndex: 200,
 
       opacity: 0.5,
 
       pointerEvents: 'none',
       touchAction: 'none'
+    },
+
+    '&.relative': {
+      position: 'relative',
+      height: 250,
+      margin: '16px 0',
     }
   },
 
@@ -167,16 +163,11 @@ export default function DragableTile({ index, canDrag, isEditing, x, y, ...props
   });
 
   const dragPosition = {
-    x: dragProps.delta ? `calc(${x} + ${dragProps.delta.x}px)` : 0,
-    y: dragProps.delta ? `calc(${y} + ${dragProps.delta.y}px)` : 0,
+    x: dragProps.delta ? `calc(${x} + ${dragProps.delta.x}px)` : x,
+    y: dragProps.delta ? `calc(${y} + ${dragProps.delta.y}px)` : y,
   }
 
-  return (
-    <Fragment>
-      <PopableTile ref={dragRef} x={x} y={y} showHandles={!dragProps.isDragging && isEditing} {...dragProps} {...props} />
-      { dragProps.isDragging && <BaseTile dragPreview {...dragPosition} {...props} /> }
-    </Fragment>
-  );
+  return <PopableTile ref={dragRef} x={x} y={y} showHandles={!dragProps.isDragging && isEditing} {...dragPosition} {...dragProps} {...props} />;
 }
 
 export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...props }, ref) => {
@@ -205,7 +196,7 @@ export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...pr
   return <BaseTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
 });
 
-export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, dragPreview, relative, showHandles, isDragging, x, y, w, h, ...props }, ref) => {
+export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showHandles, isDragging, x, y, w, h, ...props }, ref) => {
   const classes = useStyles();
 
   const handleClick = (e) => {
@@ -244,7 +235,7 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper ref={ref} className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''} ${dragPreview ? 'dragPreview' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+          <Paper ref={ref} className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
               { showHandles &&
                 <div className={classes.editCover}>
                   <div className={classes.resizeHandle}></div>

@@ -9,11 +9,14 @@ import FullSlider from '../components/FullSlider';
 import Tile from '../Tile/Tile';
 import { devLog } from '../Utils';
 import { useDrop } from 'react-dnd';
+import { modifyImmutableCollection } from '../contexts/useCollection';
 
 const useStyles = makeStyles(theme => ({
   container: {
     width: '100%',
     height: '100%',
+
+    position: 'relative',
 
     overflow: 'hidden',
 
@@ -76,6 +79,11 @@ export default function({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
   const { dashboards, modifyDashboards, config } = useContext(MainContext);
+
+  const modifyTile = modifyImmutableCollection(dashboards[index].tiles, {}, (state) => {
+    modifyDashboards({ type: 'modify', index, data: { tiles: state } });
+  });
+
   const smallRows = window.innerHeight > window.innerWidth ? 5 : 3;
   const smallCols = window.innerHeight > window.innerWidth ? 3 : 5;
 
@@ -100,7 +108,7 @@ export default function({ index, className, isSmall, style, ...props }) {
         const delta = monitor.getDifferenceFromInitialOffset();
         const tile = dashboards[index].tiles[tileIndex];
 
-        modifyDashboards({ type: 'modify', index, path: ['tiles', tileIndex], data: { x: tile.x + Math.round((delta.x / containerRef.current.clientWidth) * cols), y: tile.y + Math.round((delta.y / containerRef.current.clientHeight) * rows) }});
+        modifyTile({ type: 'modify', index: tileIndex, data: { x: tile.x + Math.round((delta.x / containerRef.current.clientWidth) * cols), y: tile.y + Math.round((delta.y / containerRef.current.clientHeight) * rows) }});
 
         return {};
       }
@@ -132,11 +140,8 @@ export default function({ index, className, isSmall, style, ...props }) {
 
     drop: (item, monitor) => {
       const tileIndex = item.index;
-      const tiles = dashboards[index].tiles;
 
-      modifyDashboards({ type: 'modify', index, data: { tiles: [ ...tiles.splice(tileIndex, 1) ] } });
-
-      return {};
+      modifyTile({ type: 'delete', index: tileIndex });
 
       return {};
     },
@@ -201,7 +206,7 @@ export default function({ index, className, isSmall, style, ...props }) {
   });
 
   const mergedStyles = Object.assign({}, style, {
-    overflowY: popped !== -1 ? 'hidden' : 'auto'
+    overflowY: !dropProps.canDrop && popped === -1 ? 'auto' : 'hidden'
   });
 
   const popCoverStyles = {
@@ -230,9 +235,18 @@ export default function({ index, className, isSmall, style, ...props }) {
         }
 
         { !dropProps.canDrop &&
-          <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
-            { !editMode ? <Icons.mdiPencil /> : <Icons.mdiCheck /> }
-          </Fab>
+          <Fragment>
+            { editMode &&
+              <Fab ref={deleteDropRef} className={classes.fab} variant="extended" color="primary">
+                <Icons.mdiPlus />
+                Add
+              </Fab>
+            }
+
+            <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
+              { !editMode ? <Icons.mdiPencil /> : <Icons.mdiCheck /> }
+            </Fab>
+          </Fragment>
         }
       </div>
     </Paper>
