@@ -89,40 +89,43 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function BaseTile({ label, primaryContent, onlyPrimary, secondaryContent, onClick, config, x, y, w, h, preview, popped, setPopped, poppedContent, containerRef, ...props }) {
-  const classes = useStyles();
-
+export default function PopableTile({ popped, setPopped, ...props }) {
   const [hoverHandle, setHoverHandle] = useState(-1);
 
+  const handleEnter = (e) => {
+    //really hacky
+    if(e.nativeEvent.type === 'touchstart' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
+      setHoverHandle(setTimeout(() => {
+        setPopped();
+      }, 1000));
+    }
+  }
+
+  const handleLeave = (e) => {
+    //really hacky
+    if(e.nativeEvent.type === 'touchend' || e.nativeEvent.type === 'touchcancel' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
+      if(hoverHandle) clearInterval(hoverHandle);
+    }
+  }
+
+  return <BaseTile popped={popped} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
+}
+
+export function BaseTile({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, x, y, w, h, ...props }) {
+  const classes = useStyles();
+
   const handleClick = (e) => {
-    if(!preview && onClick && !popped) onClick(e);
+    if(onClick && !popped) onClick(e);
 
     //don't exit the popup
     e.stopPropagation();
   }
 
-  const handleEnter = (e) => {
-    if(!preview) {
-      //really hacky
-      if(e.nativeEvent.type === 'touchstart' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
-        setHoverHandle(setTimeout(() => {
-          setPopped();
-        }, 1000));
-      }
-    }
+  let styles = {
+    position: 'relative',
+    height: 250,
+    margin: '16px 0'
   }
-
-  const handleLeave = (e) => {
-    if(!preview) {
-      //really hacky
-      if(e.nativeEvent.type === 'touchend' || e.nativeEvent.type === 'touchcancel' || (e.nativeEvent.sourceCapabilities && !e.nativeEvent.sourceCapabilities.firesTouchEvents)) {
-        if(hoverHandle) clearInterval(hoverHandle);
-      }
-    }
-  }
-
-  //start with preview styles
-  let styles = { position: 'relative', height: 250, margin: '16px 0' };
 
   if(!preview) {
     const tileStyles = {
@@ -151,21 +154,18 @@ export default function BaseTile({ label, primaryContent, onlyPrimary, secondary
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && onlyPrimary ? 'popped-big' : ''}`} elevation={8} style={styles} onClick={handleClick} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props}>
-              { onlyPrimary && primaryContent }
-              { !onlyPrimary &&
-                <CSSTransition in={popped} timeout={250} classNames="popped">
-                  <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
-                      { primaryContent }
-                      { secondaryContent }
-                      { outerTransitionState === 'entered' &&
-                        <div className={classes.popContainer}>
-                          {poppedContent}
-                        </div>
-                      }
-                  </div>
-                </CSSTransition>
-              }
+          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+              <CSSTransition in={popped} timeout={250} classNames="popped">
+                <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
+                    { primaryContent }
+                    { secondaryContent }
+                    { outerTransitionState === 'entered' &&
+                      <div className={classes.advancedContainer}>
+                        { poppedContent }
+                      </div>
+                    }
+                </div>
+              </CSSTransition>
               <div className={classes.textContainer}>
                 <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
               </div>
@@ -177,5 +177,5 @@ export default function BaseTile({ label, primaryContent, onlyPrimary, secondary
 }
 
 export function PreviewTileType(props) {
-  return <BaseTile preview styleOverride={{ position: 'relative' }} {...props} />
+  return <BaseTile preview {...props} />
 }
