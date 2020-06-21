@@ -169,32 +169,34 @@ export default function({ index, className, isSmall, style, ...props }) {
   });
 
   const dragLayerProps = useDragLayer(monitor => {
-    const item = monitor.getItem();
-    const type = item.type;
-    const tile = tiles[item.index];
-
-    const delta = monitor.getDifferenceFromInitialOffset();
-    const deltaNorm = pxToRowsAndCols(delta);
-
     let position = {}
 
-    if(type === 'tile') {
-      const newPosition = {
-        x: tile.x + deltaNorm.x,
-        y: tile.y + deltaNorm.y,
-        w: tile.w,
-        h: tile.h
-      }
+    if(monitor.isDragging()) {
+      const item = monitor.getItem();
+      const type = item.type;
+      const tile = tiles[item.index];
 
-      if(validateTilePosition(newPosition)) position = newPosition;
-    } else if(type === 'tile-resize') {
-      const newPosition = {
-        x: tile.x,
-        y: tile.y,
-        w: tile.w + deltaNorm.x,
-        h: tile.h + deltaNorm.y
-      }
-      if(validateTilePosition(newPosition)) position = newPosition;
+      const delta = monitor.getDifferenceFromInitialOffset();
+      const deltaNorm = pxToRowsAndCols(delta);
+
+      if(type === 'tile') {
+        const newPosition = {
+          x: tile.x + deltaNorm.x,
+          y: tile.y + deltaNorm.y,
+          w: tile.w,
+          h: tile.h
+        }
+
+        if(validateTilePosition(newPosition)) position = newPosition;
+      } else if(type === 'tile-resize') {
+        const newPosition = {
+          x: tile.x,
+          y: tile.y,
+          w: tile.w + deltaNorm.x,
+          h: tile.h + deltaNorm.y
+        }
+        if(validateTilePosition(newPosition)) position = newPosition;
+      } 
     }
 
     return {
