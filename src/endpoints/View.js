@@ -136,7 +136,18 @@ export default function({ index, className, isSmall, style, ...props }) {
           const delta = monitor.getDifferenceFromInitialOffset();
           const tile = dashboards[index].tiles[tileIndex];
 
-          modifyTile({ type: 'modify', index: tileIndex, data: { w: tile.w + Math.round((delta.x / containerRef.current.clientWidth) * cols), h: tile.h + Math.round((delta.y / containerRef.current.clientHeight) * rows) }});
+          const newPosition = {
+            x: tile.x,
+            y: tile.y,
+            w: tile.w + Math.round((delta.x / containerRef.current.clientWidth) * cols),
+            h: tile.h + Math.round((delta.y / containerRef.current.clientHeight) * rows)
+          }
+
+          if(validateTilePosition(cols, rows, tiles, newPosition)) {
+            modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
+
+            return {};
+          }
 
           return {};
         }
