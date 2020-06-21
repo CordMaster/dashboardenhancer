@@ -6,9 +6,9 @@ import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
-import Tile from '../Tile/Tile';
+import Tile, { DragPreviewTile } from '../Tile/Tile';
 import { devLog } from '../Utils';
-import { useDrop } from 'react-dnd';
+import { useDrop, useDragLayer } from 'react-dnd';
 import { modifyImmutableCollection } from '../contexts/useCollection';
 
 const useStyles = makeStyles(theme => ({
@@ -75,11 +75,6 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-//prevent tile intersection
-const validateTilePosition = (panelCols, panelRows, tiles, desired) => {
-  return true;
-}
-
 export default function({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
@@ -107,6 +102,19 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   const [editMode, setEditMode] = useState(false);
 
+  //prevent tile intersection
+  const validateTilePosition = (desired) => {
+    return true;
+  }
+
+  //convert pixels to snapped cols or rows
+  const pxToRowsAndCols = delta => {
+    return {
+      x: Math.round((delta.x / containerRef.current.clientWidth) * cols),
+      y: Math.round((delta.y / containerRef.current.clientHeight) * rows),
+    }
+  }
+
   const [dropProps, dropRef] = useDrop({
     accept: ['tile', 'tile-resize'],
 
@@ -114,36 +122,34 @@ export default function({ index, className, isSmall, style, ...props }) {
       if(!monitor.didDrop()) {
         const type = item.type;
 
-        if(type === 'tile') {
-          const tileIndex = item.index;
-          const delta = monitor.getDifferenceFromInitialOffset();
-          const tile = dashboards[index].tiles[tileIndex];
+        const tileIndex = item.index;
+        const delta = monitor.getDifferenceFromInitialOffset();
+        const tile = dashboards[index].tiles[tileIndex];
+        
+        const deltaNorm = pxToRowsAndCols(delta);
 
+        if(type === 'tile') {
           const newPosition = {
-            x: tile.x + Math.round((delta.x / containerRef.current.clientWidth) * cols),
-            y: tile.y + Math.round((delta.y / containerRef.current.clientHeight) * rows),
+            x: tile.x + deltaNorm.x,
+            y: tile.y + deltaNorm.y,
             w: tile.w,
             h: tile.h
           }
 
-          if(validateTilePosition(cols, rows, tiles, newPosition)) {
+          if(validateTilePosition(newPosition)) {
             modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
 
             return {};
           }
         } else if(type === 'tile-resize') {
-          const tileIndex = item.index;
-          const delta = monitor.getDifferenceFromInitialOffset();
-          const tile = dashboards[index].tiles[tileIndex];
-
           const newPosition = {
             x: tile.x,
             y: tile.y,
-            w: tile.w + Math.round((delta.x / containerRef.current.clientWidth) * cols),
-            h: tile.h + Math.round((delta.y / containerRef.current.clientHeight) * rows)
+            w: tile.w + deltaNorm.x,
+            h: tile.h + deltaNorm.y
           }
 
-          if(validateTilePosition(cols, rows, tiles, newPosition)) {
+          if(validateTilePosition(newPosition)) {
             modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
 
             return {};
@@ -159,6 +165,41 @@ export default function({ index, className, isSmall, style, ...props }) {
         canDrop: monitor.canDrop(),
         item: monitor.getItem()
       }
+    }
+  });
+
+  const dragLayerProps = useDragLayer(monitor => {
+    const item = monitor.getItem();
+    const type = item.type;
+    const tile = tiles[item.index];
+
+    const delta = monitor.getDifferenceFromInitialOffset();
+    const deltaNorm = pxToRowsAndCols(delta);
+
+    let position = {}
+
+    if(type === 'tile') {
+      const newPosition = {
+        x: tile.x + deltaNorm.x,
+        y: tile.y + deltaNorm.y,
+        w: tile.w,
+        h: tile.h
+      }
+
+      if(validateTilePosition(newPosition)) position = newPosition;
+    } else if(type === 'tile-resize') {
+      const newPosition = {
+        x: tile.x,
+        y: tile.y,
+        w: tile.w + deltaNorm.x,
+        h: tile.h + deltaNorm.y
+      }
+      if(validateTilePosition(newPosition)) position = newPosition;
+    }
+
+    return {
+      isDragging: monitor.isDragging(),
+      position
     }
   });
 
@@ -289,6 +330,8 @@ export default function({ index, className, isSmall, style, ...props }) {
           }
         </div>
       }
+
+      { dragLayerProps.isDragging && <DragPreviewTile {...dragLayerProps.position} /> }
     </Paper>
   );
 }

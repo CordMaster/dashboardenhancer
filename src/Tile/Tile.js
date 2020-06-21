@@ -292,3 +292,25 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
 export function PreviewTileType(props) {
   return <BaseTile preview {...props} />
 }
+
+const useDPTStyles = makeStyles(theme => ({
+  dragPreviewTile: {
+    position: 'absolute',
+
+    border: '1px dashed grey',
+    backgroundColor: 'rgba(0, 0, 0, 0)'
+  }
+}));
+
+export function DragPreviewTile({ x, y, w, h }) {
+  const classes = useDPTStyles();
+
+  const tileStyles = {
+    top: y,
+    left: x,
+    width: w,
+    height: h
+  }
+
+  return <div className={classes.dragPreviewTile} style={tileStyles}></div>
+}
