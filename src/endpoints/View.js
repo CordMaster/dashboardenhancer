@@ -7,7 +7,7 @@ import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
 import Tile, { DragPreviewTile } from '../Tile/Tile';
-import { devLog } from '../Utils';
+import { devLog, rectInside, expandRect, rectOverlaps } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { modifyImmutableCollection } from '../contexts/useCollection';
 
@@ -81,7 +81,7 @@ export default function({ index, className, isSmall, style, ...props }) {
   const { dashboards, modifyDashboards, config } = useContext(MainContext);
 
   const tiles = dashboards[index].tiles;
-  devLog(tiles);
+  //devLog(tiles);
 
   const modifyTile = modifyImmutableCollection(dashboards[index].tiles, {}, (state) => {
     modifyDashboards({ type: 'modify', index, data: { tiles: state } });
@@ -104,15 +104,37 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   //prevent tile intersection
   const validateTilePosition = (desired) => {
+    if(!rectInside(desired, expandRect({ x: 0, y: 0, w: cols, h: rows }, 1))) return false;
+
+    for(let i = 0; i < tiles.length; i++) {
+      const tile = tiles[i];
+
+      if(rectOverlaps(desired, expandRect(tile, -1)) || rectOverlaps(tile, expandRect(desired, -1))) return false;
+    }
+
     return true;
   }
 
-  //convert pixels to snapped cols or rows
+  //convert pixels to snapped cols or rows and vice-versa
   const pxToRowsAndCols = delta => {
     return {
       x: Math.round((delta.x / containerRef.current.clientWidth) * cols),
       y: Math.round((delta.y / containerRef.current.clientHeight) * rows),
     }
+  }
+
+  const tilePositionToReal = tilePosition => {
+    const colPercentStr = `calc(100% / ${cols / tilePosition.w})`;
+    const rowPercentStr = `calc(100% / ${rows / tilePosition.h})`;
+    
+    const dimensions = {
+      w: `${colPercentStr}`,
+      h: `${rowPercentStr}`,
+      x: `calc(calc(100% / ${cols}) * ${tilePosition.x})`,
+      y: `calc(calc(100% / ${rows}) * ${tilePosition.y})`
+    }
+
+    return dimensions;
   }
 
   const [dropProps, dropRef] = useDrop({
@@ -169,14 +191,15 @@ export default function({ index, className, isSmall, style, ...props }) {
   });
 
   const dragLayerProps = useDragLayer(monitor => {
-    let position = {}
+    let computedPosition = {}
 
-    if(monitor.isDragging()) {
+    const delta = monitor.getDifferenceFromInitialOffset();
+
+    if(monitor.isDragging() && delta) {
       const item = monitor.getItem();
       const type = item.type;
       const tile = tiles[item.index];
 
-      const delta = monitor.getDifferenceFromInitialOffset();
       const deltaNorm = pxToRowsAndCols(delta);
 
       if(type === 'tile') {
@@ -187,7 +210,7 @@ export default function({ index, className, isSmall, style, ...props }) {
           h: tile.h
         }
 
-        if(validateTilePosition(newPosition)) position = newPosition;
+        if(validateTilePosition(newPosition)) computedPosition = tilePositionToReal(newPosition);
       } else if(type === 'tile-resize') {
         const newPosition = {
           x: tile.x,
@@ -195,13 +218,14 @@ export default function({ index, className, isSmall, style, ...props }) {
           w: tile.w + deltaNorm.x,
           h: tile.h + deltaNorm.y
         }
-        if(validateTilePosition(newPosition)) position = newPosition;
+        
+        if(validateTilePosition(newPosition)) computedPosition = tilePositionToReal(newPosition);
       } 
     }
 
     return {
       isDragging: monitor.isDragging(),
-      position
+      computedPosition
     }
   });
 
@@ -259,21 +283,26 @@ export default function({ index, className, isSmall, style, ...props }) {
 
     //const device = devices[tile.device];
 
-    const col = isSmall ? smallCol : tile.x;
-    const row = isSmall ? smallRow : tile.y;
+    const dimensionsWithMobile = {
+      x: isSmall ? smallCol : tile.x,
+      y: isSmall ? smallRow : tile.y,
+      w: isSmall ? 1 : tile.w,
+      h: isSmall ? 1 : tile.h
+    }
 
-    const rowSpan = isSmall ? 1 : tile.h;
-    const colSpan = isSmall ? 1 : tile.w;
-
+    const dimensions = tilePositionToReal(dimensionsWithMobile);
+    
+    /*
     const colPercentStr = `calc(100% / ${cols / colSpan})`;
     const rowPercentStr = `calc(100% / ${rows / rowSpan})`;
-    
+
     const dimensions = {
       w: `${colPercentStr}`,
       h: `${rowPercentStr}`,
       x: `calc(calc(100% / ${cols}) * ${col})`,
       y: `calc(calc(100% / ${rows}) * ${row})`
     }
+    */
 
     ret = <Tile key={tile.id} index={tileIndex} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
 
@@ -333,7 +362,7 @@ export default function({ index, className, isSmall, style, ...props }) {
         </div>
       }
 
-      { dragLayerProps.isDragging && <DragPreviewTile {...dragLayerProps.position} /> }
+      { dragLayerProps.isDragging && <DragPreviewTile {...dragLayerProps.computedPosition} /> }
     </Paper>
   );
 }
