@@ -59,8 +59,12 @@ const useStyles = makeStyles(theme => ({
 
     '&.relative': {
       position: 'relative',
-      height: 250,
-      margin: '16px 0',
+
+      zIndex: 3
+    },
+
+    '&.hidden': {
+      display: 'none'
     }
   },
 
@@ -145,11 +149,16 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function DragableTile({ index, canDrag, isEditing, x, y, w, h, ...props }) {
+export default function DragableTile({ index, tile, canDrag, isEditing, ...props }) {
+  const isNew = index === -1;
+
   const [dragProps, dragRef] = useDrag({
     item: {
       type: 'tile',
-      index
+      index,
+      tile,
+
+      isNew
     },
 
     canDrag,
@@ -157,8 +166,6 @@ export default function DragableTile({ index, canDrag, isEditing, x, y, w, h, ..
     collect: monitor => {
       return {
         isDragging: monitor.isDragging(),
-
-        delta: monitor.getDifferenceFromInitialOffset()
       }
     }
   });
@@ -166,7 +173,8 @@ export default function DragableTile({ index, canDrag, isEditing, x, y, w, h, ..
   const [resizeDragProps, resizeDragRef] = useDrag({
     item: {
       type: 'tile-resize',
-      index
+      index,
+      tile
     },
 
     canDrag,
@@ -174,8 +182,6 @@ export default function DragableTile({ index, canDrag, isEditing, x, y, w, h, ..
     collect: monitor => {
       return {
         isDragging: monitor.isDragging(),
-
-        delta: monitor.getDifferenceFromInitialOffset()
       }
     }
   });
@@ -185,15 +191,7 @@ export default function DragableTile({ index, canDrag, isEditing, x, y, w, h, ..
     resizeDragRef
   }
 
-  const dragPosition = {
-    x: dragProps.isDragging && dragProps.delta ? `calc(${x} + ${dragProps.delta.x}px)` : x,
-    y: dragProps.isDragging && dragProps.delta ? `calc(${y} + ${dragProps.delta.y}px)` : y,
-
-    w: resizeDragProps.isDragging && dragProps.delta ? `calc(${w} + ${resizeDragProps.delta.x}px)` : w,
-    h: resizeDragProps.isDragging && dragProps.delta ? `calc(${h} + ${resizeDragProps.delta.y}px)` : h,
-  }
-
-  return <PopableTile ref={ref} x={x} y={y} showHandles={isEditing && !(dragProps.isDragging || resizeDragProps.isDragging)} {...dragPosition} isDragging={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
+  return <PopableTile ref={ref} preview={isEditing} showConfigOverlay={isEditing} showResizeHandle={isEditing && !isNew} hidden={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
 }
 
 export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...props }, ref) => {
@@ -222,7 +220,7 @@ export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...pr
   return <BaseTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
 });
 
-export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showHandles, isDragging, x, y, w, h, ...props }, ref) => {
+export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showConfigOverlay, showResizeHandle, isDragging, hidden, size, x, y, w, h, ...props }, ref) => {
   const classes = useStyles();
 
   const handleClick = (e) => {
@@ -234,8 +232,8 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
 
   let styles = {};
 
-  if(!relative) {
-    const tileStyles = {
+  if(!size) {
+    styles = {
       top: y,
       left: x,
       minWidth: w,
@@ -244,28 +242,28 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
       height: h
     }
 
-    const poppedStyles = {
-      top: `calc(50% + ${containerRef.current.scrollTop}px)`,
-      left: '50%',
-      minWidth: '50%',
-      minHeight: '25%',
+    if(popped) {
+      styles = {
+        top: `calc(50% + ${containerRef.current.scrollTop}px)`,
+        left: '50%',
+        minWidth: '50%',
+        minHeight: '25%',
 
-      width: 'auto',
-      height: 'auto'
+        width: 'auto',
+        height: 'auto'
+      }
     }
-
-    styles = popped ? poppedStyles : tileStyles;
   }
 
   return (
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
-              { showHandles &&
+          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''} ${hidden ? 'hidden' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+              { showConfigOverlay &&
                 <Fragment>
                   <div ref={ref.dragRef} className={classes.editCover}></div>
-                  <div className={classes.resizeHandle} ref={ref.resizeDragRef}></div>
+              { showResizeHandle && <div className={classes.resizeHandle} ref={ref.resizeDragRef}></div> }
                 </Fragment>
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">
@@ -293,17 +291,23 @@ export function PreviewTileType(props) {
   return <BaseTile preview {...props} />
 }
 
-const useDPTStyles = makeStyles(theme => ({
+export function DragPreviewTile(props) {
+  return <BaseTile preview isDragging {...props} />
+}
+
+const useDPUTStyles = makeStyles(theme => ({
   dragPreviewTile: {
     position: 'absolute',
+
+    zIndex: 1,
 
     border: '1px dashed grey',
     backgroundColor: 'rgba(0, 0, 0, 0)'
   }
 }));
 
-export function DragPreviewTile({ x, y, w, h }) {
-  const classes = useDPTStyles();
+export function DragPreviewUnderTile({ x, y, w, h }) {
+  const classes = useDPUTStyles();
 
   const tileStyles = {
     top: y,

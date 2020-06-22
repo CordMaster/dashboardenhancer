@@ -16,10 +16,10 @@ export function rectInside(a, b) {
   return (a.x >= b.x && a.y >= b.y && a.x <= b.x + b.w && a.y <= b.y + b.h) && (a.x + a.w >= b.x && a.y + a.h >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h);
 }
 
-export function expandRect(rect, delta) {
+export function growRect(rect, delta) {
   return {
-    x: rect.x * -delta,
-    y: rect.y * -delta,
+    x: rect.x - delta,
+    y: rect.y - delta,
     w: rect.w + delta * 2,
     h: rect.h + delta * 2
   }

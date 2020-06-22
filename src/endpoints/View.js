@@ -6,8 +6,8 @@ import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
-import Tile, { DragPreviewTile } from '../Tile/Tile';
-import { devLog, rectInside, expandRect, rectOverlaps, rectsIdentical } from '../Utils';
+import Tile, { DragPreviewTile, DragPreviewUnderTile } from '../Tile/Tile';
+import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { modifyImmutableCollection } from '../contexts/useCollection';
 
@@ -64,6 +64,12 @@ const useStyles = makeStyles(theme => ({
     }
   },
 
+  addingTile: {
+    position: 'absolute',
+
+    zIndex: 2
+  },
+
   '@keyframes fadein': {
     from: {
       opacity: 0
@@ -83,15 +89,22 @@ export default function({ index, className, isSmall, style, ...props }) {
   const tiles = dashboards[index].tiles;
   //devLog(tiles);
 
-  const modifyTile = modifyImmutableCollection(dashboards[index].tiles, {}, (state) => {
-    modifyDashboards({ type: 'modify', index, data: { tiles: state } });
-  });
-
   const smallRows = window.innerHeight > window.innerWidth ? 5 : 3;
   const smallCols = window.innerHeight > window.innerWidth ? 3 : 5;
 
   const rows = isSmall ? smallRows : config.panelRows;
   const cols = isSmall ? smallCols : config.panelCols;
+
+  const newTileTemplate = {
+    x: 1,
+    y: rows - 2,
+    w: 1,
+    h: 1
+  }
+
+  const modifyTile = modifyImmutableCollection(dashboards[index].tiles, newTileTemplate, (state) => {
+    modifyDashboards({ type: 'modify', index, data: { tiles: state } });
+  });
 
   const containerRef = useRef({ scrollTop: 0 });
 
@@ -100,7 +113,13 @@ export default function({ index, className, isSmall, style, ...props }) {
     dropRef(ref);
   }
 
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, _setEditMode] = useState(false);
+  const [addingTile, setAddingTile] = useState(null);
+
+  const setEditMode = state => {
+    _setEditMode(state);
+    if(state === false) setAddingTile(false);
+  }
 
   //prevent tile intersection
   const validateTilePosition = (srcTileIndex, desired) => {
@@ -147,7 +166,7 @@ export default function({ index, className, isSmall, style, ...props }) {
 
         const tileIndex = item.index;
         const delta = monitor.getDifferenceFromInitialOffset();
-        const tile = dashboards[index].tiles[tileIndex];
+        const tile = item.tile;
         
         const deltaNorm = pxToRowsAndCols(delta);
 
@@ -160,7 +179,12 @@ export default function({ index, className, isSmall, style, ...props }) {
           }
 
           if(validateTilePosition(tileIndex, newPosition)) {
-            modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
+            if(item.isNew) {
+              modifyTile({ type: 'new', data: newPosition });
+              setAddingTile(null);
+            } else {
+              modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
+            }
 
             return {};
           }
@@ -186,13 +210,16 @@ export default function({ index, className, isSmall, style, ...props }) {
     collect: monitor => {
       return {
         canDrop: monitor.canDrop(),
-        item: monitor.getItem()
+        item: monitor.getItem(),
+
+        isNew: monitor.getItem() && monitor.getItem().isNew,
       }
     }
   });
 
   const dragLayerProps = useDragLayer(monitor => {
-    let computedPosition = {}
+    let position = {};
+    let normPosition = {};
 
     const delta = monitor.getDifferenceFromInitialOffset();
 
@@ -200,34 +227,44 @@ export default function({ index, className, isSmall, style, ...props }) {
       const item = monitor.getItem();
       const type = item.type;
       const tileIndex = item.index;
-      const tile = tiles[tileIndex];
+      const tile = item.tile;
 
       const deltaNorm = pxToRowsAndCols(delta);
 
+      position = tilePositionToReal(tile);
+
       if(type === 'tile') {
-        const newPosition = {
+        position.x = `calc(${position.x} + ${delta.x}px)`;
+        position.y = `calc(${position.y} + ${delta.y}px)`;
+
+        const newNormPosition = {
           x: tile.x + deltaNorm.x,
           y: tile.y + deltaNorm.y,
           w: tile.w,
           h: tile.h
         }
 
-        if(validateTilePosition(tileIndex, newPosition)) computedPosition = tilePositionToReal(newPosition);
+        if(validateTilePosition(tileIndex, newNormPosition)) normPosition = tilePositionToReal(newNormPosition);
       } else if(type === 'tile-resize') {
-        const newPosition = {
+        position.w = `calc(${position.w} + ${delta.x}px)`;
+        position.h = `calc(${position.h} + ${delta.y}px)`;
+
+        const newNormPosition = {
           x: tile.x,
           y: tile.y,
           w: tile.w + deltaNorm.x,
           h: tile.h + deltaNorm.y
         }
         
-        if(validateTilePosition(tileIndex, newPosition)) computedPosition = tilePositionToReal(newPosition);
+        if(validateTilePosition(tileIndex, newNormPosition)) normPosition = tilePositionToReal(newNormPosition);
       } 
     }
 
     return {
       isDragging: monitor.isDragging(),
-      computedPosition
+
+      position,
+      normPosition
     }
   });
 
@@ -235,7 +272,18 @@ export default function({ index, className, isSmall, style, ...props }) {
     accept: 'tile',
 
     drop: (item, monitor) => {
-     
+      const tile = item.tile;
+
+      const newTile = {
+        ...tile,
+
+        x: newTileTemplate.x,
+        y: newTileTemplate.y - tile.h + 1
+      }
+
+      setAddingTile(newTile);
+
+      return {};
     },
 
     collect: monitor => {
@@ -306,7 +354,7 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
     */
 
-    ret = <Tile key={tile.id} index={tileIndex} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
+    ret = <Tile key={tile.id} index={tileIndex} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {
@@ -333,7 +381,7 @@ export default function({ index, className, isSmall, style, ...props }) {
 
       { !isSmall &&
         <div className={classes.fabContainer}>
-          { dropProps.canDrop && dropProps.item.type === 'tile' &&
+          { dropProps.canDrop && dropProps.item.type === 'tile' && !dropProps.isNew &&
             <Fragment>
               <Fab ref={duplicateDropRef} className={`${classes.fab} ${duplicateDropProps.isOver ? 'dropHover' : ''}`} variant="extended" disableRipple>
                 <Icons.mdiContentCopy />
@@ -350,10 +398,19 @@ export default function({ index, className, isSmall, style, ...props }) {
           { !(dropProps.canDrop && dropProps.item.type === 'tile') &&
             <Fragment>
               { editMode &&
-                <Fab className={classes.fab} variant="extended" color="primary">
-                  <Icons.mdiPlus />
-                  Add
-                </Fab>
+                <Fragment>
+                  { !addingTile ?
+                    <Fab className={classes.fab} variant="extended" color="primary" onClick={() => setAddingTile(newTileTemplate)}>
+                      <Icons.mdiPlus />
+                      Add
+                    </Fab>
+                    :
+                    <Fab className={classes.fab} variant="extended" color="secondary" onClick={() => setAddingTile(null)}>
+                      <Icons.mdiCancel />
+                      Cancel
+                    </Fab>
+                  }
+                </Fragment>
               }
 
               <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
@@ -364,7 +421,32 @@ export default function({ index, className, isSmall, style, ...props }) {
         </div>
       }
 
-      { dragLayerProps.isDragging && <DragPreviewTile {...dragLayerProps.computedPosition} /> }
+      { dragLayerProps.isDragging && <DragPreviewTile {...dragLayerProps.position} /> }
+      { dragLayerProps.isDragging && <DragPreviewUnderTile {...dragLayerProps.normPosition} /> }
+
+      { addingTile && !dropProps.isNew &&
+        <Fragment>
+          <Tile index={-1} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile)} />
+          <TileAddBackdrop {...tilePositionToReal(growRect(addingTile, 0.5))} />
+        </Fragment>
+      }
     </Paper>
   );
+}
+
+function TileAddBackdrop({ x, y, w, h }) {
+  const classes = useStyles();
+
+  const styles = {
+    top: y,
+    left: x,
+    width: w,
+    height: h
+  }
+
+  console.log(styles);
+
+  return (
+    <Paper className={classes.addingTile} style={styles} />
+  )
 }
