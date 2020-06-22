@@ -60,6 +60,8 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.dropHover': {
+      cursor: 'default',
+
       filter: 'brightness(0.5)'
     }
   },
@@ -68,6 +70,10 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
 
     zIndex: 2
+  },
+
+  addingTileText: {
+    display: 'block'
   },
 
   '@keyframes fadein': {
@@ -444,9 +450,9 @@ function TileAddBackdrop({ x, y, w, h }) {
     height: h
   }
 
-  console.log(styles);
-
   return (
-    <Paper className={classes.addingTile} style={styles} />
+    <Paper className={classes.addingTile} style={styles}>
+      <Typography className={classes.addingTileText} variant="caption" align="center">Drag to add</Typography>
+    </Paper>
   )
 }
