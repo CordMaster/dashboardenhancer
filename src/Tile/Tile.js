@@ -38,8 +38,8 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&.popped-big': {
-      width: 'calc(75% - 16px) !important',
-      height: 'calc(75% - 16px) !important',
+      minWidth: '75% !important',
+      minHeight: '75% !important'
     },
 
     '&[class*="popped-"]:not(.popped-exit-done)': {
@@ -247,8 +247,8 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
     const poppedStyles = {
       top: `calc(50% + ${containerRef.current.scrollTop}px)`,
       left: '50%',
-      minWidth: 'calc(50% - 16px)',
-      minHeight: 'calc(25% - 16px)',
+      minWidth: '50%',
+      minHeight: '25%',
 
       width: 'auto',
       height: 'auto'

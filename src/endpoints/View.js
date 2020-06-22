@@ -7,7 +7,7 @@ import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
 import Tile, { DragPreviewTile } from '../Tile/Tile';
-import { devLog, rectInside, expandRect, rectOverlaps } from '../Utils';
+import { devLog, rectInside, expandRect, rectOverlaps, rectsIdentical } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { modifyImmutableCollection } from '../contexts/useCollection';
 
@@ -103,13 +103,17 @@ export default function({ index, className, isSmall, style, ...props }) {
   const [editMode, setEditMode] = useState(false);
 
   //prevent tile intersection
-  const validateTilePosition = (desired) => {
-    if(!rectInside(desired, expandRect({ x: 0, y: 0, w: cols, h: rows }, 1))) return false;
+  const validateTilePosition = (srcTileIndex, desired) => {
+    //wall bound check
+    if(!rectInside(desired, { x: 0, y: 0, w: cols, h: rows })) return false;
 
+    //other rect check
     for(let i = 0; i < tiles.length; i++) {
       const tile = tiles[i];
 
-      if(rectOverlaps(desired, expandRect(tile, -1)) || rectOverlaps(tile, expandRect(desired, -1))) return false;
+      if(i !== srcTileIndex && rectOverlaps(desired, tile)) {
+        return false;
+      }
     }
 
     return true;
@@ -123,15 +127,12 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
   }
 
-  const tilePositionToReal = tilePosition => {
-    const colPercentStr = `calc(100% / ${cols / tilePosition.w})`;
-    const rowPercentStr = `calc(100% / ${rows / tilePosition.h})`;
-    
+  const tilePositionToReal = tilePosition => {   
     const dimensions = {
-      w: `${colPercentStr}`,
-      h: `${rowPercentStr}`,
-      x: `calc(calc(100% / ${cols}) * ${tilePosition.x})`,
-      y: `calc(calc(100% / ${rows}) * ${tilePosition.y})`
+      w: `${100 / (cols / tilePosition.w)}%`,
+      h: `${100 / (rows / tilePosition.h)}%`,
+      x: `${(100 / cols) * tilePosition.x}%`,
+      y: `${(100 / rows) * tilePosition.y}%`
     }
 
     return dimensions;
@@ -158,7 +159,7 @@ export default function({ index, className, isSmall, style, ...props }) {
             h: tile.h
           }
 
-          if(validateTilePosition(newPosition)) {
+          if(validateTilePosition(tileIndex, newPosition)) {
             modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
 
             return {};
@@ -171,7 +172,7 @@ export default function({ index, className, isSmall, style, ...props }) {
             h: tile.h + deltaNorm.y
           }
 
-          if(validateTilePosition(newPosition)) {
+          if(validateTilePosition(tileIndex, newPosition)) {
             modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
 
             return {};
@@ -198,7 +199,8 @@ export default function({ index, className, isSmall, style, ...props }) {
     if(monitor.isDragging() && delta) {
       const item = monitor.getItem();
       const type = item.type;
-      const tile = tiles[item.index];
+      const tileIndex = item.index;
+      const tile = tiles[tileIndex];
 
       const deltaNorm = pxToRowsAndCols(delta);
 
@@ -210,7 +212,7 @@ export default function({ index, className, isSmall, style, ...props }) {
           h: tile.h
         }
 
-        if(validateTilePosition(newPosition)) computedPosition = tilePositionToReal(newPosition);
+        if(validateTilePosition(tileIndex, newPosition)) computedPosition = tilePositionToReal(newPosition);
       } else if(type === 'tile-resize') {
         const newPosition = {
           x: tile.x,
@@ -219,7 +221,7 @@ export default function({ index, className, isSmall, style, ...props }) {
           h: tile.h + deltaNorm.y
         }
         
-        if(validateTilePosition(newPosition)) computedPosition = tilePositionToReal(newPosition);
+        if(validateTilePosition(tileIndex, newPosition)) computedPosition = tilePositionToReal(newPosition);
       } 
     }
 
