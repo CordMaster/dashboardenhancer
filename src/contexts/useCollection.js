@@ -39,7 +39,7 @@ export function modifyImmutableCollection(objState, newTemplate, onChange) {
       } else if(type === "modify") {
         const newData = obj.data;
 
-        const newArr = state.update(obj.index, val => Immutable.fromJS({ ...val.toJS(), ...newData }));
+        const newArr = state.update(obj.index, val => Immutable.fromJS(Immutable.mergeDeep(val.toJS(), newData)));
 
         onChange(newArr.toJS());
       }
