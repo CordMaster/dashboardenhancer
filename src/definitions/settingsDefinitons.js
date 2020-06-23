@@ -107,8 +107,8 @@ export default {
   'panel': {
     sectionLabel: 'Panel Options',
     sectionOptions: [
-      { name: 'panelRows', label: 'Rows', type: 'number', default: 30 },
-      { name: 'panelCols', label: 'Columns', type: 'number', default: 20 }
+      { name: 'panelRows', label: 'Rows', type: 'number', default: 20 },
+      { name: 'panelCols', label: 'Columns', type: 'number', default: 35 }
     ]
   },
 

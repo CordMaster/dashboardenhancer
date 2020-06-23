@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
 
     padding: theme.spacing(2),
 
-    zIndex: 1,
+    zIndex: 10,
 
     cursor: 'pointer',
 
@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 
     '&:hover:not(.popped):not(.preview)': {
       transform: 'scale(1.05)',
-      zIndex: 2,
+      zIndex: 15,
     },
 
     '&.popped': {
@@ -43,13 +43,13 @@ const useStyles = makeStyles(theme => ({
     },
 
     '&[class*="popped-"]:not(.popped-exit-done)': {
-      zIndex: 4,
+      zIndex: 100,
 
       transition: ['transform 250ms linear', 'min-width 250ms linear', 'min-height 250ms linear', 'top 250ms linear', 'left 250ms linear']
     },
 
     '&.dragging': {
-      zIndex: 200,
+      zIndex: 100,
 
       opacity: 0.5,
 
@@ -60,7 +60,8 @@ const useStyles = makeStyles(theme => ({
     '&.relative': {
       position: 'relative',
 
-      zIndex: 3
+      //to show above the drag to add box
+      zIndex: 30
     },
 
     '&.hidden': {
@@ -299,7 +300,7 @@ const useDPUTStyles = makeStyles(theme => ({
   dragPreviewTile: {
     position: 'absolute',
 
-    zIndex: 1,
+    zIndex: 5,
 
     border: '1px dashed grey',
     backgroundColor: 'rgba(0, 0, 0, 0)'

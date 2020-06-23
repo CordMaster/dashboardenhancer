@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
 import Immutable, { Map } from 'immutable';
+import merge from 'deepmerge';
+
 import { v4 as uuidv4 } from 'uuid';
 
 export default function(initialState, newTemplate) {
@@ -31,7 +33,7 @@ export function modifyImmutableCollection(objState, newTemplate, onChange) {
 
         onChange(newArr.toJS());
       } else if(type === "new") {
-        const newData = Map(Object.assign({ id: uuidv4(), ...newTemplate }, obj.data));
+        const newData = Map({ id: uuidv4(), ...newTemplate, ...obj.data });
 
         const newArr = state.push(newData);
 
@@ -40,14 +42,8 @@ export function modifyImmutableCollection(objState, newTemplate, onChange) {
         const newData = obj.data;
 
         const newArr = state.update(obj.index, val => {
-          console.log(Immutable.mergeDeep(val.toJS(), newData));
-          return Immutable.fromJS(Immutable.mergeDeepWith((oldData, newData) => {
-            //replace arrays, don't merge them
-            if(Array.isArray(oldData) && Array.isArray(newData)) return newData;
-            
-          }, val.toJS(), newData))
+          return Immutable.fromJS(merge(val.toJS(), newData, { arrayMerge: (dest, src) => src }));
         });
-        console.log(newArr.toJS());
 
         onChange(newArr.toJS());
       }

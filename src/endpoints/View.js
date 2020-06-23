@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
     left: '-16px',
     right: 0,
 
-    zIndex: 3,
+    zIndex: 50,
 
     display: 'none',
     opacity: 0,
@@ -69,7 +69,7 @@ const useStyles = makeStyles(theme => ({
   addingTile: {
     position: 'absolute',
 
-    zIndex: 2
+    zIndex: 20
   },
 
   addingTileText: {
@@ -104,9 +104,9 @@ export default function({ index, className, isSmall, style, ...props }) {
   const newTileTemplate = {
     position: {
       x: 1,
-      y: rows - 2,
-      w: 1,
-      h: 1
+      y: rows - 3,
+      w: 2,
+      h: 2
     }
   }
 
@@ -131,6 +131,9 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   //prevent tile intersection
   const validateTilePosition = (srcTileIndex, desired) => {
+    //size check
+    if(desired.w < 1 || desired.h < 1) return false;
+
     //wall bound check
     if(!rectInside(desired, { x: 0, y: 0, w: cols, h: rows })) return false;
 
@@ -286,7 +289,7 @@ export default function({ index, className, isSmall, style, ...props }) {
         position: {
           ...tilePosition,
           x: newTileTemplate.position.x,
-          y: newTileTemplate.position.y - tilePosition.h + 1
+          y: rows - tilePosition.h - 1
         }
       }
 
@@ -341,12 +344,13 @@ export default function({ index, className, isSmall, style, ...props }) {
     let ret = false;
 
     //const device = devices[tile.device];
+    const tilePosition = tile.position;
 
     const dimensionsWithMobile = {
-      x: isSmall ? smallCol : tile.position.x,
-      y: isSmall ? smallRow : tile.position.y,
-      w: isSmall ? 1 : tile.position.w,
-      h: isSmall ? 1 : tile.position.h
+      x: isSmall ? smallCol : tilePosition.x,
+      y: isSmall ? smallRow : tilePosition.y,
+      w: isSmall ? 1 : tilePosition.w,
+      h: isSmall ? 1 : tilePosition.h
     }
 
     const dimensions = tilePositionToReal(dimensionsWithMobile);
@@ -375,7 +379,7 @@ export default function({ index, className, isSmall, style, ...props }) {
   });
 
   const mergedStyles = Object.assign({}, style, {
-    overflowY: !dropProps.canDrop && popped === -1 ? 'auto' : 'hidden'
+    overflowY: !isSmall || popped !== -1 ? 'hidden' : 'auto'
   });
 
   const popCoverStyles = {
@@ -439,6 +443,10 @@ export default function({ index, className, isSmall, style, ...props }) {
           <TileAddBackdrop {...tilePositionToReal(growRect(addingTile.position, 0.5))} />
         </Fragment>
       }
+
+      { editMode &&
+        <BackgroundGrid cols={cols} rows={rows} />
+      }
     </Paper>
   );
 }
@@ -457,5 +465,54 @@ function TileAddBackdrop({ x, y, w, h }) {
     <Paper className={classes.addingTile} style={styles}>
       <Typography className={classes.addingTileText} variant="caption" align="center">Drag to add</Typography>
     </Paper>
+  )
+}
+
+const useBDStyles = makeStyles(theme => ({
+  container: {
+    position: 'absolute',
+
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+
+    zIndex: 1
+  },
+
+  dot: {
+    position: 'absolute',
+
+    width: theme.spacing(1),
+    height: theme.spacing(1),
+
+    borderRadius: theme.spacing(0.5),
+    
+    transform: 'translate(-50%, -50%)',
+
+    backgroundColor: theme.palette.grey[600]
+  }
+}));
+
+function BackgroundGrid({ rows, cols }) {
+  const classes = useBDStyles();
+
+  const dots = [];
+
+  for(let x = 0; x <= cols; x++) {
+    for(let y = 0; y <= rows; y++) {
+      const style = {
+        top: `${(100 / rows) * y}%`,
+        left: `${(100 / cols) * x}%`
+      }
+
+      dots.push(<div key={`dot_${x}_${y}`} className={classes.dot} style={style}></div>);
+    }
+  }
+
+  return (
+    <div className={classes.container}>
+      {dots}
+    </div>
   )
 }
