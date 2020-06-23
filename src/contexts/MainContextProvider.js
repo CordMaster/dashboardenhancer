@@ -28,18 +28,22 @@ function MainContextProvider(props) {
       tiles: [
         {
           id: 't1',
-          x: 1,
-          y: 1,
-          w: 4,
-          h: 4
+          position: {
+            x: 1,
+            y: 1,
+            w: 4,
+            h: 4
+          }
         },
 
         {
           id: 't2',
-          x: 6,
-          y: 6,
-          w: 4,
-          h: 4
+          position: {
+            x: 6,
+            y: 6,
+            w: 4,
+            h: 4
+          }
         }
       ]
     }

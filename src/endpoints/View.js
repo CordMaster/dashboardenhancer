@@ -102,10 +102,12 @@ export default function({ index, className, isSmall, style, ...props }) {
   const cols = isSmall ? smallCols : config.panelCols;
 
   const newTileTemplate = {
-    x: 1,
-    y: rows - 2,
-    w: 1,
-    h: 1
+    position: {
+      x: 1,
+      y: rows - 2,
+      w: 1,
+      h: 1
+    }
   }
 
   const modifyTile = modifyImmutableCollection(dashboards[index].tiles, newTileTemplate, (state) => {
@@ -134,9 +136,9 @@ export default function({ index, className, isSmall, style, ...props }) {
 
     //other rect check
     for(let i = 0; i < tiles.length; i++) {
-      const tile = tiles[i];
+      const tilePosition = tiles[i].position;
 
-      if(i !== srcTileIndex && rectOverlaps(desired, tile)) {
+      if(i !== srcTileIndex && rectOverlaps(desired, tilePosition)) {
         return false;
       }
     }
@@ -172,38 +174,38 @@ export default function({ index, className, isSmall, style, ...props }) {
 
         const tileIndex = item.index;
         const delta = monitor.getDifferenceFromInitialOffset();
-        const tile = item.tile;
+        const tilePosition = item.tile.position;
         
         const deltaNorm = pxToRowsAndCols(delta);
 
         if(type === 'tile') {
           const newPosition = {
-            x: tile.x + deltaNorm.x,
-            y: tile.y + deltaNorm.y,
-            w: tile.w,
-            h: tile.h
+            x: tilePosition.x + deltaNorm.x,
+            y: tilePosition.y + deltaNorm.y,
+            w: tilePosition.w,
+            h: tilePosition.h
           }
 
           if(validateTilePosition(tileIndex, newPosition)) {
             if(item.isNew) {
-              modifyTile({ type: 'new', data: newPosition });
+              modifyTile({ type: 'new', data: { position: newPosition } });
               setAddingTile(null);
             } else {
-              modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
+              modifyTile({ type: 'modify', index: tileIndex, data: { position: newPosition } });
             }
 
             return {};
           }
         } else if(type === 'tile-resize') {
           const newPosition = {
-            x: tile.x,
-            y: tile.y,
-            w: tile.w + deltaNorm.x,
-            h: tile.h + deltaNorm.y
+            x: tilePosition.x,
+            y: tilePosition.y,
+            w: tilePosition.w + deltaNorm.x,
+            h: tilePosition.h + deltaNorm.y
           }
 
           if(validateTilePosition(tileIndex, newPosition)) {
-            modifyTile({ type: 'modify', index: tileIndex, data: newPosition });
+            modifyTile({ type: 'modify', index: tileIndex, data: { position: newPosition } });
 
             return {};
           }
@@ -233,21 +235,21 @@ export default function({ index, className, isSmall, style, ...props }) {
       const item = monitor.getItem();
       const type = item.type;
       const tileIndex = item.index;
-      const tile = item.tile;
+      const tilePosition = item.tile.position;
 
       const deltaNorm = pxToRowsAndCols(delta);
 
-      position = tilePositionToReal(tile);
+      position = tilePositionToReal(tilePosition);
 
       if(type === 'tile') {
         position.x = `calc(${position.x} + ${delta.x}px)`;
         position.y = `calc(${position.y} + ${delta.y}px)`;
 
         const newNormPosition = {
-          x: tile.x + deltaNorm.x,
-          y: tile.y + deltaNorm.y,
-          w: tile.w,
-          h: tile.h
+          x: tilePosition.x + deltaNorm.x,
+          y: tilePosition.y + deltaNorm.y,
+          w: tilePosition.w,
+          h: tilePosition.h
         }
 
         if(validateTilePosition(tileIndex, newNormPosition)) normPosition = tilePositionToReal(newNormPosition);
@@ -256,10 +258,10 @@ export default function({ index, className, isSmall, style, ...props }) {
         position.h = `calc(${position.h} + ${delta.y}px)`;
 
         const newNormPosition = {
-          x: tile.x,
-          y: tile.y,
-          w: tile.w + deltaNorm.x,
-          h: tile.h + deltaNorm.y
+          x: tilePosition.x,
+          y: tilePosition.y,
+          w: tilePosition.w + deltaNorm.x,
+          h: tilePosition.h + deltaNorm.y
         }
         
         if(validateTilePosition(tileIndex, newNormPosition)) normPosition = tilePositionToReal(newNormPosition);
@@ -278,13 +280,14 @@ export default function({ index, className, isSmall, style, ...props }) {
     accept: 'tile',
 
     drop: (item, monitor) => {
-      const tile = item.tile;
+      const tilePosition = item.tile.position;
 
       const newTile = {
-        ...tile,
-
-        x: newTileTemplate.x,
-        y: newTileTemplate.y - tile.h + 1
+        position: {
+          ...tilePosition,
+          x: newTileTemplate.position.x,
+          y: newTileTemplate.position.y - tilePosition.h + 1
+        }
       }
 
       setAddingTile(newTile);
@@ -340,10 +343,10 @@ export default function({ index, className, isSmall, style, ...props }) {
     //const device = devices[tile.device];
 
     const dimensionsWithMobile = {
-      x: isSmall ? smallCol : tile.x,
-      y: isSmall ? smallRow : tile.y,
-      w: isSmall ? 1 : tile.w,
-      h: isSmall ? 1 : tile.h
+      x: isSmall ? smallCol : tile.position.x,
+      y: isSmall ? smallRow : tile.position.y,
+      w: isSmall ? 1 : tile.position.w,
+      h: isSmall ? 1 : tile.position.h
     }
 
     const dimensions = tilePositionToReal(dimensionsWithMobile);
