@@ -435,8 +435,8 @@ export default function({ index, className, isSmall, style, ...props }) {
 
       { addingTile && !dropProps.isNew &&
         <Fragment>
-          <Tile index={-1} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile)} />
-          <TileAddBackdrop {...tilePositionToReal(growRect(addingTile, 0.5))} />
+          <Tile index={-1} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile.position)} />
+          <TileAddBackdrop {...tilePositionToReal(growRect(addingTile.position, 0.5))} />
         </Fragment>
       }
     </Paper>
