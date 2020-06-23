@@ -41,7 +41,11 @@ export function modifyImmutableCollection(objState, newTemplate, onChange) {
 
         const newArr = state.update(obj.index, val => {
           console.log(Immutable.mergeDeep(val.toJS(), newData));
-          return Immutable.fromJS(Immutable.mergeDeep(val.toJS(), newData))
+          return Immutable.fromJS(Immutable.mergeDeepWith((oldData, newData) => {
+            //replace arrays, don't merge them
+            if(Array.isArray(oldData) && Array.isArray(newData)) return newData;
+            
+          }, val.toJS(), newData))
         });
         console.log(newArr.toJS());
 
