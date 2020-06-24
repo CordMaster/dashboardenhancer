@@ -11,8 +11,10 @@ export default function({ tile, modifyTile }) {
 
   const allSections = { ...generalSections, ...typeSections };
 
-  const [tileOptions, setTileOptions, mergeAllConfig] = useSettingsDefinition(allSections, tile.options, (newState) => {
-    modifyTile({ type: 'modify', data: { options: newState }});
+  const [optionBuffer, setOptionBuffer] = useState(tile.options);
+
+  const [tileOptions, setTileOptions] = useSettingsDefinition(allSections, optionBuffer, (newState) => {
+    setOptionBuffer(newState);
   });
 
   const uiTabs = Object.values(allSections).map((section, index) => {
