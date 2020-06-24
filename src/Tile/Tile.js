@@ -2,6 +2,7 @@ import React, { useState, Fragment } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { CSSTransition, Transition } from 'react-transition-group';
 import { useDrag } from 'react-dnd';
+import Icons from '../Icons';
 
 const useStyles = makeStyles(theme => ({
   tile: {
@@ -95,6 +96,23 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.primary.main,
 
     cursor: 'nwse-resize'
+  },
+
+  settingsHandle: {
+    position: 'absolute',
+
+    top: theme.spacing(1),
+    left: theme.spacing(1),
+
+    color: theme.palette.grey[200],
+
+    cursor: 'pointer',
+
+    transition: 'transform 100ms linear',
+
+    '&:hover': {
+      transform: 'scale(1.3)'
+    },
   },
 
   featuredContainer: {
@@ -192,7 +210,7 @@ export default function DragableTile({ index, tile, canDrag, isEditing, ...props
     resizeDragRef
   }
 
-  return <PopableTile ref={ref} preview={isEditing} showConfigOverlay={isEditing} showResizeHandle={isEditing && !isNew} hidden={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
+  return <PopableTile ref={ref} preview={isEditing} showConfigOverlay={isEditing} showResizeHandle={isEditing && !isNew} showSettingsButton={isEditing && !isNew} hidden={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
 }
 
 export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...props }, ref) => {
@@ -221,7 +239,7 @@ export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...pr
   return <BaseTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
 });
 
-export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showConfigOverlay, showResizeHandle, isDragging, hidden, size, x, y, w, h, ...props }, ref) => {
+export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, size, x, y, w, h, ...props }, ref) => {
   const classes = useStyles();
 
   const handleClick = (e) => {
@@ -264,7 +282,8 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
               { showConfigOverlay &&
                 <Fragment>
                   <div ref={ref.dragRef} className={classes.editCover}></div>
-              { showResizeHandle && <div className={classes.resizeHandle} ref={ref.resizeDragRef}></div> }
+                  { showResizeHandle && <div className={classes.resizeHandle} ref={ref.resizeDragRef}></div> }
+                  { showSettingsButton && <Icons.mdiCog className={classes.settingsHandle} onClick={onSettingsClick} /> }
                 </Fragment>
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">

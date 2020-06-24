@@ -1,14 +1,12 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 
 import { Typography, TextField, Switch, FormControlLabel, FormControl } from '@material-ui/core';
 import ColorPicker from '../components/colorpicker/ColorPicker';
 import DevicePicker from '../components/devicepicker/DevicePicker';
 
 //util for autogen configs
-export default function(definitions) {
-  //so we can update multiple items in the state at once
-  let preStateUpdate = {};
-
+export default function(definitions, _state, setState) {
+  //merge defaults with state to manage undefined stuff
   let def = {};
   
   Object.values(definitions).forEach((section) => {
@@ -17,7 +15,10 @@ export default function(definitions) {
     });
   });
 
-  const [state, setState] = useState(def);
+  const state = { ...def, ..._state };
+
+  //so we can update multiple items in the state at once
+  let preStateUpdate = {};
 
   function updateAffects(field, newVal) {
     field.affects.forEach(affected => {
@@ -64,7 +65,7 @@ export default function(definitions) {
   return [ret, setRet, mergeAll];
 }
 
-export const useSectionRenderer = (section, config, setConfig, state) => {
+export const useSectionRenderer = (section, config, setConfig, passState) => {
   const [cachedValues, setCachedValues] = useState(() => {
     return section.sectionOptions.reduce((sum, it) => {
       sum[it.name] = config[it.name];
@@ -77,7 +78,7 @@ export const useSectionRenderer = (section, config, setConfig, state) => {
       for(let i = 0; i < dependsOn.length; i++) {
         const dependency = dependsOn[i];
         if(typeof(dependency.name) === 'function') {
-          if(dependency.name(state) !== dependency.value) return true;
+          if(dependency.name(passState) !== dependency.value) return true;
         }
         else if(dependency.name && config[dependency.name] !== dependency.value) return true;
       }

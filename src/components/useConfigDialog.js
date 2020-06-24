@@ -3,9 +3,13 @@ import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, w
 
 export default function(label, renderProp) {
   const [openIndex, setOpenIndex] = useState(-1);
+
+  const open = openIndex !== -1;
+
+  const pLabel = open ? (typeof(label) === 'string' ? label : label(openIndex)) : '';
   
   const provided = (
-    <WMDialog label={label} renderProp={() => renderProp(openIndex)} open={openIndex !== -1} setOpenIndex={setOpenIndex} />
+    <WMDialog label={pLabel} renderProp={() => renderProp(openIndex)} open={open} setOpenIndex={setOpenIndex} />
   );
   
 
@@ -21,14 +25,16 @@ function WMDialogM({ label, renderProp, open, setOpenIndex, fullScreen }) {
 
   return (
     <Dialog fullWidth fullScreen={fullScreen} open={open} onClose={closeDialog} onExiting={() => setExiting(true)} onExited={() => setExiting(false)}>
-      <DialogTitle>{label}</DialogTitle>
-      <DialogContent>
+      {open &&
+      <Fragment>
+        <DialogTitle>{label}</DialogTitle>
         {renderProp()}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={closeDialog}>Cancel</Button>
-        {/*<Button onClick={handleSubmit}>Done</Button>*/}
-      </DialogActions>
+        <DialogActions>
+          <Button onClick={closeDialog}>Cancel</Button>
+          {/*<Button onClick={handleSubmit}>Done</Button>*/}
+        </DialogActions>
+      </Fragment>
+      }
     </Dialog>
   );
 }

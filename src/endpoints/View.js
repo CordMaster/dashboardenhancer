@@ -1,6 +1,6 @@
 import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
-import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab } from '@material-ui/core';
+import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent } from '@material-ui/core';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
@@ -10,6 +10,9 @@ import Tile, { DragPreviewTile, DragPreviewUnderTile } from '../Tile/Tile';
 import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { modifyImmutableCollection } from '../contexts/useCollection';
+import useConfigDialog from '../components/useConfigDialog';
+import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
+import TileConfig from '../Tile/TileConfig';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -110,7 +113,7 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
   }
 
-  const modifyTile = modifyImmutableCollection(dashboards[index].tiles, newTileTemplate, (state) => {
+  const modifyTiles = modifyImmutableCollection(dashboards[index].tiles, newTileTemplate, (state) => {
     modifyDashboards({ type: 'modify', index, data: { tiles: state } });
   });
 
@@ -123,6 +126,13 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   const [editMode, _setEditMode] = useState(false);
   const [addingTile, setAddingTile] = useState(null);
+
+  //the config dialog
+  const [providedConfigDialog, setConfigOpen] = useConfigDialog((tileIndex) => `Configure ${tiles[tileIndex].label ? tiles[tileIndex].label : "Tile"}`, (tileIndex) => {
+    const tile = tiles[tileIndex];
+
+    return <TileConfig tile={tile} modifyTile={(options) => modifyTiles(Object.assign(options, { index: tileIndex }))} />
+  });
 
   const setEditMode = state => {
     _setEditMode(state);
@@ -191,10 +201,10 @@ export default function({ index, className, isSmall, style, ...props }) {
 
           if(validateTilePosition(tileIndex, newPosition)) {
             if(item.isNew) {
-              modifyTile({ type: 'new', data: { position: newPosition } });
+              modifyTiles({ type: 'new', data: { position: newPosition } });
               setAddingTile(null);
             } else {
-              modifyTile({ type: 'modify', index: tileIndex, data: { position: newPosition } });
+              modifyTiles({ type: 'modify', index: tileIndex, data: { position: newPosition } });
             }
 
             return {};
@@ -208,7 +218,7 @@ export default function({ index, className, isSmall, style, ...props }) {
           }
 
           if(validateTilePosition(tileIndex, newPosition)) {
-            modifyTile({ type: 'modify', index: tileIndex, data: { position: newPosition } });
+            modifyTiles({ type: 'modify', index: tileIndex, data: { position: newPosition } });
 
             return {};
           }
@@ -311,7 +321,7 @@ export default function({ index, className, isSmall, style, ...props }) {
     drop: (item, monitor) => {
       const tileIndex = item.index;
 
-      modifyTile({ type: 'delete', index: tileIndex });
+      modifyTiles({ type: 'delete', index: tileIndex });
 
       return {};
     },
@@ -367,7 +377,7 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
     */
 
-    ret = <Tile key={tile.id} index={tileIndex} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} containerRef={containerRef} {...dimensions} />
+    ret = <Tile key={tile.id} index={tileIndex} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={() => setConfigOpen(tileIndex)} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {
@@ -447,6 +457,8 @@ export default function({ index, className, isSmall, style, ...props }) {
       { editMode &&
         <BackgroundGrid cols={cols} rows={rows} />
       }
+
+      {providedConfigDialog}
     </Paper>
   );
 }

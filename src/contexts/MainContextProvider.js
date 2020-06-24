@@ -28,6 +28,11 @@ function MainContextProvider(props) {
       tiles: [
         {
           id: 't1',
+          type: 'iframe',
+          label: 'Tile 1',
+          options: {
+
+          },
           position: {
             x: 1,
             y: 1,
@@ -38,6 +43,11 @@ function MainContextProvider(props) {
 
         {
           id: 't2',
+          type: 'hubitatTile',
+          label: 'Tile 2',
+          options: {
+
+          },
           position: {
             x: 6,
             y: 6,
@@ -57,7 +67,8 @@ function MainContextProvider(props) {
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
   //{ name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
-  const [config, setConfig, mergeAllConfig] = usseSettingsDefinition(settingsDefinitons);
+  const [_config, _setConfig] = useState();
+  const [config, setConfig, mergeAllConfig] = usseSettingsDefinition(settingsDefinitons, _config, _setConfig);
 
   //locally stored lock
   const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? -1 : parseInt(window.localStorage.getItem('locked')));
