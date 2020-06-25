@@ -3,10 +3,9 @@ import { openWeatherToken } from "../Constants";
 export default {
   'title': {
     sectionLabel: 'Title',
-    dependsOn: [{ name: 'iconsOnly', value: false }],
+    dependsOn: [{ name: 'drawer.showTitle', value: true }],
     sectionOptions: [
-      { name: 'showTitle', label: 'Show Title', type: 'boolean', default: true },
-      { name: 'title', label: 'Title', type: 'text', default: 'Panel', dependsOn: [{ name: 'showTitle', value: true }] }
+      { name: 'title', label: 'Title', type: 'text', default: 'Panel' }
     ]
   },
 
@@ -23,16 +22,17 @@ export default {
   'drawer': {
     sectionLabel: 'Drawer Settings',
     sectionOptions: [
-      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false, affects: [{ value: true, name: 'showTitle', setTo: false }, { value: true, name: 'showClock', setTo: false }, { value: true, name: 'showWeather', setTo: false }] },
+      { name: 'iconsOnly', label: 'Icons only', type: 'boolean', default: false, affects: [{ value: true, name: 'drawer.showTitle', setTo: false }, { value: true, name: 'drawer.showClock', setTo: false }, { value: true, name: 'drawer.showWeather', setTo: false }] },
       { name: 'showBadges', label: 'Show badges', type: 'boolean', default: false },
-      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, dependsOn:[{ name: 'iconsOnly', value: false }], disableOnDepends: true, affects: [{ value: false, name: 'showClockAttributes', setTo: false }] },
-      { name: 'showWeather', label: 'Show weather', type: 'boolean', default: false, dependsOn: [{ name: () => openWeatherToken !== null, value: true }, { name: 'iconsOnly', value: false }], disableOnDepends: true }
+      { name: 'showTitle', label: 'Show Title', type: 'boolean', default: true , dependsOn:[{ name: 'drawer.iconsOnly', value: false }],  disableOnDepends: true },
+      { name: 'showClock', label: 'Show clock', type: 'boolean', default: true, dependsOn:[{ name: 'drawer.iconsOnly', value: false }], disableOnDepends: true, affects: [{ value: false, name: 'clock.showClockAttributes', setTo: false }] },
+      { name: 'showWeather', label: 'Show weather', type: 'boolean', default: false, dependsOn: [{ name: () => openWeatherToken !== null, value: true }, { name: 'drawer.iconsOnly', value: false }], disableOnDepends: true }
     ]
   },
 
   'clock': {
     sectionLabel: 'Clock Settings',
-    dependsOn: [{ name: 'showClock', value: true }],
+    dependsOn: [{ name: 'drawer.showClock', value: true }],
     sectionOptions: [
       { name: 'clockOnTop', label: 'Show clock on top', type: 'boolean', default: false },
       { name: 'showSeconds', label: 'Show seconds', type: 'boolean', default: true },
@@ -43,7 +43,7 @@ export default {
 
   'clockAttrs': {
     sectionLabel: 'Clock Device Attributes',
-    dependsOn: [{ name: 'showClockAttributes', value: true }],
+    dependsOn: [{ name: 'clock.showClockAttributes', value: true }],
     sectionOptions: [
       { name: 'clockAttr1Label', label: '1st attribute label', type: 'text', default: 'Attr1' },
       { name: 'clockAttr1', label: '1st attribute', type: 'deviceattribute', default: { device: '', attribute: '' } },
@@ -55,19 +55,19 @@ export default {
 
   'weather': {
     sectionLabel: 'Weather Settings',
-    dependsOn: [{ name: 'showWeather', value: true }],
+    dependsOn: [{ name: 'drawer.showWeather', value: true }],
     sectionOptions: [
       { name: 'weatherUpdateIntervalInMin', label: 'Weather update interval (in minutes)', type: 'number', default: 5 },
       { name: 'useHubDeviceForIndoorTemp', label: 'Use a hub device for the indoor temperature', type: 'boolean', default: false },
-      { name: 'indoorTempHubDevice', label: 'Indoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'useHubDeviceForIndoorTemp', value: true }] },
+      { name: 'indoorTempHubDevice', label: 'Indoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'weather.useHubDeviceForIndoorTemp', value: true }] },
       { name: 'useHubDeviceForOutdoorTemp', label: 'Use a hub device for the outdoor temperature', type: 'boolean', default: false },
-      { name: 'outdoorTempHubDevice', label: 'Outdoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'useHubDeviceForOutdoorTemp', value: true }] },
+      { name: 'outdoorTempHubDevice', label: 'Outdoor temperature device', type: 'deviceattribute', default: { device: '', attribute: '' }, dependsOn: [{ name: 'weather.useHubDeviceForOutdoorTemp', value: true }] },
     ]
   },
 
   'weatherLocation': {
     sectionLabel: 'Weather Location Settings',
-    dependsOn: [{ name: 'showWeather', value: true }],
+    dependsOn: [{ name: 'drawer.showWeather', value: true }],
     saveBuffer: true,
     sectionOptions: [
       { name: 'latitude', label: 'Latitude', type: 'number', default: '' },
@@ -95,7 +95,7 @@ export default {
   'themeColors': {
     sectionLabel: 'Custom Theme Colors',
     saveBuffer: true,
-    dependsOn: [{ name: 'overrideColors', value: true }],
+    dependsOn: [{ name: 'theme.overrideColors', value: true }],
     sectionOptions: [
       { name: 'overrideBG', label: 'Background Color', type: 'color', default: { r: 50, b: 50, g: 50, alpha: 1.0 } },
       { name: 'overrideFG', label: 'Foreground Color', type: 'color', default: { r: 255, b: 255, g: 255, alpha: 1.0 } },
@@ -112,7 +112,7 @@ export default {
     ]
   },
 
-  'none': {
+  'other': {
     noShow: true,
     sectionOptions: [
       { name: 'defaultDashboard', type: 'number', default: -1 },

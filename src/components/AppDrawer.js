@@ -84,6 +84,9 @@ function AppDrawer({ location }) {
   const classes = useStyles();
 
   const { dashboards, config } = useContext(MainContext);
+
+  const drawerConfig = config.drawer;
+
   const { sync } = useContext(OpenWeatherContext);
 
   const subLocation = location.pathname.substr(1);
@@ -91,18 +94,18 @@ function AppDrawer({ location }) {
   const [locked, openDialog, providedDialog] = useLock();
 
   const uiDashboards = dashboards.map((dashboard, index) => {
-    return <DashboardDrawerItem key={dashboard.id} index={index} dashboard={dashboard} location={subLocation} hideText={config.iconsOnly} />
+    return <DashboardDrawerItem key={dashboard.id} index={index} dashboard={dashboard} location={subLocation} hideText={drawerConfig.iconsOnly} />
   });
 
   return (
-    <Drawer variant="permanent" className={config.iconsOnly ? classes.drawerIconsOnly : classes.drawer} classes={{ paper: config.iconsOnly ? classes.drawerIconsOnly : classes.drawer }}>
+    <Drawer variant="permanent" className={config.drawer.iconsOnly ? classes.drawerIconsOnly : classes.drawer} classes={{ paper: drawerConfig.iconsOnly ? classes.drawerIconsOnly : classes.drawer }}>
       <List className={classes.drawerList}>
-        {config.showTitle ?
+        {drawerConfig.showTitle ?
           <Fragment>
             <ListItem className={classes.drawerAppBar}>
               <ListItemText disableTypography>
                 <Typography variant="h6">
-                  {config.title}
+                  {config.title.title}
                 </Typography>
               </ListItemText>
             </ListItem>
@@ -111,7 +114,7 @@ function AppDrawer({ location }) {
           null
         }
 
-        {config.showClock && config.clockOnTop ?
+        {drawerConfig.showClock && config.clock.clockOnTop ?
           <Fragment>
             <ClockDrawerItem />
             <Divider />
@@ -126,14 +129,14 @@ function AppDrawer({ location }) {
         <div className={classes.listItemSpacer} />
         <Divider />
 
-        {config.showWeather && 
+        {drawerConfig.showWeather && 
           <Fragment>
             <WeatherWidget />
             <Divider />
           </Fragment>
         }
 
-        {config.showClock && !config.clockOnTop ?
+        {drawerConfig.showClock && !config.clock.clockOnTop ?
           <Fragment>
             <ClockDrawerItem />
             <Divider />
@@ -143,16 +146,16 @@ function AppDrawer({ location }) {
 
         <ListItem className={classes.bottomListContainer}>
           <List className={classes.bottomList}>
-              <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} disabled={locked !== -1 && config.lockSettings}>
+              <ListItem button className={`${classes.bottomListItem} ${!drawerConfig.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} disabled={locked !== -1 && config.lock.lockSettings}>
                 <Icons.mdiCog color="action" />
               </ListItem>
               
               <div>
-                <ListItem button className={`${classes.bottomListItem}  ${!config.iconsOnly ? 'left' : 'bottom'}`} onClick={sync}>
+                <ListItem button className={`${classes.bottomListItem}  ${!drawerConfig.iconsOnly ? 'left' : 'bottom'}`} onClick={sync}>
                   <Icons.mdiSync color="action" />
                 </ListItem>
 
-                <ListItem button className={`${classes.bottomListItem} ${!config.iconsOnly && 'left'}`} onClick={openDialog}>
+                <ListItem button className={`${classes.bottomListItem} ${!drawerConfig.iconsOnly && 'left'}`} onClick={openDialog}>
                   {locked !== -1 ? <Icons.mdiLockOpen color="action" /> : <Icons.mdiLock color="action" />}
                 </ListItem>
               </div>
@@ -200,7 +203,7 @@ function DashboardDrawerItem({ index, dashboard, location, ...props }) {
 
     return (
       <Fragment>
-        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} disabled={locked !== -1 && config.lockFully && dashboard.lock} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
+        <DrawerItem label={dashboard.label} badgeCount={notifications} Icon={Icon} disabled={locked !== -1 && config.lock.lockFully && dashboard.lock} component={Link} to={`/${index}/${window.location.search}`} selected={index === parseInt(location)} {...props} />
         <Divider />
       </Fragment>
     );

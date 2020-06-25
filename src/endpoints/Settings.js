@@ -132,7 +132,7 @@ const useDSSStyles = makeStyles(theme => ({
 const DerrivedSettingsSection = React.memo(({ sectionName, section, config, setConfig, state }) => {
   const classes = useDSSStyles();
 
-  const [children, handleSave, noShow] = useSectionRenderer(section, config, setConfig, state);
+  const [children, handleSave, noShow] = useSectionRenderer(sectionName, section, config, setConfig, state);
 
   return (
     <SettingsSection className={noShow && classes.noDisplay} key={sectionName} title={section.sectionLabel} button={section.saveBuffer} buttonLabel="Apply" onButtonClick={handleSave}>
@@ -170,8 +170,8 @@ function DashboardsSettings() {
   const classes = usePSStyles();
 
   const { dashboards, modifyDashboards, config, setConfig } = useContext(MainContext);
-  const defaultDashboard = config.defaultDashboard;
-  const setDefaultDashboard = setConfig.defaultDashboard;
+  const defaultDashboard = config.other.defaultDashboard;
+  const setDefaultDashboard = setConfig.other.defaultDashboard;
 
   const [newText, setNewText] = useState('');
 

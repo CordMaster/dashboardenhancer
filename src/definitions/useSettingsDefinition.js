@@ -1,21 +1,27 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, Fragment, useEffect, useMemo } from 'react';
 
 import { Typography, TextField, Switch, FormControlLabel, FormControl } from '@material-ui/core';
 import ColorPicker from '../components/colorpicker/ColorPicker';
 import DevicePicker from '../components/devicepicker/DevicePicker';
+import deepmerge from 'deepmerge';
 
 //util for autogen configs
 export default function(definitions, _state, setState) {
   //merge defaults with state to manage undefined stuff
-  let def = {};
-  
-  Object.values(definitions).forEach((section) => {
-    section.sectionOptions.forEach(field => {
-      def[field.name] = field.default;
-    });
-  });
+  const def = useMemo(() => {
+    let def = {};
 
-  const state = { ...def, ..._state };
+    Object.entries(definitions).forEach(([sectionName, section]) => {
+      def[sectionName] = {};
+      section.sectionOptions.forEach(field => {
+        def[sectionName][field.name] = field.default;
+      });
+    });
+
+    return def;
+  }, []);
+
+  const state = useMemo(() => deepmerge(def, _state), [def, _state]);
 
   //so we can update multiple items in the state at once
   let preStateUpdate = {};
@@ -23,52 +29,55 @@ export default function(definitions, _state, setState) {
   function updateAffects(field, newVal) {
     field.affects.forEach(affected => {
       if(newVal === affected.value) {
-        preStateUpdate[affected.name] = affected.setTo;
+        const [afSectionName, afName] = affected.name.split('.');
+        preStateUpdate[afSectionName][afName] = affected.setTo;
   
         //recursive changes
         //find field affected
-        const affectedField = Object.values(definitions).reduce((sum, section) => {
-          const affectedFieldIndex = section.sectionOptions.findIndex(field => field.name === affected.name);
-          if(affectedFieldIndex !== -1) return section.sectionOptions;
-          else return sum;
-        }, []);
+        const [affectedSectionName, affectedSection] = Object.entries(definitions).find(([otherSectionName, section]) => otherSectionName === afSectionName);
+        const affectedField = affectedSection.sectionOptions.find(field => field.name === afName);
 
-        if(affectedField.affects) updateAffects(affectedField, affected.setTo);
+        if(affectedField) {
+          if(affectedField.affects) updateAffects(affectedField, affected.setTo);
+        } else {
+          //debug
+          console.error('Could not find ' + affected.name);
+        }
       };
     });
   }
 
-  let ret = {};
   let setRet = {};
-  Object.values(definitions).forEach((section) => {
+  Object.entries(definitions).forEach(([sectionName, section]) => {
+    setRet[sectionName] = {};
+    preStateUpdate[sectionName] = {};
+
     section.sectionOptions.forEach(field => {
-    
-    ret[field.name] = state[field.name];
-    setRet[field.name] = (newVal) => {
-      //set the state
-      preStateUpdate[field.name] = newVal;
+      setRet[sectionName][field.name] = (newVal) => {
+        //set the state
+        preStateUpdate[sectionName][field.name] = newVal;
 
-      //set the other states
-      if(field.affects) {
-        updateAffects(field, newVal);
+        //set the other states
+        if(field.affects) {
+          updateAffects(field, newVal);
+        }
+
+        setState(deepmerge(state, preStateUpdate));
       }
-
-      setState(Object.assign({}, state, preStateUpdate));
-    }
     });
   });
 
   const mergeAll = (other) => {
-    setState(Object.assign({}, state, other));
+    setState(deepmerge({}, state, other));
   }
 
-  return [ret, setRet, mergeAll];
+  return [state, setRet, mergeAll];
 }
 
-export const useSectionRenderer = (section, config, setConfig, passState) => {
+export const useSectionRenderer = (sectionName, section, config, setConfig, passState) => {
   const [cachedValues, setCachedValues] = useState(() => {
     return section.sectionOptions.reduce((sum, it) => {
-      sum[it.name] = config[it.name];
+      sum[it.name] = config[sectionName][it.name];
       return sum;
     }, {});
   });
@@ -80,7 +89,10 @@ export const useSectionRenderer = (section, config, setConfig, passState) => {
         if(typeof(dependency.name) === 'function') {
           if(dependency.name(passState) !== dependency.value) return true;
         }
-        else if(dependency.name && config[dependency.name] !== dependency.value) return true;
+        else if(dependency.name) {
+          const [sectionName, name] = dependency.name.split('.');
+          if(config[sectionName][name] !== dependency.value) return true;
+        }
       }
     }
     return false;
@@ -90,7 +102,7 @@ export const useSectionRenderer = (section, config, setConfig, passState) => {
     if(section.saveBuffer) {
       setCachedValues({ ...cachedValues, [name]: value });
     } else {
-      setConfig[name](value);
+      setConfig[sectionName][name](value);
     }
   }
 
@@ -121,12 +133,12 @@ export const useSectionRenderer = (section, config, setConfig, passState) => {
     const evaluatedDepends = evaluateDependsOn(setting.dependsOn);
     const disabled = evaluatedDepends && setting.disableOnDepends;
     const hidden = evaluatedDepends && !setting.disableOnDepends;
-    return !hidden && <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[setting.name]} disabled={disabled} setValue={value => handleChange(setting.name, value)} />;
+    return !hidden && <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[sectionName][setting.name]} disabled={disabled} setValue={value => handleChange(setting.name, value)} />;
   });
 
   const handleSave = () => {
     section.sectionOptions.forEach(it => {
-      setConfig[it.name](cachedValues[it.name]);
+      setConfig[sectionName][it.name](cachedValues[it.name]);
     });
   }
 

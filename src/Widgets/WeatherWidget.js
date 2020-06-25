@@ -71,11 +71,13 @@ export default function() {
   const classes = useStyles();
 
   const { config } = useContext(MainContext);
+  const weatherConfig = config.weatherConfig;
+
   const { devices } = useContext(HubContext);
   const { loaded, error, current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
-  const indoorTemp = config.useHubDeviceForIndoorTemp && config.indoorTempHubDevice.device && config.indoorTempHubDevice.attribute ? Math.round(devices[config.indoorTempHubDevice.device].attr[config.indoorTempHubDevice.attribute].value) : false;
-  const outdoorTemp = Math.round(config.useHubDeviceForOutdoorTemp && config.outdoorTempHubDevice.device && config.outdoorTempHubDevice.attribute ? devices[config.outdoorTempHubDevice.device].attr[config.outdoorTempHubDevice.attribute].value : (loaded && !error ? currentWeather.temp : 0));
+  const indoorTemp = weatherConfig.useHubDeviceForIndoorTemp && config.indoorTempHubDevice.device && config.indoorTempHubDevice.attribute ? Math.round(devices[config.indoorTempHubDevice.device].attr[config.indoorTempHubDevice.attribute].value) : false;
+  const outdoorTemp = Math.round(weatherConfig.useHubDeviceForOutdoorTemp && config.outdoorTempHubDevice.device && config.outdoorTempHubDevice.attribute ? devices[config.outdoorTempHubDevice.device].attr[config.outdoorTempHubDevice.attribute].value : (loaded && !error ? currentWeather.temp : 0));
 
   const futureWeatherParsed = loaded && !error ? futureWeather.map((data) => {
     return {
@@ -100,7 +102,7 @@ export default function() {
               <Grid container direction ="row" alignItems="center">
                 
                 <Grid item xs={4}>
-                  { config.useHubDeviceForIndoorTemp && <CurrentOverview current={indoorTemp} /> }
+                  { weatherConfig.useHubDeviceForIndoorTemp && <CurrentOverview current={indoorTemp} /> }
                 </Grid>
 
                 <Grid item xs={4}>

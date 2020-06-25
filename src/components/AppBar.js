@@ -37,7 +37,7 @@ function AppBar({ location, iconsOnly }) {
   for(let i = 0; i < Math.min(dashboards.length, 4); i++) {
     const dashboard = dashboards[i];
     const Icon = getIcon(dashboard.iconName);
-    uiDashboards[i] = <BottomNavigationAction key={dashboard.id} disabled={locked !== -1 && config.lockFully && dashboard.lock} icon={<Icon />} />
+    uiDashboards[i] = <BottomNavigationAction key={dashboard.id} disabled={locked !== -1 && config.lock.lockFully && dashboard.lock} icon={<Icon />} />
   }
   uiDashboards[4] = <BottomNavigationAction key={"more"} icon={<Icons.mdiDotsHorizontal />} />
 

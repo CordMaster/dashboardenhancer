@@ -9,14 +9,15 @@ export const OpenWeatherContext = React.createContext({});
 
 export default function(props) {
   const { config } = useContext(MainContext);
+  const weatherConfig = config.weather;
 
-  const position = useMemo(() => { return { coords: { latitude: config.latitude, longitude: config.longitude } } }, [config.latitude, config.longitude]);
+  const position = useMemo(() => { return { coords: { latitude: weatherConfig.latitude, longitude: weatherConfig.longitude } } }, [weatherConfig.latitude, weatherConfig.longitude]);
 
   /*useEffect(() => {
     navigator.geolocation.getCurrentPosition((gotPosition) => setPosition(gotPosition));
   }, []);*/
 
-  const [loaded, error, sync, data] = useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, openWeatherToken && position.coords.latitude && position.coords.longitude, 1000 * 60 * config.weatherUpdateIntervalInMin);
+  const [loaded, error, sync, data] = useCachedDataSource('weather', `https://api.openweathermap.org/data/2.5/onecall?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=imperial&appid=${openWeatherToken}`, openWeatherToken && position.coords.latitude && position.coords.longitude, 1000 * 60 * weatherConfig.weatherUpdateIntervalInMin);
   const parsedWeather = useMemo(() => {
     return data ? {
       loaded: true,

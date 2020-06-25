@@ -67,7 +67,7 @@ function MainContextProvider(props) {
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
   //{ name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
-  const [_config, _setConfig] = useState();
+  const [_config, _setConfig] = useState({});
   const [config, setConfig, mergeAllConfig] = usseSettingsDefinition(settingsDefinitons, _config, _setConfig);
 
   //locally stored lock
@@ -90,28 +90,31 @@ function MainContextProvider(props) {
   const [genTheme, setGenTheme] = useState(createMuiTheme({}));
   
   useEffect(() => {
+    console.log('update');
+    const themeColorsConfig = config.themeColors;
+
     let preGen = {
       palette: {
-        type: config.darkTheme ? 'dark' : 'light',
+        type: config.theme.darkTheme ? 'dark' : 'light',
       },
 
       typography: {
-        fontSize: config.fontSize
+        fontSize: config.font.fontSize
       }
     }
 
     if(config.overrideColors) {
-      preGen.palette.primary = { main: Color(config.overridePrimary).rgb().string() };
-      preGen.palette.secondary = { main: Color(config.overrideSecondary).rgb().string() };
-      preGen.palette.background = { paper: Color(config.overrideBG).rgb().string() };
-      preGen.palette.text = { primary: Color(config.overrideFG).rgb().string() };
+      preGen.palette.primary = { main: Color(themeColorsConfig.overridePrimary).rgb().string() };
+      preGen.palette.secondary = { main: Color(themeColorsConfig.overrideSecondary).rgb().string() };
+      preGen.palette.background = { paper: Color(themeColorsConfig.overrideBG).rgb().string() };
+      preGen.palette.text = { primary: Color(themeColorsConfig.overrideFG).rgb().string() };
     }
 
     let theme = createMuiTheme(preGen);
     theme = responsiveFontSizes(theme);
 
     setGenTheme(theme);
-  }, [config.theme, config.fontSize, config.overrideColors, config.overrideBG, config.overrideFG, config.overridePrimary, config.overrideSecondary]);
+  }, [config.theme, config.font, config.themeColors]);
 
   //state save/load
   useEffect(() => {

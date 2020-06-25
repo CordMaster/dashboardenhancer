@@ -9,6 +9,9 @@ function timeStr(num) {
 
 function Clock() {
   const { config } = useContext(MainContext);
+  const clockConfig = config.clock;
+  const clockAttrsConfig = config.clockAttrs;
+
   const { devices } = useContext(HubContext);
 
   const [time, setTime] = useState(new Date());
@@ -25,21 +28,21 @@ function Clock() {
     }
   }, [setTime]);
 
-  const attr1 = config.clockAttr1.device && config.clockAttr1.attribute && devices[config.clockAttr1.device].attr[config.clockAttr1.attribute].value;
-  const attr2 = config.clockAttr2.device && config.clockAttr2.attribute && devices[config.clockAttr2.device].attr[config.clockAttr2.attribute].value;
+  const attr1 = clockAttrsConfig.clockAttr1.device && clockAttrsConfig.clockAttr1.attribute && devices[clockAttrsConfig.clockAttr1.device].attr[clockAttrsConfig.clockAttr1.attribute].value;
+  const attr2 = clockAttrsConfig.clockAttr2.device && clockAttrsConfig.clockAttr2.attribute && devices[clockAttrsConfig.clockAttr2.device].attr[clockAttrsConfig.clockAttr2.attribute].value;
   return (
     <Fragment>
-      <Typography>{config.showDate && time.toLocaleDateString()}</Typography>
-      <Typography variant="h6">{time.getHours() > 12 ? time.getHours() - 12 : time.getHours()}:{timeStr(time.getMinutes())}{config.showSeconds && `:${timeStr(time.getSeconds())}`} {time.getHours() > 12 ? 'PM' : 'AM'}</Typography>
+      <Typography>{clockConfig.showDate && time.toLocaleDateString()}</Typography>
+      <Typography variant="h6">{time.getHours() > 12 ? time.getHours() - 12 : time.getHours()}:{timeStr(time.getMinutes())}{clockConfig.showSeconds && `:${timeStr(time.getSeconds())}`} {time.getHours() > 12 ? 'PM' : 'AM'}</Typography>
       
-      {config.showClockAttributes &&
+      {clockAttrsConfig.showClockAttributes &&
         <Grid container direction="row" spacing={3}>
           <Grid item>
-            <Typography variant="caption">{config.clockAttr1Label}: {attr1}</Typography>
+            <Typography variant="caption">{clockAttrsConfig.clockAttr1Label}: {attr1}</Typography>
           </Grid>
 
           <Grid item>
-            <Typography variant="caption">{config.clockAttr2Label}: {attr2}</Typography>
+            <Typography variant="caption">{clockAttrsConfig.clockAttr2Label}: {attr2}</Typography>
           </Grid>
         </Grid>
       }
