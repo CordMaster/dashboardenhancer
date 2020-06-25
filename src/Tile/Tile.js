@@ -79,23 +79,9 @@ const useStyles = makeStyles(theme => ({
 
     backgroundColor: 'rgba(0, 0, 0, 0.25)',
 
-    cursor: 'move'
-  },
+    cursor: 'move',
 
-  resizeHandle: {
-    position: 'absolute',
-
-    right: -theme.spacing(2),
-    bottom: -theme.spacing(2),
-
-    width: theme.spacing(4),
-    height: theme.spacing(4),
-
-    borderRadius: theme.spacing(2),
-
-    backgroundColor: theme.palette.primary.main,
-
-    cursor: 'nwse-resize'
+    zIndex: 10
   },
 
   settingsHandle: {
@@ -113,6 +99,26 @@ const useStyles = makeStyles(theme => ({
     '&:hover': {
       transform: 'scale(1.3)'
     },
+
+    zIndex: 20
+  },
+
+  resizeHandle: {
+    position: 'absolute',
+
+    right: -theme.spacing(2),
+    bottom: -theme.spacing(2),
+
+    width: theme.spacing(4),
+    height: theme.spacing(4),
+
+    borderRadius: theme.spacing(2),
+
+    backgroundColor: theme.palette.primary.main,
+
+    cursor: 'nwse-resize',
+
+    zIndex: 20
   },
 
   featuredContainer: {
@@ -126,7 +132,17 @@ const useStyles = makeStyles(theme => ({
 
     fontSize: '3em',
 
-    transition:  ['transform 250ms linear', 'top 250ms linear', 'left 250ms linear', 'font-size 250ms linear']
+    transition:  ['transform 250ms linear', 'top 250ms linear', 'left 250ms linear', 'font-size 250ms linear'],
+
+    '&.fill': {
+      top: 0,
+      left: 0,
+
+      width: '100%',
+      height: '100%',
+
+      transform: 'none'
+    }
   },
 
   textContainer: {
@@ -239,7 +255,7 @@ export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...pr
   return <BaseTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
 });
 
-export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, size, x, y, w, h, ...props }, ref) => {
+export const BaseTile = React.forwardRef(({ label, fillContent, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, size, x, y, w, h, ...props }, ref) => {
   const classes = useStyles();
 
   const handleClick = (e) => {
@@ -287,7 +303,7 @@ export const BaseTile = React.forwardRef(({ label, primaryContent, secondaryCont
                 </Fragment>
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">
-                <div className={`${classes.featuredContainer} ${popped ? 'popped' : ''}`}>
+                <div className={`${classes.featuredContainer} ${fillContent ? 'fill' : ''} ${popped ? 'popped' : ''}`}>
                     { primaryContent }
                     { secondaryContent }
                     { outerTransitionState === 'entered' &&

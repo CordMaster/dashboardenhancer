@@ -13,6 +13,7 @@ import { modifyImmutableCollection } from '../contexts/useCollection';
 import useConfigDialog from '../components/useConfigDialog';
 import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import TileConfig from '../Tile/TileConfig';
+import IFrameTile from '../Tile/IFrameTile';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -101,10 +102,16 @@ export default function({ index, className, isSmall, style, ...props }) {
   const smallRows = window.innerHeight > window.innerWidth ? 5 : 3;
   const smallCols = window.innerHeight > window.innerWidth ? 3 : 5;
 
-  const rows = isSmall ? smallRows : config.panelRows;
-  const cols = isSmall ? smallCols : config.panelCols;
+  const rows = isSmall ? smallRows : config.panel.panelRows;
+  const cols = isSmall ? smallCols : config.panel.panelCols;
 
   const newTileTemplate = {
+    type: 'iframe',
+
+    options: {
+
+    },
+
     position: {
       x: 1,
       y: rows - 3,
@@ -128,10 +135,15 @@ export default function({ index, className, isSmall, style, ...props }) {
   const [addingTile, setAddingTile] = useState(null);
 
   //the config dialog
+  const [optionBuffer, setOptionBuffer] = useState({});
+
   const [providedConfigDialog, setConfigOpen] = useConfigDialog((tileIndex) => `Configure ${tiles[tileIndex].label ? tiles[tileIndex].label : "Tile"}`, (tileIndex) => {
     const tile = tiles[tileIndex];
 
-    return <TileConfig tile={tile} modifyTile={(options) => modifyTiles(Object.assign(options, { index: tileIndex }))} />
+    return <TileConfig tile={tile} optionBuffer={optionBuffer} setOptionBuffer={setOptionBuffer} />
+  }, (tileIndex) => {
+    modifyTiles({ type: 'modify', index: tileIndex, data: { options: optionBuffer } });
+    setOptionBuffer({});
   });
 
   const setEditMode = state => {
@@ -296,6 +308,7 @@ export default function({ index, className, isSmall, style, ...props }) {
       const tilePosition = item.tile.position;
 
       const newTile = {
+        ...item.tile,
         position: {
           ...tilePosition,
           x: newTileTemplate.position.x,
@@ -377,7 +390,15 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
     */
 
-    ret = <Tile key={tile.id} index={tileIndex} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={() => setConfigOpen(tileIndex)} containerRef={containerRef} {...dimensions} />
+    const handleConfigOpen = () => {
+      setOptionBuffer(tile.options);
+      setConfigOpen(tileIndex);
+    }
+
+    let Type = Tile;
+    if(tile.type === 'iframe') Type = IFrameTile;
+
+    ret = <Type key={tile.id} index={tileIndex} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {

@@ -29,9 +29,15 @@ function MainContextProvider(props) {
         {
           id: 't1',
           type: 'iframe',
-          label: 'Tile 1',
           options: {
+            label: {
+              showLabel: true,
+              label: 'Tile 1'
+            },
 
+            iframe: {
+              src: ''
+            }
           },
           position: {
             x: 1,
@@ -44,9 +50,11 @@ function MainContextProvider(props) {
         {
           id: 't2',
           type: 'hubitatTile',
-          label: 'Tile 2',
           options: {
-
+            label: {
+              showLabel: true,
+              label: 'Tile 2'
+            }
           },
           position: {
             x: 6,
@@ -74,7 +82,7 @@ function MainContextProvider(props) {
   const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? -1 : parseInt(window.localStorage.getItem('locked')));
 
   const setLocked = (desired) => {
-    const code = config.lockCode;
+    const code = config.lock.lockCode;
     if (desired === false) {
       _setLocked(-1);
       window.localStorage.setItem('locked', -1);
@@ -91,7 +99,7 @@ function MainContextProvider(props) {
   
   useEffect(() => {
     console.log('update');
-    const themeColorsConfig = config.themeColors;
+    const themeColorsConfig = config.theme.themeColors;
 
     let preGen = {
       palette: {
@@ -103,7 +111,7 @@ function MainContextProvider(props) {
       }
     }
 
-    if(config.overrideColors) {
+    if(config.theme.overrideColors) {
       preGen.palette.primary = { main: Color(themeColorsConfig.overridePrimary).rgb().string() };
       preGen.palette.secondary = { main: Color(themeColorsConfig.overrideSecondary).rgb().string() };
       preGen.palette.background = { paper: Color(themeColorsConfig.overrideBG).rgb().string() };

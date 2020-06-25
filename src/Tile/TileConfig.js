@@ -1,17 +1,17 @@
 import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
-import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent } from '@material-ui/core';
+import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent, Button } from '@material-ui/core';
 import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import useSettingsDefinition, { useSectionRenderer } from '../definitions/useSettingsDefinition';
 
-export default function({ tile, modifyTile }) {
+export default function({ tile, modifyTile, optionBuffer, setOptionBuffer }) {
   const [currentTab, setCurrentTab] = useState(0);
 
-  const generalSections = tileConfigDefinitions['all'];
+  const generalSections = tileConfigDefinitions['general'];
   const typeSections = tileConfigDefinitions[tile.type];
 
   const allSections = { ...generalSections, ...typeSections };
 
-  const [optionBuffer, setOptionBuffer] = useState(tile.options);
+  const [currentSectionName, currentSection] = Object.entries(allSections)[currentTab];
 
   const [tileOptions, setTileOptions] = useSettingsDefinition(allSections, optionBuffer, (newState) => {
     setOptionBuffer(newState);
@@ -31,14 +31,14 @@ export default function({ tile, modifyTile }) {
       </Paper>
 
       <DialogContent>
-        <TileConfigSection section={Object.values(allSections)[currentTab]} tileOptions={tileOptions} setTileOptions={setTileOptions} />
+        <TileConfigSection sectionName={currentSectionName} section={currentSection} tileOptions={tileOptions} setTileOptions={setTileOptions} />
       </DialogContent>
     </Fragment>
   );
 }
 
-function TileConfigSection({ section, tileOptions, setTileOptions }) {
-  const [provided, handleSave, noShow] = useSectionRenderer(section, tileOptions, setTileOptions);
+function TileConfigSection({ sectionName, section, tileOptions, setTileOptions }) {
+  const [provided, handleSave, noShow] = useSectionRenderer(sectionName, section, tileOptions, setTileOptions);
 
   return (
     <Fragment>

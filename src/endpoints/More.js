@@ -31,7 +31,7 @@ function More({ index }) {
   if(dashboards.length > 4) {
     for(let i = 4; i < dashboards.length; i++) {
       const dashboard = dashboards[i];
-      uiDashboards.push(<ImprovedListItem key={dashboard.id} label={dashboard.label} disabled={locked !== -1 && config.lockFully && dashboard.lock} Icon={getIcon(dashboard.iconName)} onClick={() => pushHistoryPreserve(history, `/${i}/`)} />);
+      uiDashboards.push(<ImprovedListItem key={dashboard.id} label={dashboard.label} disabled={locked !== -1 && config.lock.lockFully && dashboard.lock} Icon={getIcon(dashboard.iconName)} onClick={() => pushHistoryPreserve(history, `/${i}/`)} />);
     }
   } else uiDashboards.push(<Fragment key={"none"}><ListItem key={"none"} className={classes.listItem} disabled><ListItemText>No other panels</ListItemText></ListItem><Divider /></Fragment>);
 
@@ -51,7 +51,7 @@ function More({ index }) {
         <Divider />
 
         <ImprovedListItem label="Reload Weather" Icon={Icons.mdiSync} onClick={sync} />
-        <ImprovedListItem label="Settings" Icon={Icons.mdiCog} disabled={locked !== -1 && config.lockSettings} onClick={() => pushHistoryPreserve(history, '/settings/')} />
+        <ImprovedListItem label="Settings" Icon={Icons.mdiCog} disabled={locked !== -1 && config.lock.lockSettings} onClick={() => pushHistoryPreserve(history, '/settings/')} />
       </List>
     </Paper>
   );

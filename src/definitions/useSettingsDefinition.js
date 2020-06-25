@@ -91,7 +91,13 @@ export const useSectionRenderer = (sectionName, section, config, setConfig, pass
         }
         else if(dependency.name) {
           const [sectionName, name] = dependency.name.split('.');
-          if(config[sectionName][name] !== dependency.value) return true;
+          
+          //debug
+          if(setConfig[sectionName] && setConfig[sectionName][name]) {
+            if(config[sectionName][name] !== dependency.value) return true;
+          } else {
+            console.error(`Could not find + ${sectionName}.${name}`);
+          }
         }
       }
     }
