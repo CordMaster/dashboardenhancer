@@ -10,15 +10,19 @@ export default [
         type: 'icon',
 
         iconName: {
+          type: 'icon',
+
           conditions: [
             {
-              attribute: 'switch',
+              attributeName: 'switch',
+              comparator: '===',
               requiredState: 'on',
               value: 'mdiToggleSwitch'
             },
 
             {
-              attribute: 'switch',
+              attributeName: 'switch',
+              comparator: '===',
               requiredState: 'off',
               value: 'mdiToggleSwitchOff'
             },
@@ -26,15 +30,19 @@ export default [
         },
 
         color: {
+          type: 'color',
+
           conditions: [
             {
-              attribute: 'switch',
+              attributeName: 'switch',
+              comparator: '===',
               requiredState: 'on',
               value: 'primary'
             },
 
             {
-              attribute: 'switch',
+              attributeName: 'switch',
+              comparator: '===',
               requiredState: 'off',
               value: 'secondary'
             },

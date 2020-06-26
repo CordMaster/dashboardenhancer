@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 
 import ColorSlider from './ColorSlider.js';
 import ColorPreview from './ColorPreview.js';
+import { Popover, Button, IconButton, makeStyles } from '@material-ui/core';
+import Icons from '../../Icons.js';
 
 function TestPicker() {
   const [color, setColor] = useState({ r: 0, g: 0, b: 0, a: 0 });
@@ -27,6 +29,30 @@ function ColorPicker({ value, onChange }) {
 ColorPicker.propTypes = {
   value: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired
+}
+
+const usePCPStyles = makeStyles(() => ({
+  popover: {
+    overflow: 'hidden'
+  }
+}));
+
+export function PopoverColorPicker({ value, onChange }) {
+  const classes = usePCPStyles();
+
+  const [anchor, setAnchor] = useState(null);
+
+  return (
+    <Fragment>
+      <Button variant="contained" size="small" onClick={(e) => setAnchor(e.target)}>
+        <Icons.mdiPalette />
+      </Button>
+
+      <Popover anchorEl={anchor} open={anchor} onClose={() => setAnchor(null)}>
+        <ColorPicker value={value} onChange={onChange} />
+      </Popover>
+    </Fragment>
+  );
 }
 
 

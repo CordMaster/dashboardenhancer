@@ -1,6 +1,6 @@
 import React, { useState, Fragment, useEffect, useMemo } from 'react';
 
-import { Typography, TextField, Switch, FormControlLabel, FormControl } from '@material-ui/core';
+import { Typography, TextField, Switch, FormControlLabel, FormControl, Select, MenuItem, InputLabel } from '@material-ui/core';
 import ColorPicker from '../components/colorpicker/ColorPicker';
 import DevicePicker from '../components/devicepicker/DevicePicker';
 import deepmerge from 'deepmerge';
@@ -125,6 +125,9 @@ export const useSectionRenderer = (sectionName, section, config, setConfig, pass
       case 'boolean':
         Type = BooleanType;
         break;
+      case 'enum':
+        Type = withValues(EnumType, setting.values);
+        break;
       case 'color':
         Type = ColorType;
         break;
@@ -176,6 +179,24 @@ const NumberType = React.memo(({ label, value, setValue, ...props }) => {
     </FormControl>
   );
 });
+
+const EnumType = React.memo(({ label, values, value, setValue, ...props }) => {
+  const uiValues = values.map(item => <MenuItem value={item.value}>{item.label}</MenuItem>);
+
+  return (
+    <FormControl fullWidth margin="dense">
+      <InputLabel>{label}</InputLabel>
+      <Select value={value} onChange={(e) => setValue(e.target.value)}>
+        {uiValues}
+      </Select>
+    </FormControl>
+  );
+});
+
+//wrapper for enum
+const withValues = (Type, values) => {
+  return (props) => <Type values={values} {...props} />
+}
 
 const ColorType = React.memo(({ label, value, setValue, ...props }) => {
   return (
