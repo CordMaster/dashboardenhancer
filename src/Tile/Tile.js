@@ -3,6 +3,8 @@ import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { CSSTransition, Transition } from 'react-transition-group';
 import { useDrag } from 'react-dnd';
 import Icons from '../Icons';
+import Color from 'color';
+import { multipleClasses } from '../Utils';
 
 const useStyles = makeStyles(theme => ({
   tile: {
@@ -184,7 +186,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function DragableTile({ index, tile, canDrag, isEditing, ...props }) {
+export function DraggableTile({ index, tile, canDrag, isEditing, ...props }) {
   const isNew = index === -1;
 
   const [dragProps, dragRef] = useDrag({
@@ -226,7 +228,7 @@ export default function DragableTile({ index, tile, canDrag, isEditing, ...props
     resizeDragRef
   }
 
-  return <PopableTile ref={ref} preview={isEditing} showConfigOverlay={isEditing} showResizeHandle={isEditing && !isNew} showSettingsButton={isEditing && !isNew} hidden={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
+  return <PopableTile ref={ref} options={tile.options} preview={isEditing} showConfigOverlay={isEditing} showResizeHandle={isEditing && !isNew} showSettingsButton={isEditing && !isNew} hidden={dragProps.isDragging || resizeDragProps.isDragging} {...props} />;
 }
 
 export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...props }, ref) => {
@@ -252,12 +254,54 @@ export const PopableTile = React.forwardRef(({ popped, setPopped, preview, ...pr
     }
   }
 
-  return <BaseTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
+  return <AbsoluteTile ref={ref} popped={popped} preview={preview} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onTouchStart={handleEnter} onTouchEnd={handleLeave} onTouchCancel={handleLeave} {...props} />
 });
 
-export const BaseTile = React.forwardRef(({ label, fillContent, primaryContent, secondaryContent, onClick, popped, poppedContent, containerRef, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, size, x, y, w, h, ...props }, ref) => {
-  const classes = useStyles();
+export const AbsoluteTile = React.forwardRef(({ Type, popped, containerRef, x, y, w, h, ...props }, ref) => {
+  let style = {};
 
+  style = {
+    top: y,
+    left: x,
+    minWidth: w,
+    minHeight: h,
+    width: w,
+    height: h
+  }
+
+  if(popped) {
+    style = {
+      top: `calc(50% + ${containerRef.current.scrollTop}px)`,
+      left: '50%',
+      minWidth: '50%',
+      minHeight: '25%',
+
+      width: 'auto',
+      height: 'auto'
+    }
+  }
+
+  return (
+    <Type ref={ref} popped={popped} style={style} {...props} />
+  );
+});
+
+export const PreviewTile = React.forwardRef(({ Type, w, h, ...props }, ref) => {
+  const style = {
+    minWidth: w,
+    minHeight: h,
+    width: w,
+    height: h
+  }
+
+  return (
+    <Type ref={ref} preview relative style={style} {...props} />
+  );
+});
+
+//extend this object
+export const BaseTile = React.forwardRef(({ options, label, fillContent, primaryContent, secondaryContent, onClick, popped, poppedContent, className, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, style, ...props }, ref) => {
+  const classes = useStyles();
   const handleClick = (e) => {
     if(onClick && !popped) onClick(e);
 
@@ -265,45 +309,35 @@ export const BaseTile = React.forwardRef(({ label, fillContent, primaryContent, 
     e.stopPropagation();
   }
 
-  let styles = {};
+  //make refs safe
+  const safeRefs = ref !== null ? ref : { dragRef: false, resizeDragRef: false };
 
-  if(!size) {
-    styles = {
-      top: y,
-      left: x,
-      minWidth: w,
-      minHeight: h,
-      width: w,
-      height: h
-    }
+  //conpute styles
+  let compStyle = {
+    //styles from options
+    backgroundColor: Color(options.colors.backgroundColor).rgb().string(),
+    color: Color(options.colors.foregroundColor).rgb().string(),
 
-    if(popped) {
-      styles = {
-        top: `calc(50% + ${containerRef.current.scrollTop}px)`,
-        left: '50%',
-        minWidth: '50%',
-        minHeight: '25%',
+    ...style
+  };
 
-        width: 'auto',
-        height: 'auto'
-      }
-    }
-  }
+  //conpute label
+  const compLabel = label ? label : options.label.label;
 
   return (
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={`${classes.tile} ${popped ? 'popped' : ''} ${popped && !poppedContent ? 'popped-big' : ''} ${relative ? 'relative' : ''} ${preview ? 'preview' : ''} ${isDragging ? 'dragging' : ''} ${hidden ? 'hidden' : ''}`} elevation={8} style={styles} onClick={handleClick} {...props}>
+          <Paper className={multipleClasses(classes.tile, className, [popped, 'popped'], [popped && !poppedContent, 'popped-big'], [relative, 'relative'], [preview, 'preview'], [isDragging, 'dragging'], [hidden, 'hidden'])} elevation={8} style={compStyle} onClick={handleClick} {...props}>
               { showConfigOverlay &&
                 <Fragment>
-                  <div ref={ref.dragRef} className={classes.editCover}></div>
-                  { showResizeHandle && <div className={classes.resizeHandle} ref={ref.resizeDragRef}></div> }
+                  <div ref={safeRefs.dragRef} className={classes.editCover}></div>
+                  { showResizeHandle && <div className={classes.resizeHandle} ref={safeRefs.resizeDragRef}></div> }
                   { showSettingsButton && <Icons.mdiCog className={classes.settingsHandle} onClick={onSettingsClick} /> }
                 </Fragment>
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">
-                <div className={`${classes.featuredContainer} ${fillContent ? 'fill' : ''} ${popped ? 'popped' : ''}`}>
+                <div className={multipleClasses(classes.featuredContainer, [fillContent, 'fill'], [popped, 'popped'])}>
                     { primaryContent }
                     { secondaryContent }
                     { outerTransitionState === 'entered' &&
@@ -314,7 +348,7 @@ export const BaseTile = React.forwardRef(({ label, fillContent, primaryContent, 
                 </div>
               </CSSTransition>
               <div className={classes.textContainer}>
-                <Typography variant="caption" className={classes.overflowText}>{label}</Typography>
+                <Typography variant="caption" className={classes.overflowText}>{compLabel}</Typography>
               </div>
           </Paper>
         </CSSTransition>
@@ -322,14 +356,6 @@ export const BaseTile = React.forwardRef(({ label, fillContent, primaryContent, 
     </Transition>
   )
 });
-
-export function PreviewTileType(props) {
-  return <BaseTile preview {...props} />
-}
-
-export function DragPreviewTile(props) {
-  return <BaseTile preview isDragging {...props} />
-}
 
 const useDPUTStyles = makeStyles(theme => ({
   dragPreviewTile: {

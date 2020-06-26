@@ -35,6 +35,11 @@ function MainContextProvider(props) {
               label: 'Tile 1'
             },
 
+            colors: {
+              backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
+              foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
+            },
+
             iframe: {
               src: ''
             }
@@ -54,6 +59,11 @@ function MainContextProvider(props) {
             label: {
               showLabel: true,
               label: 'Tile 2'
+            },
+
+            colors: {
+              backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
+              foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
             }
           },
           position: {

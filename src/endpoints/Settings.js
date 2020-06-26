@@ -18,7 +18,6 @@ import IconSelectDialog from '../components/IconSelectDialog.js';
 import settingsDefinitons from '../definitions/settingsDefinitons';
 import { useSectionRenderer } from '../definitions/useSettingsDefinition';
 import useConfigDialog from '../components/useConfigDialog';
-import { PreviewTileType } from '../Tile/Tile';
 import defaultTileDefinitions from '../definitions/defaultTileDefinitions';
 
 const useStyles = makeStyles(theme => ({
@@ -264,7 +263,7 @@ function TileDefinitionsSettings() {
     return (
       <Grid container justify="center">
         <Grid item xs={8}>
-          <PreviewTileType label="Label" primaryContent={primaryContent} secondaryContent={secondaryContent} />
+          {/*<PreviewTileType label="Label" primaryContent={primaryContent} secondaryContent={secondaryContent} />*/}
         </Grid>
       </Grid>
     );

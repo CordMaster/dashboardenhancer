@@ -25,6 +25,24 @@ export function growRect(rect, delta) {
   }
 }
 
+export function multipleClasses(...list) {
+  let accum = '';
+
+  list.forEach((item, index) => {
+    if(Array.isArray(item)) {
+      if(item[0]) {
+        if(index !== 0) accum += ' ';
+        accum += item[1];
+      }
+    } else {
+      if(index !== 0) accum += ' ';
+      accum += item;
+    }
+  });
+
+  return accum;
+}
+
 export function devLog(str) {
   if(devMode) console.log(str);
 }

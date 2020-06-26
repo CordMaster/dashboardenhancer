@@ -6,7 +6,7 @@ import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
-import Tile, { DragPreviewTile, DragPreviewUnderTile } from '../Tile/Tile';
+import { DragPreviewUnderTile, AbsoluteTile, DraggableTile } from '../Tile/Tile';
 import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { modifyImmutableCollection } from '../contexts/useCollection';
@@ -14,6 +14,7 @@ import useConfigDialog from '../components/useConfigDialog';
 import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import TileConfig from '../Tile/TileConfig';
 import IFrameTile from '../Tile/IFrameTile';
+import tileMappings from '../Tile/tileMappings';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -106,10 +107,18 @@ export default function({ index, className, isSmall, style, ...props }) {
   const cols = isSmall ? smallCols : config.panel.panelCols;
 
   const newTileTemplate = {
-    type: 'iframe',
+    type: 'hubitatTile',
 
     options: {
+      label: {
+        label: 'New Tile',
+        showLabel: true
+      },
 
+      colors: {
+        backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
+        foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 }
+      }
     },
 
     position: {
@@ -148,7 +157,7 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   const setEditMode = state => {
     _setEditMode(state);
-    if(state === false) setAddingTile(false);
+    if(state === false) setAddingTile(null);
   }
 
   //prevent tile intersection
@@ -254,12 +263,19 @@ export default function({ index, className, isSmall, style, ...props }) {
     let position = {};
     let normPosition = {};
 
+    let tile = {};
+
+    let isDragging = false;
+
     const delta = monitor.getDifferenceFromInitialOffset();
 
     if(monitor.isDragging() && delta) {
+      isDragging = true;
+
       const item = monitor.getItem();
       const type = item.type;
       const tileIndex = item.index;
+      tile = item.tile;
       const tilePosition = item.tile.position;
 
       const deltaNorm = pxToRowsAndCols(delta);
@@ -290,11 +306,13 @@ export default function({ index, className, isSmall, style, ...props }) {
         }
         
         if(validateTilePosition(tileIndex, newNormPosition)) normPosition = tilePositionToReal(newNormPosition);
-      } 
+      }
     }
 
     return {
-      isDragging: monitor.isDragging(),
+      isDragging: isDragging,
+
+      tile,
 
       position,
       normPosition
@@ -395,10 +413,7 @@ export default function({ index, className, isSmall, style, ...props }) {
       setConfigOpen(tileIndex);
     }
 
-    let Type = Tile;
-    if(tile.type === 'iframe') Type = IFrameTile;
-
-    ret = <Type key={tile.id} index={tileIndex} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
+    ret = <DraggableTile key={tile.id} index={tileIndex} Type={tileMappings[tile.type]} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {
@@ -465,12 +480,12 @@ export default function({ index, className, isSmall, style, ...props }) {
         </div>
       }
 
-      { dragLayerProps.isDragging && <DragPreviewTile {...dragLayerProps.position} /> }
+      { dragLayerProps.isDragging && <AbsoluteTile Type={tileMappings[dragLayerProps.tile.type]} options={dragLayerProps.tile.options} preview isDragging {...dragLayerProps.position} /> }
       { dragLayerProps.isDragging && <DragPreviewUnderTile {...dragLayerProps.normPosition} /> }
 
       { addingTile && !dropProps.isNew &&
         <Fragment>
-          <Tile index={-1} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile.position)} />
+          <DraggableTile index={-1} Type={tileMappings[addingTile.type]} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile.position)} />
           <TileAddBackdrop {...tilePositionToReal(growRect(addingTile.position, 0.5))} />
         </Fragment>
       }

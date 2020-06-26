@@ -1,9 +1,21 @@
 import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
-import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent, Button } from '@material-ui/core';
+import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent, Button, Grid } from '@material-ui/core';
 import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import useSettingsDefinition, { useSectionRenderer } from '../definitions/useSettingsDefinition';
+import { PreviewTile } from './Tile';
+import tileMappings from './tileMappings';
 
-export default function({ tile, modifyTile, optionBuffer, setOptionBuffer }) {
+const useStyles = makeStyles(theme => ({
+  previewContainer: {
+    boxSizing: 'border-box',
+
+    padding: theme.spacing(2)
+  }
+}));
+
+export default function({ tile, optionBuffer, setOptionBuffer }) {
+  const classes = useStyles();
+
   const [currentTab, setCurrentTab] = useState(0);
 
   const generalSections = tileConfigDefinitions['general'];
@@ -21,7 +33,6 @@ export default function({ tile, modifyTile, optionBuffer, setOptionBuffer }) {
     return <Tab label={section.sectionLabel} />
   });
 
-
   return (
     <Fragment>
       <Paper square elevation={0}>
@@ -33,6 +44,14 @@ export default function({ tile, modifyTile, optionBuffer, setOptionBuffer }) {
       <DialogContent>
         <TileConfigSection sectionName={currentSectionName} section={currentSection} tileOptions={tileOptions} setTileOptions={setTileOptions} />
       </DialogContent>
+
+      <Grid container className={classes.previewContainer} justify="center">
+          <Grid item xs={12}>
+            <Typography gutterBottom variant="h5">Preview</Typography>
+          </Grid>
+
+          <PreviewTile Type={tileMappings[tile.type]} options={optionBuffer} w={250} h={150} />
+        </Grid>
     </Fragment>
   );
 }
