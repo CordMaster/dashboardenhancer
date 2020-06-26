@@ -347,9 +347,11 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, primary
                     }
                 </div>
               </CSSTransition>
-              <div className={classes.textContainer}>
-                <Typography variant="caption" className={classes.overflowText}>{compLabel}</Typography>
-              </div>
+              { options.label.showLabel && 
+                <div className={classes.textContainer}>
+                  <Typography variant="caption" className={classes.overflowText}>{compLabel}</Typography>
+                </div>
+              }
           </Paper>
         </CSSTransition>
       }

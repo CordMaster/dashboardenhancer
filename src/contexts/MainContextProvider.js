@@ -79,7 +79,7 @@ function MainContextProvider(props) {
 
   const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, tiles: List() });
 
-  const [tileDefinitions, modifyTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: Map() });
+  const [hubitatTileDefinitions, modifyHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: Map() });
 
   //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
@@ -163,7 +163,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, tileDefinitions, modifyTileDefinitions, config, setConfig, locked, setLocked, save }}>
+    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, hubitatTileDefinitions, modifyHubitatTileDefinitions, config, setConfig, locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );

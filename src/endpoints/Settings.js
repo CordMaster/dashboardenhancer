@@ -80,7 +80,7 @@ function Settings() {
           
           <DashboardsSettings />
 
-          <TileDefinitionsSettings />
+          <HubitatTileDefinitionsSettings />
 
           {compiledSettings}
 
@@ -249,10 +249,10 @@ function DashboardsSettings() {
   );
 }
 
-function TileDefinitionsSettings() {
+function HubitatTileDefinitionsSettings() {
   const classes = usePSStyles();
 
-  const { tileDefinitions, modifyTileDefinitions } = useContext(MainContext);
+  const { hubitatTileDefinitions, modifyHubitatTileDefinitions } = useContext(MainContext);
 
   const [newText, setNewText] = useState('');
 
@@ -270,7 +270,7 @@ function TileDefinitionsSettings() {
   });
 
   const handleAdd = () => {
-    modifyTileDefinitions({ type: 'new', data: { label: newText } });
+    modifyHubitatTileDefinitions({ type: 'new', data: { label: newText } });
 
     setNewText('');
   }
@@ -279,7 +279,7 @@ function TileDefinitionsSettings() {
     const {source, destination} = result;
     
     if(source.droppableId === destination.droppableId) {
-      modifyTileDefinitions({ type: 'move', startIndex: source.index, destIndex: destination.index });
+      modifyHubitatTileDefinitions({ type: 'move', startIndex: source.index, destIndex: destination.index });
     }
   }
 
@@ -308,13 +308,13 @@ function TileDefinitionsSettings() {
     );
   });
 
-  const uiTileDefinitions = tileDefinitions.map((tileDefinition, index) => {
+  const uiTileDefinitions = hubitatTileDefinitions.map((tileDefinition, index) => {
     const handleEdit = () => {
       setDialogOpenOn(index);
     }
 
     return (
-      <DraggableListItem key={tileDefinition.id} index={index} data={tileDefinition} modifyData={(action) => modifyTileDefinitions(Object.assign({ index, ...action }))}>
+      <DraggableListItem key={tileDefinition.id} index={index} data={tileDefinition} modifyData={(action) => modifyHubitatTileDefinitions(Object.assign({ index, ...action }))}>
         <IconButton onClick={() => handleEdit()}>
           <Icons.mdiPencil />
         </IconButton>
