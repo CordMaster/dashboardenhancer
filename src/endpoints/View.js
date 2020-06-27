@@ -9,7 +9,7 @@ import FullSlider from '../components/FullSlider';
 import { DragPreviewUnderTile, AbsoluteTile, DraggableTile } from '../Tile/Tile';
 import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
-import { modifyImmutableCollection } from '../contexts/useCollection';
+import { useModifyImmutableCollection } from '../contexts/useCollection';
 import useConfigDialog from '../components/useConfigDialog';
 import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import TileConfig from '../Tile/TileConfig';
@@ -129,7 +129,7 @@ export default function({ index, className, isSmall, style, ...props }) {
     }
   }
 
-  const modifyTiles = modifyImmutableCollection(dashboards[index].tiles, newTileTemplate, (state) => {
+  const modifyTiles = useModifyImmutableCollection(dashboards[index].tiles, newTileTemplate, (state) => {
     modifyDashboards({ type: 'modify', index, data: { tiles: state } });
   });
 

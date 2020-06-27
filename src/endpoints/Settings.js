@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import $ from 'jquery';
 
-import { makeStyles, CircularProgress, Snackbar, SnackbarContent, Select, DialogContent } from '@material-ui/core';
+import { makeStyles, CircularProgress, Snackbar, SnackbarContent, Select, DialogContent, Tabs } from '@material-ui/core';
 
 import { Grid, Paper, Typography, TextField, MenuItem, Button, Switch, FormControlLabel, Divider, List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, FormControl, FormLabel, RadioGroup, Radio, ThemeProvider } from '@material-ui/core';
 
@@ -19,7 +19,7 @@ import settingsDefinitons from '../definitions/settingsDefinitons';
 import { useSectionRenderer } from '../definitions/useSettingsDefinition';
 import useConfigDialog from '../components/useConfigDialog';
 import defaultTileDefinitions from '../definitions/defaultHubitatTileDefinitions';
-import { Condition } from '../components/HubitatTileDefinitionMaker';
+import HubitatTileDefinitionMaker from '../components/HubitatTileDefinitionMaker';
 import { PopoverColorPicker } from '../components/colorpicker/ColorPicker';
 
 const useStyles = makeStyles(theme => ({
@@ -258,27 +258,12 @@ function HubitatTileDefinitionsSettings() {
 
   const [newText, setNewText] = useState('');
 
-  const [conditionsBuffer, setConditionsBuffer] = useState({});
+  const [propertiesBuffer, setPropertiesBuffer] = useState({});
 
   const [providedDialog, setDialogOpenOn] = useConfigDialog('Edit Tile Definition', (index) => {
-    
-    const primaryContent = <Typography variant="h4">Primary</Typography>
-    const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
-
-    const uiTabs = 0;
-
-    return (
-      <Fragment>
-        <DialogContent>
-          
-        </DialogContent>
-        <Grid container justify="center">
-          <Grid item xs={8}>
-            {/*<PreviewTileType label="Label" primaryContent={primaryContent} secondaryContent={secondaryContent} />*/}
-          </Grid>
-        </Grid>
-      </Fragment>
-    );
+    return <HubitatTileDefinitionMaker propertiesBuffer={propertiesBuffer} setPropertiesBuffer={setPropertiesBuffer} />
+  }, (index) => {
+    modifyHubitatTileDefinitions({ type: 'modify', index, data: { properties: propertiesBuffer } });
   });
 
   const handleAdd = () => {
@@ -322,7 +307,7 @@ function HubitatTileDefinitionsSettings() {
 
   const uiTileDefinitions = hubitatTileDefinitions.map((tileDefinition, index) => {
     const handleEdit = () => {
-      setConditionsBuffer(hubitatTileDefinitions[index].conditions);
+      setPropertiesBuffer(hubitatTileDefinitions[index].properties);
       setDialogOpenOn(index);
     }
 

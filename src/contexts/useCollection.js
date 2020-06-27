@@ -8,14 +8,14 @@ import { v4 as uuidv4 } from 'uuid';
 export default function(initialState, newTemplate) {
   const [ret, setRetM] = useState(initialState);
 
-  const setRet = modifyImmutableCollection(ret, newTemplate, (state) => {
+  const setRet = useModifyImmutableCollection(ret, newTemplate, (state) => {
     setRetM(state);
   });
 
   return [ret, setRet];
 }
 
-export function modifyImmutableCollection(objState, newTemplate, onChange) {
+export function useModifyImmutableCollection(objState, newTemplate, onChange) {
   const state = Immutable.fromJS(objState);
 
   return obj => {

@@ -46,12 +46,12 @@ export default function({ tile, optionBuffer, setOptionBuffer }) {
       </DialogContent>
 
       <Grid container className={classes.previewContainer} justify="center">
-          <Grid item xs={12}>
-            <Typography gutterBottom variant="h5">Preview</Typography>
-          </Grid>
-
-          <PreviewTile Type={tileMappings[tile.type]} options={optionBuffer} w={250} h={150} />
+        <Grid item xs={12}>
+          <Typography gutterBottom variant="h5">Preview</Typography>
         </Grid>
+
+        <PreviewTile Type={tileMappings[tile.type]} options={optionBuffer} w={250} h={150} />
+      </Grid>
     </Fragment>
   );
 }

@@ -13,6 +13,7 @@ import { LoadingContext } from './LoadingContextProvider.js';
 import useCollection from './useCollection.js';
 import usseSettingsDefinition from '../definitions/useSettingsDefinition.js';
 import settingsDefinitons from '../definitions/settingsDefinitons.js';
+import defaultHubitatTileDefinitions from '../definitions/defaultHubitatTileDefinitions.js';
 
 export const MainContext = React.createContext({});
 
@@ -79,7 +80,25 @@ function MainContextProvider(props) {
 
   const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, tiles: List() });
 
-  const [hubitatTileDefinitions, modifyHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: Map() });
+  const [hubitatTileDefinitions, modifyHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: {
+      primary: {
+        enabled: false,
+        type: 'none'
+      },
+
+      secondary: {
+        enabled: false,
+        type: 'none'
+      },
+
+      label: {
+        enabled: true,
+        type: 'text',
+        value: '%deviceName%',
+        color: { r: 0, g: 0, b: 0, alpha: 1.0 }
+      }
+    }
+  });
 
   //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },

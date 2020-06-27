@@ -313,16 +313,28 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, primary
   const safeRefs = ref !== null ? ref : { dragRef: false, resizeDragRef: false };
 
   //conpute styles
+  const compOptions = options ? options : {
+    label: {
+      showLabel: true,
+      label: null
+    },
+
+    colors: {
+      backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
+      foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
+    },
+  }
+
   let compStyle = {
     //styles from options
-    backgroundColor: Color(options.colors.backgroundColor).rgb().string(),
-    color: Color(options.colors.foregroundColor).rgb().string(),
+    backgroundColor: Color(compOptions.colors.backgroundColor).rgb().string(),
+    color: Color(compOptions.colors.foregroundColor).rgb().string(),
 
     ...style
   };
 
   //conpute label
-  const compLabel = label ? label : options.label.label;
+  const compLabel = label ? label : compOptions.label.label;
 
   return (
     <Transition in={popped} timeout={250}>
@@ -347,7 +359,7 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, primary
                     }
                 </div>
               </CSSTransition>
-              { options.label.showLabel && 
+              { compOptions.label.showLabel && 
                 <div className={classes.textContainer}>
                   <Typography variant="caption" className={classes.overflowText}>{compLabel}</Typography>
                 </div>

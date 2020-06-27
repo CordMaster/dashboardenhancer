@@ -4,57 +4,53 @@ export default [
     label: 'Switch',
     iconName: 'mdiToggleSwitch',
 
-    sections: {
+    properties: {
       primary: {
         enabled: true,
         type: 'icon',
 
-        iconName: {
-          type: 'icon',
+        iconName: [
+          {
+            attributeName: 'switch',
+            comparator: '===',
+            requiredState: 'on',
+            value: 'mdiToggleSwitch'
+          },
 
-          conditions: [
-            {
-              attributeName: 'switch',
-              comparator: '===',
-              requiredState: 'on',
-              value: 'mdiToggleSwitch'
-            },
+          {
+            attributeName: 'switch',
+            comparator: '===',
+            requiredState: 'off',
+            value: 'mdiToggleSwitchOff'
+          },
+        ],
 
-            {
-              attributeName: 'switch',
-              comparator: '===',
-              requiredState: 'off',
-              value: 'mdiToggleSwitchOff'
-            },
-          ]
-        },
+        color: [
+          {
+            attributeName: 'switch',
+            comparator: '===',
+            requiredState: 'on',
+            value: 'primary'
+          },
 
-        color: {
-          type: 'color',
-
-          conditions: [
-            {
-              attributeName: 'switch',
-              comparator: '===',
-              requiredState: 'on',
-              value: 'primary'
-            },
-
-            {
-              attributeName: 'switch',
-              comparator: '===',
-              requiredState: 'off',
-              value: 'secondary'
-            },
-          ]
-        }
+          {
+            attributeName: 'switch',
+            comparator: '===',
+            requiredState: 'off',
+            value: 'secondary'
+          },
+        ]
       },
 
       secondary: {
-        enabled: false
+        enabled: false,
+        type: 'none'
       },
 
       label: {
+        enabled: true,
+        type: 'text',
+
         constant: '%deviceName%'
       }
     }
