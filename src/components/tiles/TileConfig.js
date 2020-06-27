@@ -1,10 +1,10 @@
 import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
 import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent, Button, Grid } from '@material-ui/core';
-import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
-import useSettingsDefinition, { useSectionRenderer } from '../definitions/useSettingsDefinition';
+import tileConfigDefinitions from './tileConfigDefinitions';
+import useSettingsDefinition, { useSectionRenderer } from '../../definitions/useSettingsDefinition';
 import { PreviewTile } from './Tile';
 import tileMappings from './tileMappings';
-import { MainContext } from '../contexts/MainContextProvider';
+import { MainContext } from '../../contexts/MainContextProvider';
 
 const useStyles = makeStyles(theme => ({
   previewContainer: {

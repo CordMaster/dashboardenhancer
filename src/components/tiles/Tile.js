@@ -2,9 +2,9 @@ import React, { useState, Fragment } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { CSSTransition, Transition } from 'react-transition-group';
 import { useDrag } from 'react-dnd';
-import Icons from '../Icons';
+import Icons from '../../Icons';
 import Color from 'color';
-import { multipleClasses } from '../Utils';
+import { multipleClasses } from '../../Utils';
 
 const useStyles = makeStyles(theme => ({
   tile: {

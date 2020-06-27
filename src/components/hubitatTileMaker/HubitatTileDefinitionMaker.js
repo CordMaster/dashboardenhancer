@@ -1,12 +1,12 @@
 import React, { useState, Fragment } from 'react';
 import { Grid, Typography, TextField, FormControl, InputLabel, MenuItem, Select, Tab, Tabs, Paper, DialogContent, makeStyles, Switch, FormControlLabel, Button } from '@material-ui/core';
-import { useModifyImmutableCollection } from '../contexts/useCollection';
-import { List } from 'immutable';
 import merge from 'deepmerge';
-import { toSentence } from '../Utils';
-import { PreviewTile, BaseTile } from '../Tile/Tile';
-import { PopoverColorPicker } from './colorpicker/ColorPicker';
-import validHubitatTileDefinitionProperties from '../definitions/validHubitatTileDefinitionProperties';
+
+import { useModifyImmutableCollection } from '../../contexts/useCollection';
+
+import { toSentence } from '../../Utils';
+import { PreviewTile, BaseTile } from '../tiles/Tile';
+import validHubitatTileDefinitionProperties from './validHubitatTileDefinitionProperties';
 
 const useStyles = makeStyles(theme => ({
   previewContainer: {

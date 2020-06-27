@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { BaseTile } from './Tile';
-import { multipleClasses } from '../Utils';
+import { multipleClasses } from '../../Utils';
 
 const useStyles = makeStyles(theme => ({
   iframe: {

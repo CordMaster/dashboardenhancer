@@ -1,13 +1,14 @@
 import React, { useState, Fragment, useContext } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
-import { BaseTile } from './Tile';
-import { multipleClasses, evalExpr } from '../Utils';
-import { MainContext } from '../contexts/MainContextProvider';
-import defaultHubitatTileDefinitions from '../definitions/defaultHubitatTileDefinitions';
-import { HubContext } from '../contexts/HubContextProvider';
-import validHubitatTileDefinitionProperties from '../definitions/validHubitatTileDefinitionProperties';
-import Icons from '../Icons';
 import Color from 'color';
+
+import { BaseTile } from './Tile';
+import { multipleClasses, evalExpr } from '../../Utils';
+import { MainContext } from '../../contexts/MainContextProvider';
+import defaultHubitatTileDefinitions from '../hubitatTileMaker/defaultHubitatTileDefinitions';
+import { HubContext } from '../../contexts/HubContextProvider';
+
+import Icons from '../../Icons';
 
 const useStyles = makeStyles(theme => ({
   iframe: {
@@ -27,9 +28,7 @@ export default React.forwardRef(({ options, ...props }, ref) => {
   const classes = useStyles();
 
   const { devices } = useContext(HubContext);
-  const { hubitatTileDefinitions } = useContext(MainContext);
-
-  const allHubitatTileDefinitions = defaultHubitatTileDefinitions.concat(hubitatTileDefinitions);
+  const { allHubitatTileDefinitions } = useContext(MainContext);
 
   if(options.deviceInfo.device && options.deviceInfo.type) {
     const device = devices[options.deviceInfo.device];

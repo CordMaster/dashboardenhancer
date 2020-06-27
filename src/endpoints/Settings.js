@@ -18,8 +18,8 @@ import IconSelectDialog from '../components/IconSelectDialog.js';
 import settingsDefinitons from '../definitions/settingsDefinitons';
 import { useSectionRenderer } from '../definitions/useSettingsDefinition';
 import useConfigDialog from '../components/useConfigDialog';
-import defaultHubitatTileDefinitions from '../definitions/defaultHubitatTileDefinitions';
-import HubitatTileDefinitionMaker from '../components/HubitatTileDefinitionMaker';
+import defaultHubitatTileDefinitions from '../components/hubitatTileMaker/defaultHubitatTileDefinitions';
+import HubitatTileDefinitionMaker from '../components/hubitatTileMaker/HubitatTileDefinitionMaker';
 import { PopoverColorPicker } from '../components/colorpicker/ColorPicker';
 import DashboardConfig from '../components/DashboardConfig';
 

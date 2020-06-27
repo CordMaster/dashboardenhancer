@@ -6,15 +6,15 @@ import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
-import { DragPreviewUnderTile, AbsoluteTile, DraggableTile } from '../Tile/Tile';
+
 import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { useModifyImmutableCollection } from '../contexts/useCollection';
+
+import { DragPreviewUnderTile, AbsoluteTile, DraggableTile } from '../components/tiles/Tile';
 import useConfigDialog from '../components/useConfigDialog';
-import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
-import TileConfig from '../Tile/TileConfig';
-import IFrameTile from '../Tile/IFrameTile';
-import tileMappings from '../Tile/tileMappings';
+import TileConfig from '../components/tiles/TileConfig';
+import tileMappings from '../components/tiles/tileMappings';
 import Color from 'color';
 
 const useStyles = makeStyles(theme => ({

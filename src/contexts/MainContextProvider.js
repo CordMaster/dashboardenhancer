@@ -13,7 +13,7 @@ import { LoadingContext } from './LoadingContextProvider.js';
 import useCollection from './useCollection.js';
 import usseSettingsDefinition from '../definitions/useSettingsDefinition.js';
 import settingsDefinitons from '../definitions/settingsDefinitons.js';
-import defaultHubitatTileDefinitions from '../definitions/defaultHubitatTileDefinitions.js';
+import defaultHubitatTileDefinitions from '../components/hubitatTileMaker/defaultHubitatTileDefinitions.js';
 
 export const MainContext = React.createContext({});
 
@@ -187,7 +187,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, hubitatTileDefinitions, modifyHubitatTileDefinitions, config, setConfig, locked, setLocked, save }}>
+    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, hubitatTileDefinitions, modifyHubitatTileDefinitions, allHubitatTileDefinitions: [ ...defaultHubitatTileDefinitions, hubitatTileDefinitions ], config, setConfig, locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );
