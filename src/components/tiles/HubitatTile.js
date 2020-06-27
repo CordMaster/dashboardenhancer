@@ -35,63 +35,63 @@ export default React.forwardRef(({ options, ...props }, ref) => {
     const tileDefinition = allHubitatTileDefinitions.find(it => it.id === options.deviceInfo.type);
     const sections = tileDefinition.sections;
 
-    console.log(tileDefinition);
+    const evalConditions = property => {
+      console.log(property);
+      const type = property.type;
+      const value = property.value;
+
+      const prepare = obj => {
+        if(typeof(obj) !== 'string') return obj;
+
+        let ret = obj;
+
+        Object.entries(device.attributes).forEach(([attributeName, attribute]) => {
+          ret = ret.replace(`%${attributeName}%`, attribute.currentState);
+        });
+
+        return ret.replace('%deviceName%', device.label);
+      }
+
+      if(type === 'constant') return prepare(value);
+      else if(type === 'conditional') {
+        let ret;
+
+        value.forEach(condition => {
+          const attribute = device.attributes[condition.attributeName];
+
+          //TODO: break?
+          if(attribute && evalExpr(attribute.currentState, condition.comparator, condition.requiredState)) ret = condition.value;
+        });
+
+        return prepare(ret);
+      } else {
+        return null;
+      }
+    }
 
     const getRenderer = sectionName => {
       const section = sections[sectionName];
 
-      const evalConditions = propertyName => {
-        const conditions = section[propertyName];
-
-        const isConstant = !Array.isArray(conditions);
-  
-        const prepare = obj => {
-          if(typeof(obj) !== 'string') return obj;
-
-          let ret = obj;
-  
-          Object.entries(device.attributes).forEach(([attributeName, attribute]) => {
-            ret = ret.replace(`%${attributeName}%`, attribute.currentState);
-          });
-  
-          return ret.replace('%deviceName%', device.label);
-        }
-  
-        if(isConstant) return prepare(conditions);
-  
-        else {
-          let ret;
-  
-          conditions.forEach(condition => {
-            const attribute = device.attributes[condition.attributeName];
-
-            //TODO: break?
-            if(attribute && evalExpr(attribute.currentState, condition.comparator, condition.requiredState)) ret = condition.value;
-          });
-  
-          return prepare(ret);
-        }
-      }
-
       switch(section.type) {
         case 'icon':
-          var Icon = Icons[evalConditions('iconName')];
-          var color = evalConditions('color');
+          var iconName = evalConditions(section.iconName);
+          var color = evalConditions(section.color);
+          var size = evalConditions(section.size);
 
-          var style = { color: Color(color).rgb().string() };
+          var Icon = iconName ? Icons[iconName] : Icons.mdiAlertCircle;
+          var style = { color: color ? Color(color).rgb().string() : null, fontSize: size ? size : null };
 
           return (
             <Icon style={style} />
           );
         case 'text':
-          var text = evalConditions('value');
-          var color = evalConditions('color');
+          var text = evalConditions(section.value);
+          var color = evalConditions(section.color);
+          var size = evalConditions(section.size);
 
-          var style = { color: Color(color).rgb().string() };
+          var style = { color: color ? Color(color).rgb().string() : null, fontSize: size ? size : null };
 
-          if(sectionName === 'primary') return <Typography variant="h5" style={style}>{text}</Typography>;
-          else if(sectionName === 'primary') return <Typography variant="subtitle2" style={style}>{text}</Typography>;
-          else return <span style={style}>{text}</span>;
+          return <span style={style}>{text}</span>
         case 'none':
           return false;
         default:
@@ -105,8 +105,12 @@ export default React.forwardRef(({ options, ...props }, ref) => {
 
     const label = sections.label.enabled && getRenderer('label');
 
+    //merge options
+    let newOptions = { ...options };
+    if(sections.optionOverrides.backgroundColor.type !== 'none') newOptions.colors.backgroundColor =  evalConditions(sections.optionOverrides.backgroundColor);
+
     //todo: unique title
-    return <BaseTile ref={ref} options={options} {...props} primaryContent={primaryContent} secondaryContent={secondaryContent} label={label} />
+    return <BaseTile ref={ref} options={newOptions} {...props} primaryContent={primaryContent} secondaryContent={secondaryContent} label={label} />
   }
 
   return <BaseTile ref={ref} options={options} {...props} />

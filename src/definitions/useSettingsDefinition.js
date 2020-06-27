@@ -1,10 +1,7 @@
-import React, { useState, Fragment, useEffect, useMemo } from 'react';
-
-import { Typography, TextField, Switch, FormControlLabel, FormControl, Select, MenuItem, InputLabel } from '@material-ui/core';
-import ColorPicker from '../components/colorpicker/ColorPicker';
-import DeviceAttributePicker from '../components/devicepicker/DeviceAttributePicker';
+import React, { useState, useMemo } from 'react';
 import deepmerge from 'deepmerge';
-import DevicePicker from '../components/devicepicker/DevicePicker';
+
+import InputComponents from '../components/InputComponents';
 import { evalIfFunction } from '../Utils';
 
 //util for autogen configs
@@ -115,39 +112,12 @@ export const useSectionRenderer = (sectionName, section, config, setConfig, ...e
   }
 
   const children = section.sectionOptions.map((setting) => {
-    let Type;
-
-    switch(setting.type) {
-      case 'text':
-        Type = TextType;
-        break;
-      case 'number':
-        Type = NumberType;
-        break;
-      case 'boolean':
-        Type = BooleanType;
-        break;
-      case 'enum':
-        Type = withValues(EnumType, evalIfFunction(setting.values, ...evalParams));
-        break;
-      case 'color':
-        Type = ColorType;
-        break;
-      case 'device':
-        Type = DeviceType;
-        break;
-      case 'deviceattribute':
-        Type = DeviceAttributeType;
-        break;
-      default:
-        Type = Typography;
-        break;
-    }
+    const Type = InputComponents[setting.type];
 
     const evaluatedDepends = evaluateDependsOn(setting.dependsOn);
     const disabled = evaluatedDepends && setting.disableOnDepends;
     const hidden = evaluatedDepends && !setting.disableOnDepends;
-    return !hidden && <Type key={setting.name} label={setting.label} value={section.saveBuffer ? cachedValues[setting.name] : config[sectionName][setting.name]} disabled={disabled} setValue={value => handleChange(setting.name, value)} />;
+    return !hidden && <Type key={setting.name} label={setting.label} values={evalIfFunction(setting.values, ...evalParams)} value={section.saveBuffer ? cachedValues[setting.name] : config[sectionName][setting.name]} disabled={disabled} setValue={value => handleChange(setting.name, value)} />;
   });
 
   const handleSave = () => {
@@ -160,63 +130,3 @@ export const useSectionRenderer = (sectionName, section, config, setConfig, ...e
 
   return [children, handleSave, noShow];
 };
-
-const BooleanType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <FormControl fullWidth margin="dense">
-      <FormControlLabel control={<Switch />} label={label} checked={value} onChange={() => setValue(!value)} {...props} />
-    </FormControl>
-  );
-});
-
-const TextType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <FormControl fullWidth margin="dense">
-      <TextField label={label} value={value} onChange={(e) => setValue(e.target.value)} {...props} />
-    </FormControl>
-  );
-});
-
-const NumberType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <FormControl fullWidth margin="dense">
-      <TextField type="number" label={label} value={value} onChange={(e) => setValue(parseFloat(e.target.value))} {...props} />
-    </FormControl>
-  );
-});
-
-const EnumType = React.memo(({ label, values, value, setValue, ...props }) => {
-  console.log(values)
-  const uiValues = values.map(item => <MenuItem value={item.value}>{item.label}</MenuItem>);
-
-  return (
-    <FormControl fullWidth margin="dense">
-      <InputLabel>{label}</InputLabel>
-      <Select value={value} onChange={(e) => setValue(e.target.value)} {...props}>
-        {uiValues}
-      </Select>
-    </FormControl>
-  );
-});
-
-//wrapper for enum
-const withValues = (Type, values) => {
-  return (props) => <Type values={values} {...props} />
-}
-
-const ColorType = React.memo(({ label, value, setValue, ...props }) => {
-  return (
-    <Fragment>
-      <Typography variant="subtitle1">{label}</Typography>
-      <ColorPicker value={value} onChange={(value) => setValue(value)} {...props} />
-    </Fragment>
-  );
-});
-
-const DeviceType = React.memo(({ value, setValue, ...props }) => {
-  return <DevicePicker value={value} onChange={(value) => setValue(value)} {...props} />
-});
-
-const DeviceAttributeType = React.memo(({ value, setValue, ...props }) => {
-  return <DeviceAttributePicker value={value} onChange={(value) => setValue(value)} {...props} />
-});

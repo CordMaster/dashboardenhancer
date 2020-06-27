@@ -100,8 +100,25 @@ function MainContextProvider(props) {
       label: {
         enabled: true,
         type: 'text',
-        value: '%deviceName%',
-        color: { r: 0, g: 0, b: 0, alpha: 1.0 }
+
+        value: {
+          type: 'constant',
+          value: '%deviceName%'
+        },
+
+        color: {
+          type: 'none'
+        },
+
+        size: {
+          type: 'none'
+        }
+      },
+
+      optionOverrides: {
+        backgroundColor: {
+          type: 'none',
+        }
       }
     }
   });
@@ -187,7 +204,7 @@ function MainContextProvider(props) {
   }
 
   return (
-    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, hubitatTileDefinitions, modifyHubitatTileDefinitions, allHubitatTileDefinitions: [ ...defaultHubitatTileDefinitions, hubitatTileDefinitions ], config, setConfig, locked, setLocked, save }}>
+    <MainContext.Provider value={{ genTheme, dashboards, modifyDashboards, hubitatTileDefinitions, modifyHubitatTileDefinitions, allHubitatTileDefinitions: [ ...defaultHubitatTileDefinitions, ...hubitatTileDefinitions ], config, setConfig, locked, setLocked, save }}>
       {props.children}
     </MainContext.Provider>
   );

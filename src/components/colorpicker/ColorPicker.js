@@ -5,6 +5,7 @@ import ColorSlider from './ColorSlider.js';
 import ColorPreview from './ColorPreview.js';
 import { Popover, Button, IconButton, makeStyles } from '@material-ui/core';
 import Icons from '../../Icons.js';
+import Color from 'color';
 
 function TestPicker() {
   const [color, setColor] = useState({ r: 0, g: 0, b: 0, a: 0 });
@@ -40,12 +41,20 @@ const usePCPStyles = makeStyles(() => ({
 export function PopoverColorPicker({ value, onChange }) {
   const classes = usePCPStyles();
 
+  const buttonStyle = {
+    backgroundColor: Color(value).rgb().string()
+  }
+
+  const iconStyle = {
+    color: Color(value).isDark() ? 'white' : 'black'
+  }
+
   const [anchor, setAnchor] = useState(null);
 
   return (
     <Fragment>
-      <Button variant="contained" size="small" onClick={(e) => setAnchor(e.target)}>
-        <Icons.mdiPalette />
+      <Button variant="contained" style={buttonStyle} size="small" onClick={(e) => setAnchor(e.target)}>
+        <Icons.mdiPalette style={iconStyle} />
       </Button>
 
       <Popover anchorEl={anchor} open={anchor} onClose={() => setAnchor(null)}>

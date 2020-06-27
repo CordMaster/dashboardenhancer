@@ -9,37 +9,48 @@ export default [
         enabled: true,
         type: 'icon',
 
-        iconName: [
-          {
-            attributeName: 'switch',
-            comparator: '===',
-            requiredState: 'on',
-            value: 'mdiToggleSwitch'
-          },
+        iconName: {
+          type: 'conditional',
+          value: [
+            {
+              attributeName: 'switch',
+              comparator: '===',
+              requiredState: 'on',
+              value: 'mdiToggleSwitch'
+            },
 
-          {
-            attributeName: 'switch',
-            comparator: '===',
-            requiredState: 'off',
-            value: 'mdiToggleSwitchOff'
-          },
-        ],
+            {
+              attributeName: 'switch',
+              comparator: '===',
+              requiredState: 'off',
+              value: 'mdiToggleSwitchOff'
+            }
+          ]
+        },
 
-        color: [
-          {
-            attributeName: 'switch',
-            comparator: '===',
-            requiredState: 'on',
-            value: { r: 255, g: 255, b: 255, alpha: 1.0 }
-          },
+        color: {
+          type: 'conditional',
+          value: [
+            {
+              attributeName: 'switch',
+              comparator: '===',
+              requiredState: 'on',
+              value: { r: 255, g: 255, b: 255, alpha: 1.0 }
+            },
 
-          {
-            attributeName: 'switch',
-            comparator: '===',
-            requiredState: 'off',
-            value: { r: 0, g: 0, b: 0, alpha: 1.0 }
-          },
-        ]
+            {
+              attributeName: 'switch',
+              comparator: '===',
+              requiredState: 'off',
+              value: { r: 0, g: 0, b: 0, alpha: 1.0 }
+            }
+          ]
+        },
+
+        size: {
+          type: 'constant',
+          value: '50'
+        }
       },
 
       secondary: {
@@ -51,9 +62,25 @@ export default [
         enabled: true,
         type: 'text',
 
-        value: '%deviceName%',
-        color: { r: 0, g: 0, b: 0, alpha: 1.0 }
+        value: {
+          type: 'constant',
+          value: '%deviceName%'
+        },
+
+        color: {
+          type: 'none',
+        },
+
+        size: {
+          type: 'none'
+        }
+      },
+
+      optionOverrides: {
+        backgroundColor: {
+          type: 'none',
+        }
       }
     }
-  }
+  } 
 ];

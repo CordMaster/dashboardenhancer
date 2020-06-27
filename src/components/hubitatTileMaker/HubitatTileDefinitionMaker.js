@@ -6,7 +6,8 @@ import { useModifyImmutableCollection } from '../../contexts/useCollection';
 
 import { toSentence } from '../../Utils';
 import { PreviewTile, BaseTile } from '../tiles/Tile';
-import validHubitatTileDefinitionProperties from './validHubitatTileDefinitionProperties';
+import validHubitatTileDefinitionSectionTypes, { optionOverridesTemplates } from './validHubitatTileDefinitionSectionTypes';
+import InputComponents from '../InputComponents';
 
 const useStyles = makeStyles(theme => ({
   previewContainer: {
@@ -25,7 +26,16 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
   const primaryContent = <Typography variant="h4">Primary</Typography>
   const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
 
-  const uiTabs = Object.entries(sectionsBuffer).map(([name, section]) => <Tab key={name} label={toSentence(name)} />);
+  const tabs = [
+    'primary',
+    'secondary',
+    'label'
+  ]
+
+  let uiTabs = tabs.map((name) => <Tab key={name} label={toSentence(name)} />);
+  uiTabs.push(<Tab key="optionOverrides" label="Option Overrides" />);
+
+  const mergeSection = (data) => setSectionsBuffer({ ...sectionsBuffer, [currentSectionName]: merge(currentSection, data, { arrayMerge: (oldArr, newArr) => newArr }) });
 
   return (
     <Fragment>
@@ -34,7 +44,11 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
           {uiTabs}
         </Tabs>
 
-        <SectionTab label={toSentence(currentSectionName)} section={currentSection} setSection={(data) => setSectionsBuffer({ ...sectionsBuffer, [currentSectionName]: data })} mergeSection={(data) => setSectionsBuffer({ ...sectionsBuffer, [currentSectionName]: merge(currentSection, data, { arrayMerge: (oldArr, newArr) => newArr }) })} />
+        { currentSectionName !== 'optionOverrides' ?
+          <SectionTab label={toSentence(currentSectionName)} section={currentSection} setSection={(data) => setSectionsBuffer({ ...sectionsBuffer, [currentSectionName]: data })} mergeSection={mergeSection} />
+          :
+          <OptionOverridesProperties optionOverrides={currentSection} mergeSection={mergeSection} />
+        }
       </Paper>
 
       <Grid container className={classes.previewContainer} justify="center">
@@ -61,8 +75,10 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
   const classes = usePSStyles();
 
   const generateConditions = type => {
-    const conditions = validHubitatTileDefinitionProperties[type].reduce((sum, item) => {
-      sum[item.name] = [];
+    const conditions = validHubitatTileDefinitionSectionTypes[type].reduce((sum, item) => {
+      sum[item.name] = {
+        type: 'none'
+      };
       return sum;
     }, {});
 
@@ -76,25 +92,13 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
     setSection({ enabled: section.enabled, type: value, ...generateConditions(value) });
   }
 
-  const uiSections = validHubitatTileDefinitionProperties[section.type].map((property, index) => {
-    const conditions = section[property.name];
-    const isConstant = !Array.isArray(conditions);
+  const avaliableProperties = validHubitatTileDefinitionSectionTypes[section.type].map(propertyTemplate => {
+    const propertyTemplateName = propertyTemplate.name;
 
-    return (
-      <Paper square key={property.name} className={classes.typeContainer}>
-        <Grid container justify="space-between">
-          <Typography variant="h6" gutterBottom>{property.name}</Typography>
-          <FormControl>
-            <FormControlLabel control={<Switch />} label={'Constant'} checked={isConstant} onChange={() => mergeSection({ [property.name]: !(isConstant) ? property.default : [] })} />
-          </FormControl>
-        </Grid>
-        { !isConstant ? 
-          <Conditions typeDefault={property.default} Component={property.Component} conditions={conditions} setConditions={(conditions) => mergeSection({ [property.name]: conditions })} />
-          :
-          <Constant Component={property.Component} constant={conditions} setConstant={(constant) => mergeSection({ [property.name]: constant })} />
-        }
-      </Paper>
-    );
+    return [ section[propertyTemplateName], propertyTemplate, (value) => {
+      mergeSection({ [propertyTemplateName]: value });
+     }
+    ];
   });
 
   return (
@@ -116,14 +120,84 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
         </FormControl>
       }
 
-      {section.enabled && section.type !== 'none' && uiSections}
+      {section.enabled && section.type !== 'none' && <Properties properties={avaliableProperties} />}
     </DialogContent>
   );
 }
 
+function OptionOverridesProperties({ optionOverrides, mergeSection }) {
+  const avaliableProperties = optionOverridesTemplates.map(propertyTemplate => {
+    const propertyTemplateName = propertyTemplate.name;
+
+    return [ optionOverrides[propertyTemplateName], propertyTemplate, (value) => {
+      mergeSection({ [propertyTemplateName]: value });
+     }
+    ];
+  });
+
+  return (
+    <DialogContent>
+      <Properties properties={avaliableProperties} />
+    </DialogContent>
+  );
+}
+
+export function Properties({ properties }) {
+  const classes = usePSStyles();
+
+  const uiProperties = properties.map(([property, propertyTemplate, mergeProperty], index) => {
+    const propertyName = propertyTemplate.name;
+    
+    const propertyType = property.type;
+    const propertyValue = property.value;
+
+    const handlePropertyTypeChange = e => {
+      const value = e.target.value;
+
+      let newValue;
+
+      if(value !== 'none') {
+        if(value === 'conditional') newValue = [];
+        else newValue = propertyTemplate.default;
+      } else newValue = null;
+  
+      mergeProperty({ type: value, value: newValue });
+    }
+
+    return (
+      <Paper square key={propertyName} className={classes.typeContainer}>
+        <Grid container>
+          <Typography variant="h6" gutterBottom>{propertyName}</Typography>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Property Type</InputLabel>
+            <Select value={propertyType} onChange={handlePropertyTypeChange}>
+              <MenuItem value="none">Default</MenuItem>
+              <MenuItem value="constant">Constant</MenuItem>
+              <MenuItem value="conditional">Conditional</MenuItem>
+            </Select>
+        </FormControl>
+        </Grid>
+        { propertyType !== 'none' &&
+          (propertyType === 'conditional' ? 
+          <Conditions typeDefault={propertyTemplate.default} Component={InputComponents[propertyTemplate.type]} conditions={propertyValue} setConditions={(value) => mergeProperty({ value })} />
+          :
+          <Constant Component={InputComponents[propertyTemplate.type]} constant={propertyValue} setConstant={(value) => mergeProperty({ value })} />
+          )
+        }
+      </Paper>
+    );
+  });
+
+  return (
+    <Fragment>
+      {uiProperties}
+    </Fragment>
+  )
+}
+
 export function Constant({ Component, constant, setConstant }) {
   return (
-    <Component value={constant} onChange={(e) => setConstant(e.target ? e.target.value : e)} />
+    <Component value={constant} setValue={setConstant} />
   )
 }
 
@@ -157,7 +231,7 @@ export function Condition({ ValueComponent, condition, modifyCondition }) {
   return (
     <Grid container alignItems="flex-end" spacing={2}>
       <Grid item xs={2}>
-        <ValueComponent value={condition.value} onChange={(e) => modifyCondition({ value: e.target ? e.target.value : e })} />
+        <ValueComponent value={condition.value} setValue={(value) => modifyCondition({ value })} />
       </Grid>
 
       <Grid item xs={2}>
