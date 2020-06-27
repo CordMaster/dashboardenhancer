@@ -6,6 +6,7 @@ import merge from 'deepmerge';
 import { toSentence } from '../Utils';
 import { PreviewTile, BaseTile } from '../Tile/Tile';
 import { PopoverColorPicker } from './colorpicker/ColorPicker';
+import validHubitatTileDefinitionProperties from '../definitions/validHubitatTileDefinitionProperties';
 
 const useStyles = makeStyles(theme => ({
   previewContainer: {
@@ -15,16 +16,16 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function HubitatTileDefinitionMaker({ propertiesBuffer, setPropertiesBuffer }) {
+export default function({ sectionsBuffer, setSectionsBuffer }) {
   const classes = useStyles();
 
   const [currentTab, setCurrentTab] = useState(0);
-  const [currentPropertiesName, currentProperties] = Object.entries(propertiesBuffer)[currentTab];
+  const [currentSectionName, currentSection] = Object.entries(sectionsBuffer)[currentTab];
 
   const primaryContent = <Typography variant="h4">Primary</Typography>
   const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
 
-  const uiTabs = Object.entries(propertiesBuffer).map(([name, properties]) => <Tab key={name} label={toSentence(name)} />);
+  const uiTabs = Object.entries(sectionsBuffer).map(([name, section]) => <Tab key={name} label={toSentence(name)} />);
 
   return (
     <Fragment>
@@ -33,7 +34,7 @@ export default function HubitatTileDefinitionMaker({ propertiesBuffer, setProper
           {uiTabs}
         </Tabs>
 
-        <PropertiesSection label={toSentence(currentPropertiesName)} properties={currentProperties} setProperties={(data) => setPropertiesBuffer({ ...propertiesBuffer, [currentPropertiesName]: data })} mergeProperties={(data) => setPropertiesBuffer({ ...propertiesBuffer, [currentPropertiesName]: merge(currentProperties, data, { arrayMerge: (oldArr, newArr) => newArr }) })} />
+        <SectionTab label={toSentence(currentSectionName)} section={currentSection} setSection={(data) => setSectionsBuffer({ ...sectionsBuffer, [currentSectionName]: data })} mergeSection={(data) => setSectionsBuffer({ ...sectionsBuffer, [currentSectionName]: merge(currentSection, data, { arrayMerge: (oldArr, newArr) => newArr }) })} />
       </Paper>
 
       <Grid container className={classes.previewContainer} justify="center">
@@ -41,16 +42,10 @@ export default function HubitatTileDefinitionMaker({ propertiesBuffer, setProper
           <Typography gutterBottom variant="h5">Preview</Typography>
         </Grid>
 
-        <PreviewTile Type={BaseTile} primaryContent={propertiesBuffer.primary.enabled && primaryContent} secondaryContent={propertiesBuffer.secondary.enabled && secondaryContent} w={250} h={150} />
+        <PreviewTile Type={BaseTile} primaryContent={sectionsBuffer.primary.enabled && primaryContent} secondaryContent={sectionsBuffer.secondary.enabled && secondaryContent} w={250} h={150} />
       </Grid>
     </Fragment>
   );
-}
-
-const validProperties = {
-  text: [{ name: 'value', type: 'text', default: '', Component: TextField }, { name: 'color', type: 'color', default: { r: 0, g: 0, b: 0, alpha: 1.0 }, Component: PopoverColorPicker }],
-  icon: [{ name: 'iconName', type: 'icon', default: 'mdiCancel', Component: TextField }, { name: 'color', type: 'color', default: { r: 255, g: 255, b: 255, alpha: 1.0 }, Component: PopoverColorPicker }],
-  none: []
 }
 
 const usePSStyles = makeStyles(theme => ({
@@ -62,11 +57,11 @@ const usePSStyles = makeStyles(theme => ({
   }
 }));
 
-export function PropertiesSection({ label, properties, setProperties, mergeProperties }) {
+export function SectionTab({ label, section, setSection, mergeSection }) {
   const classes = usePSStyles();
 
   const generateConditions = type => {
-    const conditions = validProperties[type].reduce((sum, item) => {
+    const conditions = validHubitatTileDefinitionProperties[type].reduce((sum, item) => {
       sum[item.name] = [];
       return sum;
     }, {});
@@ -78,24 +73,25 @@ export function PropertiesSection({ label, properties, setProperties, mergePrope
     const value = e.target.value;
 
     //reset conditions too
-    setProperties({ enabled: properties.enabled, type: value, ...generateConditions(value) });
+    setSection({ enabled: section.enabled, type: value, ...generateConditions(value) });
   }
 
-  const uiProperties = validProperties[properties.type].map((property, index) => {
-    const isConstant = !Array.isArray(properties[property.name]);
+  const uiSections = validHubitatTileDefinitionProperties[section.type].map((property, index) => {
+    const conditions = section[property.name];
+    const isConstant = !Array.isArray(conditions);
 
     return (
       <Paper square key={property.name} className={classes.typeContainer}>
         <Grid container justify="space-between">
           <Typography variant="h6" gutterBottom>{property.name}</Typography>
           <FormControl>
-            <FormControlLabel control={<Switch />} label={'Constant'} checked={isConstant} onChange={() => mergeProperties({ [property.name]: !(isConstant) ? property.default : [] })} />
+            <FormControlLabel control={<Switch />} label={'Constant'} checked={isConstant} onChange={() => mergeSection({ [property.name]: !(isConstant) ? property.default : [] })} />
           </FormControl>
         </Grid>
         { !isConstant ? 
-          <Conditions typeDefault={property.default} Component={property.Component} conditions={properties[property.name]} setConditions={(conditions) => mergeProperties({ [property.name]: conditions })} />
+          <Conditions typeDefault={property.default} Component={property.Component} conditions={conditions} setConditions={(conditions) => mergeSection({ [property.name]: conditions })} />
           :
-          <Constant Component={property.Component} constant={properties[property.name]} setConstant={(conditions) => mergeProperties({ [property.name]: conditions })} />
+          <Constant Component={property.Component} constant={conditions} setConstant={(constant) => mergeSection({ [property.name]: constant })} />
         }
       </Paper>
     );
@@ -106,13 +102,13 @@ export function PropertiesSection({ label, properties, setProperties, mergePrope
        <Typography variant="subtitle2" gutterBottom>Note: you can substitute %deviceName% to get the device name and %[attributeName]% to get an attribute's value</Typography>
 
       <FormControl fullWidth>
-        <FormControlLabel control={<Switch />} label={`${label} enabled`} checked={properties.enabled} onChange={() => setProperties({ enabled: !properties.enabled, type: 'none' })} />
+        <FormControlLabel control={<Switch />} label={`${label} enabled`} checked={section.enabled} onChange={() => setSection({ enabled: !section.enabled, type: 'none' })} />
       </FormControl>
 
-      { properties.enabled &&
+      { section.enabled &&
         <FormControl fullWidth margin="dense">
           <InputLabel>Type</InputLabel>
-          <Select value={properties.type} onChange={handleTypeChange}>
+          <Select value={section.type} onChange={handleTypeChange}>
             <MenuItem value="none">Not set</MenuItem>
             <MenuItem value="text">Text</MenuItem>
             <MenuItem value="icon">Icon</MenuItem>
@@ -120,7 +116,7 @@ export function PropertiesSection({ label, properties, setProperties, mergePrope
         </FormControl>
       }
 
-      {properties.enabled && properties.type !== 'none' && uiProperties}
+      {section.enabled && section.type !== 'none' && uiSections}
     </DialogContent>
   );
 }

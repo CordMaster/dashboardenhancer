@@ -26,6 +26,8 @@ function MainContextProvider(props) {
       iconName: "mdiHome",
       label: '1234',
       lock: false,
+      backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 },
+
       tiles: [
         {
           id: 't1',
@@ -65,6 +67,10 @@ function MainContextProvider(props) {
             colors: {
               backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
               foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
+            },
+
+            deviceInfo: {
+
             }
           },
           position: {
@@ -74,13 +80,13 @@ function MainContextProvider(props) {
             h: 4
           }
         }
-      ]
+      ],
     }
   ];
 
-  const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, tiles: List() });
+  const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: List() });
 
-  const [hubitatTileDefinitions, modifyHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", properties: {
+  const [hubitatTileDefinitions, modifyHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", sections: {
       primary: {
         enabled: false,
         type: 'none'
@@ -127,7 +133,6 @@ function MainContextProvider(props) {
   const [genTheme, setGenTheme] = useState(createMuiTheme({}));
   
   useEffect(() => {
-    console.log('update');
     const themeColorsConfig = config.theme.themeColors;
 
     let preGen = {

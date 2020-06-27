@@ -1,3 +1,5 @@
+import defaultHubitatTileDefinitions from "../definitions/defaultHubitatTileDefinitions";
+
 export default {
   'general': {
     'label': {
@@ -27,6 +29,14 @@ export default {
   },
 
   'hubitatTile': {
-
+    'deviceInfo': {
+      sectionLabel: 'Device Info',
+      sectionOptions: [
+        { name: 'device', label: 'Device', type: 'device', default: '' },
+        { name: 'type', label: 'Type', type: 'enum', values: (mainContext) => {
+          return defaultHubitatTileDefinitions.concat(mainContext.hubitatTileDefinitions).map(it => ({ value: it.id, label: it.label }));
+        }, default: '' }
+      ]
+    }
   }
 };

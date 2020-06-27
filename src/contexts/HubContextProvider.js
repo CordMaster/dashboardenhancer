@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useMemo} from 'react';
 import $ from 'jquery';
-import Immutable, { Map } from 'immutable';
+import merge from 'deepmerge';
 import { hubIp, endpoint, access_token } from '../Constants';
 import { LoadingContext } from './LoadingContextProvider';
 import { devLog } from '../Utils';
@@ -23,11 +23,10 @@ websocket.addEventListener('error', () => {
 function useHub() {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const [devices, setDevices] = useState(new Map());
-  const objDevices = useMemo(() => devices.toJS(), [devices]);
+  const [devices, setDevices] = useState({});
 
   //so we can update multiple items in the state at once
-  let preStateUpdate = devices;
+  let preStateUpdate = { ...devices };
   
   //for the first load
   useEffect(() => {
@@ -42,7 +41,10 @@ function useHub() {
         devicesData.forEach(device => {
           devices[device.id] = device;
           $.get(`${endpoint}getDevice/${device.id}/?access_token=${access_token}`, (data) => {
-            devices[device.id]['attributes'] = data;
+            devices[device.id].attributes = {};
+            data.forEach(attribute => {
+              devices[device.id].attributes[attribute.name] = attribute;
+            });
 
             devLog('Got device data');
             devLog(data);
@@ -50,6 +52,10 @@ function useHub() {
             loadedDevices++;
             
             if(loadedDevices === devicesData.length) {
+              devLog('Finished getting device data');
+              devLog(devices);
+
+              setDevices(devices);
               setLoading(100);
             } else {
               setLoading(Math.max(loading, 10 + 90 / devicesData.length * loadedDevices));
@@ -73,19 +79,30 @@ function useHub() {
 
       //update our cache
       if(data.source === 'DEVICE' && data.deviceId && data.name && data.value) {
-        preStateUpdate = preStateUpdate.updateIn([ '' + data.deviceId, 'attr', data.name, 'value' ], props => data.value); //eslint-disable-line
+        const toMerge = {
+            [data.deviceId]: {
+            attributes: {
+              [data.name]: {
+                currentState: data.value
+              }
+            }
+          }
+        }
+
+        preStateUpdate = merge(preStateUpdate, toMerge);
+
         setDevices(preStateUpdate);
       }
     }
 
-    if(loading >= 100 && Object.keys(objDevices).length > 0) websocket.addEventListener('message', onMessage);
+    if(loading >= 100 && Object.keys(devices).length > 0) websocket.addEventListener('message', onMessage);
 
     return () => {
       websocket.removeEventListener('message', onMessage);
     }
-  }, [loading, devices, objDevices]);
+  }, [loading, devices]);
 
-  return [objDevices];
+  return devices;
 }
 
 const sendCommand = (dashboardId, deviceId, command, secondary = '') => {
@@ -100,7 +117,7 @@ const sendCommand = (dashboardId, deviceId, command, secondary = '') => {
 }
 
 export default function({ children }) {
-  const [devices] = useHub();
+  const devices = useHub();
 
   return (
     <HubContext.Provider value={{ devices }}>

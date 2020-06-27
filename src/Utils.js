@@ -43,6 +43,31 @@ export function multipleClasses(...list) {
   return accum;
 }
 
+export function evalExpr(a, expr, b) {
+  switch (expr) {
+    case '===':
+      return a === b;
+    case '!==':
+      return a !== b;
+    case '<':
+      return a < b;
+    case '>':
+      return a > b;
+    case '<=':
+      return a <= b;
+    case '>=':
+      return a >= b;
+    default:
+      return false;
+  }
+}
+
+export function evalIfFunction(obj, ...params) {
+  if(typeof(obj) === 'function') {
+    return(obj(...params));
+  } else return obj;
+}
+
 export function devLog(str) {
   if(devMode) console.log(str);
 }

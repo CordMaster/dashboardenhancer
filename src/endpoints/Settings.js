@@ -18,9 +18,10 @@ import IconSelectDialog from '../components/IconSelectDialog.js';
 import settingsDefinitons from '../definitions/settingsDefinitons';
 import { useSectionRenderer } from '../definitions/useSettingsDefinition';
 import useConfigDialog from '../components/useConfigDialog';
-import defaultTileDefinitions from '../definitions/defaultHubitatTileDefinitions';
+import defaultHubitatTileDefinitions from '../definitions/defaultHubitatTileDefinitions';
 import HubitatTileDefinitionMaker from '../components/HubitatTileDefinitionMaker';
 import { PopoverColorPicker } from '../components/colorpicker/ColorPicker';
+import DashboardConfig from '../components/DashboardConfig';
 
 const useStyles = makeStyles(theme => ({
   settingsPaper: {
@@ -176,6 +177,10 @@ function DashboardsSettings() {
 
   const [newText, setNewText] = useState('');
 
+  const [providedDialog, setDialogOpenOn] = useConfigDialog((index) => `Edit ${dashboards[index].label}`, (index) => {
+    return <DashboardConfig dashboard={dashboards[index]} modifyDashboard={(data) => modifyDashboards({ type: 'modify', index, data })} />;
+  }, () => null);
+
   const handleAdd = () => {
     modifyDashboards({ type: 'new', data: { label: newText } });
 
@@ -197,6 +202,10 @@ function DashboardsSettings() {
   }
 
   const uiDashboards = dashboards.map((dashboard, index) => {
+    const handleEdit = () => {
+      setDialogOpenOn(index);
+    }
+
     const onDelete = () => {
       if(defaultDashboard === index) {
         if(dashboards.length > 1) setDefaultDashboard(0);
@@ -212,6 +221,9 @@ function DashboardsSettings() {
       <DraggableListItem key={dashboard.id} index={index} data={dashboard} modifyData={(action) => modifyDashboards(Object.assign({ index, ...action }))} onDelete={onDelete} >
         <Switch checked={defaultDashboard === index} onChange={() => setDefaultDashboard(index)} />
         <ToggleButton size="small" selected={dashboard.lock} onChange={() => handleToggleLock()}>Child Lock</ToggleButton>
+        <IconButton onClick={() => handleEdit()}>
+          <Icons.mdiPencil />
+        </IconButton>
       </DraggableListItem>
     );
   });
@@ -246,6 +258,8 @@ function DashboardsSettings() {
               )}
             </Droppable>
           </div>
+
+          {providedDialog}
         </SettingsSection>
     </DragDropContext>
   );
@@ -258,12 +272,12 @@ function HubitatTileDefinitionsSettings() {
 
   const [newText, setNewText] = useState('');
 
-  const [propertiesBuffer, setPropertiesBuffer] = useState({});
+  const [sectionsBuffer, setSectionsBuffer] = useState({});
 
   const [providedDialog, setDialogOpenOn] = useConfigDialog('Edit Tile Definition', (index) => {
-    return <HubitatTileDefinitionMaker propertiesBuffer={propertiesBuffer} setPropertiesBuffer={setPropertiesBuffer} />
+    return <HubitatTileDefinitionMaker sectionsBuffer={sectionsBuffer} setSectionsBuffer={setSectionsBuffer} />
   }, (index) => {
-    modifyHubitatTileDefinitions({ type: 'modify', index, data: { properties: propertiesBuffer } });
+    modifyHubitatTileDefinitions({ type: 'modify', index, data: { sections: sectionsBuffer } });
   });
 
   const handleAdd = () => {
@@ -280,7 +294,7 @@ function HubitatTileDefinitionsSettings() {
     }
   }
 
-  const uiDefaultTileDefinitions = defaultTileDefinitions.map((tileDefinition, index) => {
+  const uiDefaultTileDefinitions = defaultHubitatTileDefinitions.map((tileDefinition, index) => {
     const Icon = getIcon(tileDefinition.iconName);
 
     return (
@@ -307,7 +321,7 @@ function HubitatTileDefinitionsSettings() {
 
   const uiTileDefinitions = hubitatTileDefinitions.map((tileDefinition, index) => {
     const handleEdit = () => {
-      setPropertiesBuffer(hubitatTileDefinitions[index].properties);
+      setSectionsBuffer(hubitatTileDefinitions[index].sections);
       setDialogOpenOn(index);
     }
 

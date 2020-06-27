@@ -4,7 +4,7 @@ export default [
     label: 'Switch',
     iconName: 'mdiToggleSwitch',
 
-    properties: {
+    sections: {
       primary: {
         enabled: true,
         type: 'icon',
@@ -30,14 +30,14 @@ export default [
             attributeName: 'switch',
             comparator: '===',
             requiredState: 'on',
-            value: 'primary'
+            value: { r: 255, g: 255, b: 255, alpha: 1.0 }
           },
 
           {
             attributeName: 'switch',
             comparator: '===',
             requiredState: 'off',
-            value: 'secondary'
+            value: { r: 0, g: 0, b: 0, alpha: 1.0 }
           },
         ]
       },
@@ -51,7 +51,8 @@ export default [
         enabled: true,
         type: 'text',
 
-        constant: '%deviceName%'
+        value: '%deviceName%',
+        color: { r: 0, g: 0, b: 0, alpha: 1.0 }
       }
     }
   }

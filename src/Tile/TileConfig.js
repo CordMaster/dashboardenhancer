@@ -4,6 +4,7 @@ import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import useSettingsDefinition, { useSectionRenderer } from '../definitions/useSettingsDefinition';
 import { PreviewTile } from './Tile';
 import tileMappings from './tileMappings';
+import { MainContext } from '../contexts/MainContextProvider';
 
 const useStyles = makeStyles(theme => ({
   previewContainer: {
@@ -57,7 +58,9 @@ export default function({ tile, optionBuffer, setOptionBuffer }) {
 }
 
 function TileConfigSection({ sectionName, section, tileOptions, setTileOptions }) {
-  const [provided, handleSave, noShow] = useSectionRenderer(sectionName, section, tileOptions, setTileOptions);
+  const mainContext = useContext(MainContext);
+
+  const [provided, handleSave, noShow] = useSectionRenderer(sectionName, section, tileOptions, setTileOptions, mainContext);
 
   return (
     <Fragment>

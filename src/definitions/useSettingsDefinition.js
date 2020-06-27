@@ -2,8 +2,10 @@ import React, { useState, Fragment, useEffect, useMemo } from 'react';
 
 import { Typography, TextField, Switch, FormControlLabel, FormControl, Select, MenuItem, InputLabel } from '@material-ui/core';
 import ColorPicker from '../components/colorpicker/ColorPicker';
-import DevicePicker from '../components/devicepicker/DevicePicker';
+import DeviceAttributePicker from '../components/devicepicker/DeviceAttributePicker';
 import deepmerge from 'deepmerge';
+import DevicePicker from '../components/devicepicker/DevicePicker';
+import { evalIfFunction } from '../Utils';
 
 //util for autogen configs
 export default function(definitions, _state, setState) {
@@ -74,7 +76,7 @@ export default function(definitions, _state, setState) {
   return [state, setRet, mergeAll];
 }
 
-export const useSectionRenderer = (sectionName, section, config, setConfig, passState) => {
+export const useSectionRenderer = (sectionName, section, config, setConfig, ...evalParams) => {
   const [cachedValues, setCachedValues] = useState(() => {
     return section.sectionOptions.reduce((sum, it) => {
       sum[it.name] = config[sectionName][it.name];
@@ -87,7 +89,7 @@ export const useSectionRenderer = (sectionName, section, config, setConfig, pass
       for(let i = 0; i < dependsOn.length; i++) {
         const dependency = dependsOn[i];
         if(typeof(dependency.name) === 'function') {
-          if(dependency.name(passState) !== dependency.value) return true;
+          if(dependency.name(...evalParams) !== dependency.value) return true;
         }
         else if(dependency.name) {
           const [sectionName, name] = dependency.name.split('.');
@@ -126,10 +128,13 @@ export const useSectionRenderer = (sectionName, section, config, setConfig, pass
         Type = BooleanType;
         break;
       case 'enum':
-        Type = withValues(EnumType, setting.values);
+        Type = withValues(EnumType, evalIfFunction(setting.values, ...evalParams));
         break;
       case 'color':
         Type = ColorType;
+        break;
+      case 'device':
+        Type = DeviceType;
         break;
       case 'deviceattribute':
         Type = DeviceAttributeType;
@@ -181,12 +186,13 @@ const NumberType = React.memo(({ label, value, setValue, ...props }) => {
 });
 
 const EnumType = React.memo(({ label, values, value, setValue, ...props }) => {
+  console.log(values)
   const uiValues = values.map(item => <MenuItem value={item.value}>{item.label}</MenuItem>);
 
   return (
     <FormControl fullWidth margin="dense">
       <InputLabel>{label}</InputLabel>
-      <Select value={value} onChange={(e) => setValue(e.target.value)}>
+      <Select value={value} onChange={(e) => setValue(e.target.value)} {...props}>
         {uiValues}
       </Select>
     </FormControl>
@@ -207,6 +213,10 @@ const ColorType = React.memo(({ label, value, setValue, ...props }) => {
   );
 });
 
-const DeviceAttributeType = React.memo(({ value, setValue, ...props }) => {
+const DeviceType = React.memo(({ value, setValue, ...props }) => {
   return <DevicePicker value={value} onChange={(value) => setValue(value)} {...props} />
+});
+
+const DeviceAttributeType = React.memo(({ value, setValue, ...props }) => {
+  return <DeviceAttributePicker value={value} onChange={(value) => setValue(value)} {...props} />
 });

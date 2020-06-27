@@ -15,6 +15,7 @@ import tileConfigDefinitions from '../Tile/tileConfigDefinitions';
 import TileConfig from '../Tile/TileConfig';
 import IFrameTile from '../Tile/IFrameTile';
 import tileMappings from '../Tile/tileMappings';
+import Color from 'color';
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -97,7 +98,8 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   const { dashboards, modifyDashboards, config } = useContext(MainContext);
 
-  const tiles = dashboards[index].tiles;
+  const dashboard = dashboards[index];
+  const tiles = dashboard.tiles;
   //devLog(tiles);
 
   const smallRows = window.innerHeight > window.innerWidth ? 5 : 3;
@@ -423,8 +425,11 @@ export default function({ index, className, isSmall, style, ...props }) {
 
     return ret;
   });
-
+  
   const mergedStyles = Object.assign({}, style, {
+    //backgroundColor from dashboard
+    backgroundColor: Color(dashboard.backgroundColor).rgb().string(),
+
     overflowY: !isSmall || popped !== -1 ? 'hidden' : 'auto'
   });
 
