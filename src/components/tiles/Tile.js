@@ -72,6 +72,30 @@ const useStyles = makeStyles(theme => ({
     }
   },
 
+  anchor: {
+    position: 'absolute',
+
+    '&.tl': {
+      top: theme.spacing(0.5),
+      left: theme.spacing(0.5)
+    },
+
+    '&.tr': {
+      top: theme.spacing(0.5),
+      right: theme.spacing(0.5)
+    },
+
+    '&.bl': {
+      bottom: theme.spacing(0.5),
+      left: theme.spacing(0.5)
+    },
+
+    '&.br': {
+      bottom: theme.spacing(0.5),
+      right: theme.spacing(0.5)
+    }
+  },
+
   editCover: {
     position: 'absolute',
     top: 0,
@@ -300,7 +324,7 @@ export const PreviewTile = React.forwardRef(({ Type, w, h, ...props }, ref) => {
 });
 
 //extend this object
-export const BaseTile = React.forwardRef(({ options, label, fillContent, primaryContent, secondaryContent, onClick, popped, poppedContent, className, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, style, ...props }, ref) => {
+export const BaseTile = React.forwardRef(({ options, label, fillContent, content, onClick, popped, poppedContent, className, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, style, ...props }, ref) => {
   const classes = useStyles();
   const handleClick = (e) => {
     if(onClick && !popped) onClick(e);
@@ -350,8 +374,8 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, primary
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">
                 <div className={multipleClasses(classes.featuredContainer, [fillContent, 'fill'], [popped, 'popped'])}>
-                    { primaryContent }
-                    { secondaryContent }
+                    { content.primary }
+                    { content.secondary }
                     { outerTransitionState === 'entered' &&
                       <div className={classes.advancedContainer}>
                         { poppedContent }
@@ -359,6 +383,23 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, primary
                     }
                 </div>
               </CSSTransition>
+
+              <div className={multipleClasses(classes.anchor, 'tl')}>
+                TL
+              </div>
+
+              <div className={multipleClasses(classes.anchor, 'tr')}>
+                TR
+              </div>
+
+              <div className={multipleClasses(classes.anchor, 'bl')}>
+                BL
+              </div>
+
+              <div className={multipleClasses(classes.anchor, 'br')}>
+                BR
+              </div>
+
               { compOptions.label.showLabel && 
                 <div className={classes.textContainer}>
                   <Typography variant="caption" className={classes.overflowText}>{compLabel}</Typography>

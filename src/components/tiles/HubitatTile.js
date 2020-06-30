@@ -109,8 +109,13 @@ export default React.forwardRef(({ options, ...props }, ref) => {
     let newOptions = { ...options };
     if(sections.optionOverrides.backgroundColor.type !== 'none') newOptions.colors.backgroundColor =  evalConditions(sections.optionOverrides.backgroundColor);
 
+    const content = {
+      primaryContent,
+      secondaryContent
+    }
+
     //todo: unique title
-    return <BaseTile ref={ref} options={newOptions} {...props} primaryContent={primaryContent} secondaryContent={secondaryContent} label={label} />
+    return <BaseTile ref={ref} options={newOptions} {...props} content={content} label={label} />
   }
 
   return <BaseTile ref={ref} options={options} {...props} />
