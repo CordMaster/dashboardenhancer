@@ -97,6 +97,26 @@ function MainContextProvider(props) {
         type: 'none'
       },
 
+      tl: {
+        enabled: false,
+        type: 'none'
+      },
+
+      tr: {
+        enabled: false,
+        type: 'none'
+      },
+
+      bl: {
+        enabled: false,
+        type: 'none'
+      },
+
+      br: {
+        enabled: false,
+        type: 'none'
+      },
+
       label: {
         enabled: true,
         type: 'text',

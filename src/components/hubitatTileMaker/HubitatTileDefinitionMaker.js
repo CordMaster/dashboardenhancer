@@ -23,12 +23,16 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
   const [currentTab, setCurrentTab] = useState(0);
   const [currentSectionName, currentSection] = Object.entries(sectionsBuffer)[currentTab];
 
-  const primaryContent = <Typography variant="h4">Primary</Typography>
-  const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
+  //const primaryContent = <Typography variant="h4">Primary</Typography>
+  //const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
 
   const tabs = [
     'primary',
     'secondary',
+    'tl',
+    'tr',
+    'bl',
+    'br',
     'label'
   ]
 
@@ -40,7 +44,7 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
   return (
     <Fragment>
       <Paper square elevation={0}>
-        <Tabs color="default" value={currentTab} onChange={(e, value) => setCurrentTab(value)}>
+        <Tabs color="default" variant="scrollable" scrollButtons="on" value={currentTab} onChange={(e, value) => setCurrentTab(value)}>
           {uiTabs}
         </Tabs>
 
@@ -56,7 +60,7 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
           <Typography gutterBottom variant="h5">Preview</Typography>
         </Grid>
 
-        <PreviewTile Type={BaseTile} primaryContent={sectionsBuffer.primary.enabled && primaryContent} secondaryContent={sectionsBuffer.secondary.enabled && secondaryContent} w={250} h={150} />
+        <PreviewTile Type={BaseTile} content={/*primaryContent={sectionsBuffer.primary.enabled && primaryContent} secondaryContent={sectionsBuffer.secondary.enabled && secondaryContent}*/{}} w={250} h={150} />
       </Grid>
     </Fragment>
   );
@@ -75,7 +79,7 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
   const classes = usePSStyles();
 
   const generateConditions = type => {
-    const conditions = validHubitatTileDefinitionSectionTypes[type].reduce((sum, item) => {
+    const conditions = validHubitatTileDefinitionSectionTypes[type].fields.reduce((sum, item) => {
       sum[item.name] = {
         type: 'none'
       };
@@ -92,7 +96,9 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
     setSection({ enabled: section.enabled, type: value, ...generateConditions(value) });
   }
 
-  const avaliableProperties = validHubitatTileDefinitionSectionTypes[section.type].map(propertyTemplate => {
+  const uiTypes = Object.entries(validHubitatTileDefinitionSectionTypes).map(([name, type]) => <MenuItem value={name}>{type.label}</MenuItem>);
+
+  const avaliableProperties = validHubitatTileDefinitionSectionTypes[section.type].fields.map(propertyTemplate => {
     const propertyTemplateName = propertyTemplate.name;
 
     return [ section[propertyTemplateName], propertyTemplate, (value) => {
@@ -113,9 +119,7 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
         <FormControl fullWidth margin="dense">
           <InputLabel>Type</InputLabel>
           <Select value={section.type} onChange={handleTypeChange}>
-            <MenuItem value="none">Not set</MenuItem>
-            <MenuItem value="text">Text</MenuItem>
-            <MenuItem value="icon">Icon</MenuItem>
+            {uiTypes}
           </Select>
         </FormControl>
       }
