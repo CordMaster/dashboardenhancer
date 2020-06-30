@@ -12,6 +12,7 @@ import { MainContext } from './contexts/MainContextProvider.js';
 import More from './endpoints/More.js';
 import { LoadingContext } from './contexts/LoadingContextProvider.js';
 import View from './endpoints/View';
+import BatteryMeter from './components/BatteryMeter.js';
 
 
 const useStyles = makeStyles(theme => ({
@@ -76,6 +77,7 @@ function MainContainer({ width }) {
               <Switch>
                 <Route path="/settings" component={Settings} />
                 <Route path="/more" component={More} />
+                <Route path="/dev" render={() => <BatteryMeter value={75} />} />
                 <Route exact path="/" render={() => <Redirect to={config.other.defaultDashboard === -1 ? 'settings/' + window.location.search : '' + config.other.defaultDashboard + '/' + window.location.search} />} />
                 <Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} isSmall={isSmall} />} />
               </Switch>

@@ -359,7 +359,7 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, content
 
   //conpute label
   const compLabel = label ? label : compOptions.label.label;
-
+  
   return (
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>

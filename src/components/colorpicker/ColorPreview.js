@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/styles';
 
 import Color from 'color';
 
-import gridImage from '../../grid.png'
+import gridImage from '../../res/grid.png'
 
 const useStyles = makeStyles(theme => ({
   container: {

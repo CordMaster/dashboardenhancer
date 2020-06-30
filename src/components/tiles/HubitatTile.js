@@ -118,6 +118,6 @@ export default React.forwardRef(({ options, ...props }, ref) => {
     return <BaseTile ref={ref} options={newOptions} {...props} content={content} label={label} />
   }
 
-  return <BaseTile ref={ref} options={options} {...props} />
+  return <BaseTile ref={ref} options={options} {...props} content={{ }} />
 });
 
