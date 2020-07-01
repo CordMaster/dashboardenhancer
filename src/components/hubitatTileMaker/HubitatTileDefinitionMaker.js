@@ -23,6 +23,10 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
   const [currentTab, setCurrentTab] = useState(0);
   const [currentSectionName, currentSection] = Object.entries(sectionsBuffer)[currentTab];
 
+  const computePreview = () => {
+    
+  }
+
   //const primaryContent = <Typography variant="h4">Primary</Typography>
   //const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
 
@@ -60,7 +64,7 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
           <Typography gutterBottom variant="h5">Preview</Typography>
         </Grid>
 
-        <PreviewTile Type={BaseTile} content={/*primaryContent={sectionsBuffer.primary.enabled && primaryContent} secondaryContent={sectionsBuffer.secondary.enabled && secondaryContent}*/{}} w={250} h={150} />
+        <PreviewTile Type={BaseTile} content={computePreview()} w={250} h={150} />
       </Grid>
     </Fragment>
   );
@@ -71,7 +75,7 @@ const usePSStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
 
     padding: theme.spacing(2),
-    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(2),
   }
 }));
 
@@ -79,8 +83,8 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
   const classes = usePSStyles();
 
   const generateConditions = type => {
-    const conditions = validHubitatTileDefinitionSectionTypes[type].fields.reduce((sum, item) => {
-      sum[item.name] = {
+    const conditions = Object.keys(validHubitatTileDefinitionSectionTypes[type].properties).reduce((sum, propertyName) => {
+      sum[propertyName] = {
         type: 'none'
       };
       return sum;
@@ -98,10 +102,10 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
 
   const uiTypes = Object.entries(validHubitatTileDefinitionSectionTypes).map(([name, type]) => <MenuItem value={name}>{type.label}</MenuItem>);
 
-  const avaliableProperties = validHubitatTileDefinitionSectionTypes[section.type].fields.map(propertyTemplate => {
+  const avaliableProperties = Object.entries(validHubitatTileDefinitionSectionTypes[section.type].properties).map(([propertyName, propertyTemplate]) => {
     const propertyTemplateName = propertyTemplate.name;
 
-    return [ section[propertyTemplateName], propertyTemplate, (value) => {
+    return [ propertyName, section[propertyTemplateName], propertyTemplate, (value) => {
       mergeSection({ [propertyTemplateName]: value });
      }
     ];
@@ -149,9 +153,7 @@ function OptionOverridesProperties({ optionOverrides, mergeSection }) {
 export function Properties({ properties }) {
   const classes = usePSStyles();
 
-  const uiProperties = properties.map(([property, propertyTemplate, mergeProperty], index) => {
-    const propertyName = propertyTemplate.name;
-    
+  const uiProperties = properties.map(([propertyName, property, propertyTemplate, mergeProperty], index) => {
     const propertyType = property.type;
     const propertyValue = property.value;
 
@@ -169,7 +171,7 @@ export function Properties({ properties }) {
     }
 
     return (
-      <Paper square key={propertyName} className={classes.typeContainer}>
+      <Paper square className={classes.typeContainer}>
         <Grid container>
           <Typography variant="h6" gutterBottom>{propertyName}</Typography>
           <FormControl fullWidth margin="dense">
