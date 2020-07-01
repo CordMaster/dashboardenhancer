@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect, useMemo } from 'react';
 
 import PropTypes from 'prop-types';
 
-import { List, ListItem, ListItemIcon, ListItemText, DialogContent, DialogActions, Button, TextField, Typography } from '@material-ui/core';
+import { List, ListItem, ListItemIcon, ListItemText, DialogContent, DialogActions, Button, TextField, Typography, Popover } from '@material-ui/core';
 
 import Error from '@material-ui/icons/Error';
 import Icons from '../Icons';
@@ -95,5 +95,24 @@ const IconListItem = React.memo(function ({ item: icon, selected, onSelect }) {
     </ListItem>
   );
 });
+
+//popover variant
+export function PopoverIconSelect({ value, onChange }) {
+  const [anchor, setAnchor] = useState(null);
+
+  const Icon = Icons[value];
+
+  return (
+    <Fragment>
+      <Button variant="contained" size="small" onClick={(e) => setAnchor(e.target)}>
+        <Icon />
+      </Button>
+
+      <Popover anchorEl={anchor} open={anchor} onClose={() => setAnchor(null)}>
+        <IconSelect value={value} onChange={onChange} />
+      </Popover>
+    </Fragment>
+  );
+}
 
 export default IconSelect;

@@ -1,4 +1,5 @@
 import { devMode } from './Constants.js';
+import Color from 'color';
 
 export function pushHistoryPreserve(history, location) {
   history.push(`${location}${window.location.search}`);
@@ -66,6 +67,10 @@ export function evalIfFunction(obj, ...params) {
   if(typeof(obj) === 'function') {
     return(obj(...params));
   } else return obj;
+}
+
+export function colToStr(col) {
+  return Color(col).rgb().string();
 }
 
 export function devLog(str) {

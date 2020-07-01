@@ -12,7 +12,7 @@ export default function(initialState, newTemplate) {
     setRetM(state);
   });
 
-  return [ret, setRet];
+  return [ret, setRet, setRetM];
 }
 
 export function useModifyImmutableCollection(objState, newTemplate, onChange) {

@@ -5,6 +5,7 @@ import ColorPicker, { PopoverColorPicker } from './colorpicker/ColorPicker';
 import DeviceAttributePicker from './devicepicker/DeviceAttributePicker';
 import DevicePicker from './devicepicker/DevicePicker';
 import { evalIfFunction } from '../Utils';
+import { PopoverIconSelect } from './IconSelect';
 
 const BooleanType = React.memo(({ label, value, setValue, ...props }) => {
   return (
@@ -59,6 +60,10 @@ const ColorPopoverType = React.memo(({ setValue, ...props }) => {
   );
 });
 
+const IconSelectPopoverType = React.memo(({ value, setValue, ...props }) => {
+  return <PopoverIconSelect value={value} onChange={(value) => setValue(value)} {...props} />
+});
+
 const DeviceType = React.memo(({ value, setValue, ...props }) => {
   return <DevicePicker value={value} onChange={(value) => setValue(value)} {...props} />
 });
@@ -74,6 +79,7 @@ export default {
   enum: EnumType,
   color: ColorType,
   colorpopover: ColorPopoverType,
+  iconselectpopover: IconSelectPopoverType,
   device: DeviceType,
   deviceattribute: DeviceAttributeType
 }

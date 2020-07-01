@@ -84,9 +84,9 @@ function MainContextProvider(props) {
     }
   ];
 
-  const [dashboards, modifyDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: List() });
+  const [dashboards, modifyDashboards, setDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: List() });
 
-  const [hubitatTileDefinitions, modifyHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", sections: {
+  const [hubitatTileDefinitions, modifyHubitatTileDefinitions, setHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", sections: {
       primary: {
         enabled: false,
         type: 'none'
@@ -201,10 +201,14 @@ function MainContextProvider(props) {
     if(access_token) {
       if(loading === 0) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
+          console.log(data);
           if(!data.error) {
-            mergeAllConfig(data);
+            mergeAllConfig(data.config ? data.config : {});
+            //setDashboards(data.dashboards ? data.dashboards : []);
+            setHubitatTileDefinitions(data.hubitatTileDefinitions ? data.hubitatTileDefinitions : []);
 
             devLog(`Got config`);
+            devLog(data);
           }
         }).always(() => {
           setLoading(10);
@@ -218,8 +222,12 @@ function MainContextProvider(props) {
   const save = () => {
     return $.ajax(`${endpoint}options/?access_token=${access_token}`, {
       type: 'POST',
-      contentType: "multipart/form-data",
-      data: JSON.stringify(config)
+      contentType: "text/plain",
+      data: JSON.stringify({
+        config,
+        dashboards,
+        hubitatTileDefinitions
+      })
     });
   }
 

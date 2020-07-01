@@ -1,5 +1,10 @@
-import { TextField } from "@material-ui/core";
+import React from 'react';
+import { TextField, Typography } from "@material-ui/core";
 import { PopoverColorPicker } from "../colorpicker/ColorPicker";
+import Color from 'color';
+import Icons from '../../Icons';
+import BatteryMeter from '../BatteryMeter';
+import { colToStr } from '../../Utils';
 
 export default {
   none: {
@@ -18,14 +23,16 @@ export default {
     label: 'Text',
 
     properties: {
-      value: { type: 'text', default: '' },
+      value: { type: 'text', default: 'Text' },
       color: { type: 'colorpopover', default: { r: 0, g: 0, b: 0, alpha: 1.0 } },
       size: { type: 'number', default: 12 }
     },
 
     Renderer: ({ options }) => {
       return (
-        null
+        <Typography align="center" style={{ fontSize: options.size, color: colToStr(options.color) }}>
+          {options.value}
+        </Typography>
       );
     }
   },
@@ -34,14 +41,16 @@ export default {
     label: 'Icon',
 
     properties: {
-      iconName: { type: 'text', default: 'mdiCancel' },
-      color: { type: 'colorpopover', default: { r: 255, g: 255, b: 255, alpha: 1.0 } },
-      size: { type: 'number', default: 12 }
+      iconName: { type: 'iconselectpopover', default: 'mdiCancel' },
+      color: { type: 'colorpopover', default: { r: 0, g: 0, b: 0, alpha: 1.0 } },
+      size: { type: 'number', default: 24 }
     },
 
     Renderer: ({ options }) => {
+      const Icon = Icons[options.iconName];
+
       return (
-        null
+        <Icon style={{ fontSize: options.size, color: colToStr(options.color) }} />
       );
     }
   },
@@ -50,19 +59,20 @@ export default {
     label: 'Battery (0 - 100)',
 
     properties: {
-      borderColor: { type: 'colorpopover', default: { r: 255, g: 255, b: 255, alpha: 1.0 } },
-      batteryColor: { type: 'colorpopover', default: { r: 200, g: 0, b: 0, alpha: 1.0 } },
-      size: { type: 'number', default: 12 }
+      value: { type: 'text', default: '50' },
+      borderColor: { type: 'colorpopover', default: { r: 0, g: 0, b: 0, alpha: 1.0 } },
+      batteryColor: { type: 'colorpopover', default: { r: 0, g: 200, b: 0, alpha: 1.0 } },
+      size: { type: 'number', default: 24 }
     },
 
     Renderer: ({ options }) => {
       return (
-        null
+        <BatteryMeter value={parseInt(options.value) ? Math.max(0, Math.min(100, parseInt(options.value))) : 0} borderColor={colToStr(options.borderColor)} batteryColor={colToStr(options.batteryColor)} size={options.size} />
       );
     }
   }
 }
 
-export const optionOverridesTemplates = [
-  { name: 'backgroundColor', type: 'colorpopover', default: { r: 255, g: 255, b: 255, alpha: 1.0 } }
-];
+export const optionOverridesTemplates = {
+  backgroundColor: { type: 'colorpopover', default: { r: 255, g: 255, b: 255, alpha: 1.0 } }
+};

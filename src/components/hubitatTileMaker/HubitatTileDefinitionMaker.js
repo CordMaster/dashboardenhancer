@@ -14,6 +14,53 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
 
     padding: theme.spacing(2)
+  },
+
+  sectionSelectContainer: {
+    position: 'absolute',
+
+    boxSizing: 'border-box',
+    padding: theme.spacing(1),
+
+    display: 'flex',
+    flexFlow: 'column nowrap',
+
+    top: 0,
+    left: 0,
+
+    width: '100%',
+    height: '100%',
+
+    '&>table': {
+      width: '100%',
+      height: '100%',
+
+      '&>tr': {
+        height: '20%',
+
+        '&>td': {
+          wisth: '20%',
+
+          cursor: 'pointer',
+
+          backgroundColor: 'rgba(150, 150, 50, 0.25)',
+          '&:hover:not(.disabled)': {
+            backgroundColor: 'rgba(150, 150, 50, 0.50)'
+          },
+          '&.disabled': {
+            backgroundColor: 'rgba(100, 100, 100, 0.25)',
+          }
+        },
+
+        '&>td:nth-child(2)': {
+          width: '60%'
+        }
+      },
+
+      '&>tr:nth-child(2)': {
+        height: '60%'
+      }
+    }
   }
 }));
 
@@ -24,11 +71,23 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
   const [currentSectionName, currentSection] = Object.entries(sectionsBuffer)[currentTab];
 
   const computePreview = () => {
-    
-  }
+    let ret = {};
 
-  //const primaryContent = <Typography variant="h4">Primary</Typography>
-  //const secondaryContent = <Typography variant="subtitle2" align="center">Secondary</Typography>
+    Object.entries(sectionsBuffer).forEach(([sectionName, section]) => {
+      if(sectionName !== 'optionOverrides' && section.enabled) {
+        let options = {};
+        Object.entries(validHubitatTileDefinitionSectionTypes[section.type].properties).map(([propertyName, propertyTemplate]) => {
+          options[propertyName] = section[propertyName].type === 'constant' ? section[propertyName].value : propertyTemplate.default;
+        });
+
+        const Renderer = validHubitatTileDefinitionSectionTypes[section.type].Renderer;
+
+        ret[sectionName] = <Renderer options={options} />
+      }
+    });
+
+    return ret;
+  }
 
   const tabs = [
     'primary',
@@ -64,7 +123,29 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
           <Typography gutterBottom variant="h5">Preview</Typography>
         </Grid>
 
-        <PreviewTile Type={BaseTile} content={computePreview()} w={250} h={150} />
+        <PreviewTile Type={BaseTile} content={computePreview()} w={250} h={150}>
+          <div className={classes.sectionSelectContainer}>
+            <table>
+              <tr>
+                <td onClick={() => setCurrentTab(2)}></td>
+                <td className="disabled"></td>
+                <td onClick={() => setCurrentTab(3)}></td>
+              </tr>
+
+              <tr>
+                <td className="disabled"></td>
+                <td onClick={() => setCurrentTab(0)}></td>
+                <td className="disabled"></td>
+              </tr>
+
+              <tr>
+                <td onClick={() => setCurrentTab(4)}></td>
+                <td className="disabled"></td>
+                <td onClick={() => setCurrentTab(5)}></td>
+              </tr>
+            </table>
+          </div>
+        </PreviewTile>
       </Grid>
     </Fragment>
   );
@@ -103,10 +184,8 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
   const uiTypes = Object.entries(validHubitatTileDefinitionSectionTypes).map(([name, type]) => <MenuItem value={name}>{type.label}</MenuItem>);
 
   const avaliableProperties = Object.entries(validHubitatTileDefinitionSectionTypes[section.type].properties).map(([propertyName, propertyTemplate]) => {
-    const propertyTemplateName = propertyTemplate.name;
-
-    return [ propertyName, section[propertyTemplateName], propertyTemplate, (value) => {
-      mergeSection({ [propertyTemplateName]: value });
+    return [ propertyName, section[propertyName], propertyTemplate, (value) => {
+      mergeSection({ [propertyName]: value });
      }
     ];
   });
@@ -134,11 +213,9 @@ export function SectionTab({ label, section, setSection, mergeSection }) {
 }
 
 function OptionOverridesProperties({ optionOverrides, mergeSection }) {
-  const avaliableProperties = optionOverridesTemplates.map(propertyTemplate => {
-    const propertyTemplateName = propertyTemplate.name;
-
-    return [ optionOverrides[propertyTemplateName], propertyTemplate, (value) => {
-      mergeSection({ [propertyTemplateName]: value });
+  const avaliableProperties = Object.entries(optionOverridesTemplates).map(([propertyName, propertyTemplate]) => {
+    return [ propertyName, optionOverrides[propertyName], propertyTemplate, (value) => {
+      mergeSection({ [propertyName]: value });
      }
     ];
   });

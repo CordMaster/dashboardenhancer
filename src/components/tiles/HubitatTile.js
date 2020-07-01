@@ -9,6 +9,7 @@ import defaultHubitatTileDefinitions from '../hubitatTileMaker/defaultHubitatTil
 import { HubContext } from '../../contexts/HubContextProvider';
 
 import Icons from '../../Icons';
+import validHubitatTileDefinitionSectionTypes from '../hubitatTileMaker/validHubitatTileDefinitionSectionTypes';
 
 const useStyles = makeStyles(theme => ({
   iframe: {
@@ -36,7 +37,6 @@ export default React.forwardRef(({ options, ...props }, ref) => {
     const sections = tileDefinition.sections;
 
     const evalConditions = property => {
-      console.log(property);
       const type = property.type;
       const value = property.value;
 
@@ -69,53 +69,29 @@ export default React.forwardRef(({ options, ...props }, ref) => {
       }
     }
 
-    const getRenderer = sectionName => {
-      const section = sections[sectionName];
+    const getRenderer = section => {
+      let options = {};
+      Object.entries(validHubitatTileDefinitionSectionTypes[section.type].properties).forEach(([propertyName, property]) => {
+        options[propertyName] = section[propertyName].type !== 'none' ? evalConditions(section[propertyName]) : property.default;
+      });
 
-      switch(section.type) {
-        case 'icon':
-          var iconName = evalConditions(section.iconName);
-          var color = evalConditions(section.color);
-          var size = evalConditions(section.size);
+      const Renderer = validHubitatTileDefinitionSectionTypes[section.type].Renderer;
 
-          var Icon = iconName ? Icons[iconName] : Icons.mdiAlertCircle;
-          var style = { color: color ? Color(color).rgb().string() : null, fontSize: size ? size : null };
-
-          return (
-            <Icon style={style} />
-          );
-        case 'text':
-          var text = evalConditions(section.value);
-          var color = evalConditions(section.color);
-          var size = evalConditions(section.size);
-
-          var style = { color: color ? Color(color).rgb().string() : null, fontSize: size ? size : null };
-
-          return <span style={style}>{text}</span>
-        case 'none':
-          return false;
-        default:
-          return false;
-      }
+      return <Renderer options={options} />;
     }
 
-    const primaryContent = sections.primary.enabled && getRenderer('primary');
+    let content = {};
 
-    const secondaryContent = sections.secondary.enabled && getRenderer('secondary');
-
-    const label = sections.label.enabled && getRenderer('label');
+    Object.entries(sections).forEach(([sectionName, section]) => {
+      if(sectionName !== 'optionOverrides' && section.enabled) content[sectionName] = getRenderer(section);
+    });
 
     //merge options
     let newOptions = { ...options };
     if(sections.optionOverrides.backgroundColor.type !== 'none') newOptions.colors.backgroundColor =  evalConditions(sections.optionOverrides.backgroundColor);
 
-    const content = {
-      primaryContent,
-      secondaryContent
-    }
-
     //todo: unique title
-    return <BaseTile ref={ref} options={newOptions} {...props} content={content} label={label} />
+    return <BaseTile ref={ref} options={newOptions} {...props} content={content} />
   }
 
   return <BaseTile ref={ref} options={options} {...props} content={{ }} />

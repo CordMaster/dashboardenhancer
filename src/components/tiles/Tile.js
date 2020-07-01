@@ -76,23 +76,23 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
 
     '&.tl': {
-      top: theme.spacing(0.5),
-      left: theme.spacing(0.5)
+      top: theme.spacing(2),
+      left: theme.spacing(2)
     },
 
     '&.tr': {
-      top: theme.spacing(0.5),
-      right: theme.spacing(0.5)
+      top: theme.spacing(2),
+      right: theme.spacing(2)
     },
 
     '&.bl': {
-      bottom: theme.spacing(0.5),
-      left: theme.spacing(0.5)
+      bottom: theme.spacing(2),
+      left: theme.spacing(2)
     },
 
     '&.br': {
-      bottom: theme.spacing(0.5),
-      right: theme.spacing(0.5)
+      bottom: theme.spacing(2),
+      right: theme.spacing(2)
     }
   },
 
@@ -324,7 +324,7 @@ export const PreviewTile = React.forwardRef(({ Type, w, h, ...props }, ref) => {
 });
 
 //extend this object
-export const BaseTile = React.forwardRef(({ options, label, fillContent, content, onClick, popped, poppedContent, className, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, style, ...props }, ref) => {
+export const BaseTile = React.forwardRef(({ options, fillContent, content, onClick, popped, poppedContent, className, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, style, children, ...props }, ref) => {
   const classes = useStyles();
   const handleClick = (e) => {
     if(onClick && !popped) onClick(e);
@@ -358,7 +358,7 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, content
   };
 
   //conpute label
-  const compLabel = label ? label : compOptions.label.label;
+  const compLabel = content.label ? content.label : compOptions.label.label;
   
   return (
     <Transition in={popped} timeout={250}>
@@ -385,19 +385,19 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, content
               </CSSTransition>
 
               <div className={multipleClasses(classes.anchor, 'tl')}>
-                TL
+                {content.tl}
               </div>
 
               <div className={multipleClasses(classes.anchor, 'tr')}>
-                TR
+                {content.tr}
               </div>
 
               <div className={multipleClasses(classes.anchor, 'bl')}>
-                BL
+                {content.bl}
               </div>
 
               <div className={multipleClasses(classes.anchor, 'br')}>
-                BR
+                {content.br}
               </div>
 
               { compOptions.label.showLabel && 
@@ -405,6 +405,8 @@ export const BaseTile = React.forwardRef(({ options, label, fillContent, content
                   <Typography variant="caption" className={classes.overflowText}>{compLabel}</Typography>
                 </div>
               }
+
+              {children}
           </Paper>
         </CSSTransition>
       }

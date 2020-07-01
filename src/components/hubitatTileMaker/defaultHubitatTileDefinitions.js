@@ -5,10 +5,12 @@ export default [
     iconName: 'mdiToggleSwitch',
 
     sections: {
+      //section
       primary: {
         enabled: true,
         type: 'icon',
 
+        //propertys
         iconName: {
           type: 'conditional',
           value: [
