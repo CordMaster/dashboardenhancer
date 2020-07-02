@@ -4,7 +4,7 @@ import merge from 'deepmerge';
 
 import { useModifyImmutableCollection } from '../../contexts/useCollection';
 
-import { toSentence } from '../../Utils';
+import { toSentence, multipleClasses } from '../../Utils';
 import { PreviewTile, BaseTile } from '../tiles/Tile';
 import validHubitatTileDefinitionSectionTypes, { optionOverridesTemplates } from './validHubitatTileDefinitionSectionTypes';
 import InputComponents from '../InputComponents';
@@ -44,7 +44,7 @@ const useStyles = makeStyles(theme => ({
           cursor: 'pointer',
 
           backgroundColor: 'rgba(150, 150, 50, 0.25)',
-          '&:hover:not(.disabled)': {
+          '&:hover:not(.disabled),&.active': {
             backgroundColor: 'rgba(150, 150, 50, 0.50)'
           },
           '&.disabled': {
@@ -127,21 +127,21 @@ export default function({ sectionsBuffer, setSectionsBuffer }) {
           <div className={classes.sectionSelectContainer}>
             <table>
               <tr>
-                <td onClick={() => setCurrentTab(2)}></td>
+                <td className={multipleClasses([currentTab === 2, 'active'])} onClick={() => setCurrentTab(2)}></td>
                 <td className="disabled"></td>
-                <td onClick={() => setCurrentTab(3)}></td>
+                <td className={multipleClasses([currentTab === 3, 'active'])} onClick={() => setCurrentTab(3)}></td>
               </tr>
 
               <tr>
                 <td className="disabled"></td>
-                <td onClick={() => setCurrentTab(0)}></td>
+                <td className={multipleClasses([currentTab === 0, 'active'])} onClick={() => setCurrentTab(0)}></td>
                 <td className="disabled"></td>
               </tr>
 
               <tr>
-                <td onClick={() => setCurrentTab(4)}></td>
-                <td className="disabled"></td>
-                <td onClick={() => setCurrentTab(5)}></td>
+                <td className={multipleClasses([currentTab === 4, 'active'])} onClick={() => setCurrentTab(4)}></td>
+                <td className={multipleClasses([currentTab === 6, 'active'])} onClick={() => setCurrentTab(6)}></td>
+                <td className={multipleClasses([currentTab === 5, 'active'])} onClick={() => setCurrentTab(5)}></td>
               </tr>
             </table>
           </div>

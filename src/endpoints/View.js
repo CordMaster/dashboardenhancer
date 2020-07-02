@@ -1,6 +1,7 @@
 import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
 import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent } from '@material-ui/core';
+import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
 import Icons, { getIcon } from '../Icons';
@@ -464,10 +465,17 @@ export default function({ index, className, isSmall, style, ...props }) {
               { editMode &&
                 <Fragment>
                   { !addingTile ?
-                    <Fab className={classes.fab} variant="extended" color="primary" onClick={() => setAddingTile(newTileTemplate)}>
-                      <Icons.mdiPlus />
-                      Add
-                    </Fab>
+                    <Fragment>
+                      <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile(null)}>
+                        <Icons.mdiApplication />
+                        Add an iframe
+                      </Fab>
+
+                      <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile(null)}>
+                        <Icons.mdiHomeLightbulb />
+                        Add a Hubitat tile
+                      </Fab>
+                    </Fragment>
                     :
                     <Fab className={classes.fab} variant="extended" color="secondary" onClick={() => setAddingTile(null)}>
                       <Icons.mdiCancel />
@@ -501,6 +509,21 @@ export default function({ index, className, isSmall, style, ...props }) {
 
       {providedConfigDialog}
     </Paper>
+  );
+}
+
+function TileAddSpeedDial({ setAddingTile }) {
+  const [open, setOpen] = useState(false);
+
+  const handleClose = () => {
+    setOpen(false);
+  }
+
+  return (
+    <SpeedDial icon={<Icons.mdiPlus />} open={open} onOpen={() => setOpen(true)} onClose={handleClose} ariaLabel="">
+      <SpeedDialAction icon={<Icons.mdiApplication />} onClick={() => handleClose() & setAddingTile()} />
+      <SpeedDialAction icon={<Icons.mdiHomeLightbulb />} onClick={() => handleClose() & setAddingTile()} />
+    </SpeedDial>
   );
 }
 

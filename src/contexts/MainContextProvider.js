@@ -84,9 +84,9 @@ function MainContextProvider(props) {
     }
   ];
 
-  const [dashboards, modifyDashboards, setDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: List() });
+  const [dashboards, modifyDashboards, setDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: [] });
 
-  const [hubitatTileDefinitions, modifyHubitatTileDefinitions, setHubitatTileDefinitions] = useCollection(List(), { iconName: "mdiApplication", sections: {
+  const [hubitatTileDefinitions, modifyHubitatTileDefinitions, setHubitatTileDefinitions] = useCollection([], { iconName: "mdiApplication", sections: {
       primary: {
         enabled: false,
         type: 'none'
