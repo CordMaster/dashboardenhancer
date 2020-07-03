@@ -8,7 +8,7 @@ import Icons, { getIcon } from '../Icons';
 import { CSSTransition, Transition } from 'react-transition-group';
 import FullSlider from '../components/FullSlider';
 
-import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical } from '../Utils';
+import { devLog, rectInside, growRect, rectOverlaps, rectsIdentical, multipleClasses } from '../Utils';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { useModifyImmutableCollection } from '../contexts/useCollection';
 
@@ -27,7 +27,21 @@ const useStyles = makeStyles(theme => ({
 
     overflow: 'hidden',
 
-    userSelect: 'none'
+    userSelect: 'none',
+
+    '&.small': {
+      boxSizing: 'border-box',
+
+      paddingRight: 16,
+      paddingBottom: 16
+    }
+  },
+
+  subContainer: {
+    position: 'relative',
+
+    width: '100%',
+    height: '100%'
   },
 
   popCover: {
@@ -97,7 +111,7 @@ const useStyles = makeStyles(theme => ({
 export default function({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
-  const { dashboards, modifyDashboards, config } = useContext(MainContext);
+  const { dashboards, modifyDashboards, config, locked } = useContext(MainContext);
 
   const dashboard = dashboards[index];
   const tiles = dashboard.tiles;
@@ -110,25 +124,15 @@ export default function({ index, className, isSmall, style, ...props }) {
   const cols = isSmall ? smallCols : config.panel.panelCols;
 
   const newTileTemplate = {
-    type: 'hubitatTile',
+    type: null, // needs to be set
 
-    options: {
-      label: {
-        label: 'New Tile',
-        showLabel: true
-      },
-
-      colors: {
-        backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
-        foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 }
-      }
-    },
+    options: null, //needs to be set
 
     position: {
       x: 1,
-      y: rows - 3,
-      w: 2,
-      h: 2
+      y: rows - parseInt(rows / 12) - 1,
+      w: parseInt(cols / 12),
+      h: parseInt(rows / 12)
     }
   }
 
@@ -162,6 +166,11 @@ export default function({ index, className, isSmall, style, ...props }) {
     _setEditMode(state);
     if(state === false) setAddingTile(null);
   }
+
+  //disable edit on change
+  useEffect(() => {
+    if(isSmall || locked) setEditMode(false);
+  }, [isSmall, locked])
 
   //prevent tile intersection
   const validateTilePosition = (srcTileIndex, desired) => {
@@ -225,7 +234,7 @@ export default function({ index, className, isSmall, style, ...props }) {
 
           if(validateTilePosition(tileIndex, newPosition)) {
             if(item.isNew) {
-              modifyTiles({ type: 'new', data: { position: newPosition } });
+              modifyTiles({ type: 'new', data: { ...item.tile, position: newPosition } });
               setAddingTile(null);
             } else {
               modifyTiles({ type: 'modify', index: tileIndex, data: { position: newPosition } });
@@ -380,9 +389,9 @@ export default function({ index, className, isSmall, style, ...props }) {
   }, []);
   //tile popping
 
-  //rows and cols are 1-indexed
-  let smallCol = 1;
-  let smallRow = 1;
+  //rows and cols are 0-indexed
+  let smallCol = 0;
+  let smallRow = 0;
 
   const uiTiles = tiles.map((tile, tileIndex) => {
     let ret = false;
@@ -397,7 +406,16 @@ export default function({ index, className, isSmall, style, ...props }) {
       h: isSmall ? 1 : tilePosition.h
     }
 
-    const dimensions = tilePositionToReal(dimensionsWithMobile);
+    let dimensions = tilePositionToReal(dimensionsWithMobile);
+
+    //add padding for mobile
+    if(isSmall) {
+      dimensions.x = `calc(${dimensions.x} + 16px)`;
+      dimensions.y = `calc(${dimensions.y} + 16px)`;
+
+      dimensions.w = `calc(${dimensions.w} - 16px)`;
+      dimensions.h = `calc(${dimensions.h} - 16px)`;
+    }
     
     /*
     const colPercentStr = `calc(100% / ${cols / colSpan})`;
@@ -416,7 +434,7 @@ export default function({ index, className, isSmall, style, ...props }) {
       setConfigOpen(tileIndex);
     }
 
-    ret = <DraggableTile key={tile.id} index={tileIndex} Type={tileMappings[tile.type]} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
+    ret = <DraggableTile key={tile.id} index={tileIndex} Type={tileMappings[tile.type].Type} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {
@@ -440,74 +458,76 @@ export default function({ index, className, isSmall, style, ...props }) {
   }
 
   return (
-    <Paper className={`${classes.container} ${className}`} ref={attachRef} square elevation={0} style={mergedStyles} {...props}>
-      {uiTiles}
-      <div className={`${classes.popCover} ${popped !== -1 && 'popped'}`} style={popCoverStyles}></div>
+    <Paper className={multipleClasses(classes.container, [isSmall, 'small'], className)} square elevation={0} style={mergedStyles} {...props}>
+      <div className={multipleClasses(classes.popCover, [popped !== -1, 'popped'])} style={popCoverStyles}></div>
 
-      { !isSmall &&
-        <div className={classes.fabContainer}>
-          { dropProps.canDrop && dropProps.item.type === 'tile' && !dropProps.isNew &&
-            <Fragment>
-              <Fab ref={duplicateDropRef} className={`${classes.fab} ${duplicateDropProps.isOver ? 'dropHover' : ''}`} variant="extended" disableRipple>
-                <Icons.mdiContentCopy />
-                Duplicate
-              </Fab>
+      <div ref={attachRef} className={classes.subContainer}>
+        {uiTiles}
+        { !isSmall && !locked &&
+          <div className={classes.fabContainer}>
+            { dropProps.canDrop && dropProps.item.type === 'tile' && !dropProps.isNew &&
+              <Fragment>
+                <Fab ref={duplicateDropRef} className={`${classes.fab} ${duplicateDropProps.isOver ? 'dropHover' : ''}`} variant="extended" disableRipple>
+                  <Icons.mdiContentCopy />
+                  Duplicate
+                </Fab>
 
-              <Fab ref={deleteDropRef} className={`${classes.fab} ${deleteDropProps.isOver ? 'dropHover' : ''}`} variant="extended" color="secondary" disableRipple>
-                <Icons.mdiDelete />
-                Delete
-              </Fab>
-            </Fragment>
-          }
+                <Fab ref={deleteDropRef} className={`${classes.fab} ${deleteDropProps.isOver ? 'dropHover' : ''}`} variant="extended" color="secondary" disableRipple>
+                  <Icons.mdiDelete />
+                  Delete
+                </Fab>
+              </Fragment>
+            }
 
-          { !(dropProps.canDrop && dropProps.item.type === 'tile') &&
-            <Fragment>
-              { editMode &&
-                <Fragment>
-                  { !addingTile ?
-                    <Fragment>
-                      <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile(null)}>
-                        <Icons.mdiApplication />
-                        Add an iframe
+            { !(dropProps.canDrop && dropProps.item.type === 'tile') &&
+              <Fragment>
+                { editMode &&
+                  <Fragment>
+                    { !addingTile ?
+                      <Fragment>
+                        <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type: 'iframeTile', options: tileMappings.iframeTile.defaultOptions })}>
+                          <Icons.mdiApplication />
+                          Add an iframe
+                        </Fab>
+                        {console.log()}
+                        <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type: 'hubitatTile', options: tileMappings.hubitatTile.defaultOptions })}>
+                          <Icons.mdiHomeLightbulb />
+                          Add a Hubitat tile
+                        </Fab>
+                      </Fragment>
+                      :
+                      <Fab className={classes.fab} variant="extended" color="secondary" onClick={() => setAddingTile(null)}>
+                        <Icons.mdiCancel />
+                        Cancel
                       </Fab>
+                    }
+                  </Fragment>
+                }
 
-                      <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile(null)}>
-                        <Icons.mdiHomeLightbulb />
-                        Add a Hubitat tile
-                      </Fab>
-                    </Fragment>
-                    :
-                    <Fab className={classes.fab} variant="extended" color="secondary" onClick={() => setAddingTile(null)}>
-                      <Icons.mdiCancel />
-                      Cancel
-                    </Fab>
-                  }
-                </Fragment>
-              }
+                <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
+                  { !editMode ? <Icons.mdiPencil /> : <Icons.mdiCheck /> }
+                </Fab>
+              </Fragment>
+            }
+          </div>
+        }
 
-              <Fab className={classes.fab} color="primary" onClick={() => setEditMode(!editMode)}>
-                { !editMode ? <Icons.mdiPencil /> : <Icons.mdiCheck /> }
-              </Fab>
-            </Fragment>
-          }
-        </div>
-      }
+        { dragLayerProps.isDragging && <AbsoluteTile Type={tileMappings[dragLayerProps.tile.type].Type} options={dragLayerProps.tile.options} preview isDragging {...dragLayerProps.position} /> }
+        { dragLayerProps.isDragging && <DragPreviewUnderTile {...dragLayerProps.normPosition} /> }
 
-      { dragLayerProps.isDragging && <AbsoluteTile Type={tileMappings[dragLayerProps.tile.type]} options={dragLayerProps.tile.options} preview isDragging {...dragLayerProps.position} /> }
-      { dragLayerProps.isDragging && <DragPreviewUnderTile {...dragLayerProps.normPosition} /> }
+        { addingTile && !dropProps.isNew &&
+          <Fragment>
+            <DraggableTile index={-1} Type={tileMappings[addingTile.type].Type} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile.position)} />
+            <TileAddBackdrop {...tilePositionToReal(growRect(addingTile.position, 0.5))} />
+          </Fragment>
+        }
 
-      { addingTile && !dropProps.isNew &&
-        <Fragment>
-          <DraggableTile index={-1} Type={tileMappings[addingTile.type]} tile={addingTile} relative canDrag isEditing {...tilePositionToReal(addingTile.position)} />
-          <TileAddBackdrop {...tilePositionToReal(growRect(addingTile.position, 0.5))} />
-        </Fragment>
-      }
+        { editMode &&
+          <BackgroundGrid cols={cols} rows={rows} />
+        }
 
-      { editMode &&
-        <BackgroundGrid cols={cols} rows={rows} />
-      }
-
-      {providedConfigDialog}
+        {providedConfigDialog}
+      </div>
     </Paper>
   );
 }
@@ -558,11 +578,6 @@ const useBDStyles = makeStyles(theme => ({
 
   dot: {
     position: 'absolute',
-
-    width: theme.spacing(1),
-    height: theme.spacing(1),
-
-    borderRadius: theme.spacing(0.5),
     
     transform: 'translate(-50%, -50%)',
 
@@ -570,14 +585,21 @@ const useBDStyles = makeStyles(theme => ({
   }
 }));
 
-function BackgroundGrid({ rows, cols }) {
+const BackgroundGrid = React.memo(({ rows, cols }) => {
   const classes = useBDStyles();
 
   const dots = [];
 
+  const maj = Math.max(rows, cols);
+
   for(let x = 0; x <= cols; x++) {
     for(let y = 0; y <= rows; y++) {
       const style = {
+        width: 350 / maj,
+        height: 350 / maj,
+    
+        borderRadius: 700 / maj,
+
         top: `${(100 / rows) * y}%`,
         left: `${(100 / cols) * x}%`
       }
@@ -591,4 +613,4 @@ function BackgroundGrid({ rows, cols }) {
       {dots}
     </div>
   )
-}
+});

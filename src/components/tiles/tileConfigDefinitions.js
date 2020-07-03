@@ -17,7 +17,7 @@ export default {
     },
   },
 
-  'iframe': {
+  'iframeTile': {
     'iframe': {
       sectionLabel: 'iFrame Options',
       sectionOptions: [

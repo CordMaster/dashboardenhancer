@@ -11,9 +11,10 @@ export default {
 
   'lock': {
     sectionLabel: 'Lock Settings',
-    dependsOn: [{ name: ({ locked }) => locked === -1, value: true }],
+    dependsOn: [{ name: ({ locked }) => !Boolean(locked), value: true }],
     sectionOptions: [
-      { name: 'lockCode', label: 'Lock code', type: 'number', default: 0 },
+      { name: 'useLockCode', label: 'Use lock code', type: 'boolean', default: false },
+      { name: 'lockCode', label: 'Lock code', type: 'text', default: '', dependsOn: [{ name: 'lock.useLockCode', value: true }] },
       { name: 'lockSettings', label: 'Disable settings when locked', type: 'boolean', default: false },
       { name: 'lockFully', label: 'Disable viewing selected dashboards when locked', type: 'boolean', default: false }
     ]

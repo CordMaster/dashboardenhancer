@@ -21,5 +21,5 @@ export default React.forwardRef(({ options, popped, ...props }, ref) => {
   const classes = useStyles();
 
   //todo: unique title
-  return <BaseTile ref={ref} options={options} popped={popped} {...props} fillContent content={ { primaryContent: <iframe title={'title'} className={multipleClasses(classes.iframe, [!popped, 'noclick'])} src={options.iframe.src}></iframe> } } />
+  return <BaseTile ref={ref} options={options} popped={popped} {...props} fillContent content={ { primary: <iframe title={'title'} className={multipleClasses(classes.iframe, [!popped, 'noclick'])} src={options.iframe.src}></iframe> } } />
 });

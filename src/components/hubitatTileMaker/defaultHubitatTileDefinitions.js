@@ -37,7 +37,7 @@ export default [
               attributeName: 'switch',
               comparator: '===',
               requiredState: 'on',
-              value: { r: 255, g: 255, b: 255, alpha: 1.0 }
+              value: { r: 25, g: 50, b: 255, alpha: 1.0 }
             },
 
             {

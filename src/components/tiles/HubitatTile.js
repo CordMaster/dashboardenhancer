@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 export default React.forwardRef(({ options, ...props }, ref) => {
   const classes = useStyles();
 
-  const { devices } = useContext(HubContext);
+  const { devices, sendCommand } = useContext(HubContext);
   const { allHubitatTileDefinitions } = useContext(MainContext);
 
   if(options.deviceInfo.device && options.deviceInfo.type) {
@@ -90,8 +90,15 @@ export default React.forwardRef(({ options, ...props }, ref) => {
     let newOptions = { ...options };
     if(sections.optionOverrides.backgroundColor.type !== 'none') newOptions.colors.backgroundColor =  evalConditions(sections.optionOverrides.backgroundColor);
 
+    const handleClick = () => {
+      if(device.attributes.switch) {
+        if(device.attributes.switch.currentState === 'on') sendCommand(device.id, 'off');
+        else sendCommand(device.id, 'on');
+      }
+    }
+
     //todo: unique title
-    return <BaseTile ref={ref} options={newOptions} {...props} content={content} />
+    return <BaseTile ref={ref} options={newOptions} {...props} content={content} onClick={handleClick} />
   }
 
   return <BaseTile ref={ref} options={options} {...props} content={{ }} />

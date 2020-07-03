@@ -31,7 +31,7 @@ function MainContextProvider(props) {
       tiles: [
         {
           id: 't1',
-          type: 'iframe',
+          type: 'iframeTile',
           options: {
             label: {
               showLabel: true,
@@ -151,20 +151,20 @@ function MainContextProvider(props) {
   const [config, setConfig, mergeAllConfig] = usseSettingsDefinition(settingsDefinitons, _config, _setConfig);
 
   //locally stored lock
-  const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? -1 : parseInt(window.localStorage.getItem('locked')));
+  const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? '' : window.localStorage.getItem('locked'));
 
   const setLocked = (desired) => {
-    const code = config.lock.lockCode;
+    const code = !config.lock.useLockCode ? 'nopass' : config.lock.lockCode;
     if (desired === false) {
-      _setLocked(-1);
-      window.localStorage.setItem('locked', -1);
+      _setLocked('');
+      window.localStorage.setItem('locked', '');
       return true;
     }
     else if(desired === true && code) {
       _setLocked(code);
       window.localStorage.setItem('locked', code);
       return true;
-    }else return false;
+    } else return false;
   }
 
   const [genTheme, setGenTheme] = useState(createMuiTheme({}));

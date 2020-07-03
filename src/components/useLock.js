@@ -55,7 +55,7 @@ function LockDialogContent({ locked, setLocked, exiting, closeDialog, save }) {
       <Fragment>
         <DialogTitle>{isLocked ? "Enter lock code" : "Lock HubiPanel?"}</DialogTitle>
         <DialogContent>
-          {isLocked ? <TextField fullWidth type="number" label="Code" error={error} value={tempCode} onChange={(e) => setTempCode(parseInt(e.target.value))} /> : (error ? <Typography color="error">Please set a code in settings first</Typography> : <Typography color="error">Locking will save your settings</Typography>) }
+          {isLocked ? <TextField fullWidth label="Code" error={error} value={tempCode} onChange={(e) => setTempCode(e.target.value)} /> : (error ? <Typography color="error">Please set a code in settings first</Typography> : <Typography color="error">Locking will save your settings</Typography>) }
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Cancel</Button>

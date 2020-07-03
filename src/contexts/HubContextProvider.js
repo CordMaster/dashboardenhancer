@@ -105,11 +105,11 @@ function useHub() {
   return devices;
 }
 
-const sendCommand = (dashboardId, deviceId, command, secondary = '') => {
+const sendCommand = (deviceId, command, params = {}) => {
   $.post({
-    url: `${endpoint}sendCommand/${dashboardId}/?access_token=${access_token}`,
-    data: JSON.stringify({id: parseInt(deviceId), cmd: command, secondary: secondary }),
-    contentType: 'multipart/form-data',
+    url: `${endpoint}sendCommand/?access_token=${access_token}`,
+    data: JSON.stringify({ deviceId: parseInt(deviceId), command, params }),
+    contentType: 'text/plain',
     success: (data) => {
       
     }
@@ -120,7 +120,7 @@ export default function({ children }) {
   const devices = useHub();
 
   return (
-    <HubContext.Provider value={{ devices }}>
+    <HubContext.Provider value={{ devices, sendCommand }}>
       {children}
     </HubContext.Provider>
   )

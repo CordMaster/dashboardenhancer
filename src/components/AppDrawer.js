@@ -83,7 +83,7 @@ const useStyles = makeStyles(theme => ({
 function AppDrawer({ location }) {
   const classes = useStyles();
 
-  const { dashboards, config } = useContext(MainContext);
+  const { dashboards, config, setLocked } = useContext(MainContext);
 
   const drawerConfig = config.drawer;
 
@@ -154,9 +154,9 @@ function AppDrawer({ location }) {
                 <ListItem button className={`${classes.bottomListItem}  ${!drawerConfig.iconsOnly ? 'left' : 'bottom'}`} onClick={sync}>
                   <Icons.mdiSync color="action" />
                 </ListItem>
-
-                <ListItem button className={`${classes.bottomListItem} ${!drawerConfig.iconsOnly && 'left'}`} onClick={openDialog}>
-                  {locked !== -1 ? <Icons.mdiLockOpen color="action" /> : <Icons.mdiLock color="action" />}
+                
+                <ListItem button className={`${classes.bottomListItem} ${!drawerConfig.iconsOnly && 'left'}`} onClick={() => !config.lock.useLockCode ? (locked ? setLocked(false) : setLocked(true)) : openDialog()}>
+                  {locked ? <Icons.mdiLockOpen color="action" /> : <Icons.mdiLock color="action" />}
                 </ListItem>
               </div>
           </List>

@@ -327,7 +327,8 @@ export const PreviewTile = React.forwardRef(({ Type, w, h, ...props }, ref) => {
 export const BaseTile = React.forwardRef(({ options, fillContent, content, onClick, popped, poppedContent, className, preview, relative, showConfigOverlay, showResizeHandle, showSettingsButton, onSettingsClick, isDragging, hidden, style, children, ...props }, ref) => {
   const classes = useStyles();
   const handleClick = (e) => {
-    if(onClick && !popped) onClick(e);
+    //only fire click if
+    if(onClick && !showConfigOverlay && !popped) onClick(e);
 
     //don't exit the popup
     e.stopPropagation();

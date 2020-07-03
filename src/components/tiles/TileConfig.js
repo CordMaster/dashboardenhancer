@@ -51,7 +51,7 @@ export default function({ tile, optionBuffer, setOptionBuffer }) {
           <Typography gutterBottom variant="h5">Preview</Typography>
         </Grid>
 
-        <PreviewTile Type={tileMappings[tile.type]} options={optionBuffer} w={250} h={150} />
+        <PreviewTile Type={tileMappings[tile.type].Type} options={optionBuffer} w={250} h={150} />
       </Grid>
     </Fragment>
   );
