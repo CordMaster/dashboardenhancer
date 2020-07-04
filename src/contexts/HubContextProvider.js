@@ -81,11 +81,11 @@ function useHub() {
       if(data.source === 'DEVICE' && data.deviceId && data.name && data.value) {
         const toMerge = {
             [data.deviceId]: {
-            attributes: {
-              [data.name]: {
-                currentState: data.value
+              attributes: {
+                [data.name]: {
+                  currentState: data.value
+                }
               }
-            }
           }
         }
 
