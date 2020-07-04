@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import deepmerge from 'deepmerge';
+import merge from 'deepmerge';
 
 import InputComponents from '../components/InputComponents';
 import { evalIfFunction } from '../Utils';
@@ -20,7 +20,7 @@ export default function(definitions, _state, setState) {
     return def;
   }, []);
 
-  const state = useMemo(() => deepmerge(def, _state), [def, _state]);
+  const state = useMemo(() => merge(def, _state), [def, _state]);
 
   //so we can update multiple items in the state at once
   let preStateUpdate = {};
@@ -61,13 +61,13 @@ export default function(definitions, _state, setState) {
           updateAffects(field, newVal);
         }
 
-        setState(deepmerge(state, preStateUpdate));
+        setState(merge(state, preStateUpdate));
       }
     });
   });
 
   const mergeAll = (other) => {
-    setState(deepmerge({}, state, other));
+    setState(merge(state, other));
   }
 
   return [state, setRet, mergeAll];

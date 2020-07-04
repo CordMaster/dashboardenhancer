@@ -11,7 +11,7 @@ import { devLog } from '../Utils.js';
 import { useContext } from 'react';
 import { LoadingContext } from './LoadingContextProvider.js';
 import useCollection from './useCollection.js';
-import usseSettingsDefinition from '../definitions/useSettingsDefinition.js';
+import useSettingsDefinition from '../definitions/useSettingsDefinition.js';
 import settingsDefinitons from '../definitions/settingsDefinitons.js';
 import defaultHubitatTileDefinitions from '../components/hubitatTileMaker/defaultHubitatTileDefinitions.js';
 
@@ -148,7 +148,7 @@ function MainContextProvider(props) {
   //{ name: 'showClock', default: true }, { name: 'clockOnTop', default: false }, { name: 'showClockAttributes', default: false }, { name: 'clockAttr1Label', default: 'At1' }, { name: 'clockAttr2Label', default: 'At2:' }, { name: 'clockAttr1', default: { device: '', attribute: '' } }, { name: 'clockAttr2', default: { device: '', attribute: '' } }, { name: 'lockSettings', default: true }, { name: 'lockFully', default: false } ]);
 
   const [_config, _setConfig] = useState({});
-  const [config, setConfig, mergeAllConfig] = usseSettingsDefinition(settingsDefinitons, _config, _setConfig);
+  const [config, setConfig, mergeAllConfig] = useSettingsDefinition(settingsDefinitons, _config, _setConfig);
 
   //locally stored lock
   const [locked, _setLocked] = useState(window.localStorage.getItem('locked') === null ? '' : window.localStorage.getItem('locked'));
@@ -203,7 +203,7 @@ function MainContextProvider(props) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
           if(!data.error) {
             mergeAllConfig(data.config ? data.config : {});
-            //setDashboards(data.dashboards ? data.dashboards : []);
+            setDashboards(data.dashboards ? data.dashboards : []);
             setHubitatTileDefinitions(data.hubitatTileDefinitions ? data.hubitatTileDefinitions : []);
 
             devLog(`Got config`);

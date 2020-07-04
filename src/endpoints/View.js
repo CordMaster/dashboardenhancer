@@ -111,7 +111,7 @@ const useStyles = makeStyles(theme => ({
 export default function({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
-  const { dashboards, modifyDashboards, config, locked } = useContext(MainContext);
+  const { dashboards, modifyDashboards, config, locked, save } = useContext(MainContext);
 
   const dashboard = dashboards[index];
   const tiles = dashboard.tiles;
@@ -164,7 +164,10 @@ export default function({ index, className, isSmall, style, ...props }) {
 
   const setEditMode = state => {
     _setEditMode(state);
-    if(state === false) setAddingTile(null);
+    if(state === false) {
+      setAddingTile(null);
+      save();
+    }
   }
 
   //disable edit on change
