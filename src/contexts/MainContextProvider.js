@@ -201,7 +201,6 @@ function MainContextProvider(props) {
     if(access_token) {
       if(loading === 0) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
-          console.log(data);
           if(!data.error) {
             mergeAllConfig(data.config ? data.config : {});
             //setDashboards(data.dashboards ? data.dashboards : []);

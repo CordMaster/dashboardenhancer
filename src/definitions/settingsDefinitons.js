@@ -14,7 +14,7 @@ export default {
     dependsOn: [{ name: ({ locked }) => !Boolean(locked), value: true }],
     sectionOptions: [
       //temp move to none
-      { name: 'useLockCode', label: 'Use lock code', type: 'boolean', default: false, dependsOn: [{ name: 'other.true', value: false }], disableOnDepends: true },
+      { name: 'useLockCode', label: 'Use lock code', type: 'boolean', default: false },
       { name: 'lockCode', label: 'Lock code', type: 'text', default: '', dependsOn: [{ name: 'lock.useLockCode', value: true }] },
       { name: 'lockSettings', label: 'Disable settings when locked', type: 'boolean', default: false },
       { name: 'lockFully', label: 'Disable viewing selected dashboards when locked', type: 'boolean', default: false }
@@ -117,10 +117,7 @@ export default {
   'other': {
     noShow: true,
     sectionOptions: [
-      { name: 'defaultDashboard', type: 'number', default: -1 },
-
-      //constants
-      { name: 'true', type: 'boolean', default: true }
+      { name: 'defaultDashboard', type: 'number', default: -1 }
     ]
   }
 };
