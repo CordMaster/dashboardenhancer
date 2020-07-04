@@ -78,7 +78,7 @@ function useHub() {
       devLog(data);
 
       //update our cache
-      if(data.source === 'DEVICE' && data.deviceId && data.name && data.value) {
+      if(data.source === 'DEVICE' && data.deviceId && data.name && data.value && devices[data.deviceId]) {
         const toMerge = {
             [data.deviceId]: {
               attributes: {
