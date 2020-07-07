@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo} from 'react';
 import $ from 'jquery';
 import merge from 'deepmerge';
-import { hubIp, endpoint, access_token } from '../Constants';
+import { hubIp, endpoint, access_token, devMode } from '../Constants';
 import { LoadingContext } from './LoadingContextProvider';
 import { devLog } from '../Utils';
 import ReconnectingWebSocket from 'reconnecting-websocket';
@@ -35,6 +35,10 @@ function useHub() {
       let loadedDevices = 0;
 
       $.get(`${endpoint}getDevices/?access_token=${access_token}`, (devicesData) => {
+        //DEV
+        if(devMode) devicesData = devicesData.filter(it => it.id === 68 || it.id === 69);
+        //DEV
+
         devLog('Got device Ids');
         devLog(devicesData);
 

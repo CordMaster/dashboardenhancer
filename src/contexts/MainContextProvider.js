@@ -6,7 +6,7 @@ import $ from 'jquery';
 import Color from 'color';
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core';
 
-import { endpoint, access_token } from '../Constants.js';
+import { endpoint, access_token, defaultDashboards } from '../Constants.js';
 import { devLog } from '../Utils.js';
 import { useContext } from 'react';
 import { LoadingContext } from './LoadingContextProvider.js';
@@ -20,71 +20,7 @@ export const MainContext = React.createContext({});
 function MainContextProvider(props) {
   const { loading, setLoading } = useContext(LoadingContext);
 
-  const dev = [
-    {
-      id: '1234',
-      iconName: "mdiHome",
-      label: '1234',
-      lock: false,
-      backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 },
-
-      tiles: [
-        {
-          id: 't1',
-          type: 'iframeTile',
-          options: {
-            label: {
-              showLabel: true,
-              label: 'Tile 1'
-            },
-
-            colors: {
-              backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
-              foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
-            },
-
-            iframe: {
-              src: ''
-            }
-          },
-          position: {
-            x: 1,
-            y: 1,
-            w: 4,
-            h: 4
-          }
-        },
-
-        {
-          id: 't2',
-          type: 'hubitatTile',
-          options: {
-            label: {
-              showLabel: true,
-              label: 'Tile 2'
-            },
-
-            colors: {
-              backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
-              foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
-            },
-
-            deviceInfo: {
-
-            }
-          },
-          position: {
-            x: 6,
-            y: 6,
-            w: 4,
-            h: 4
-          }
-        }
-      ],
-    }
-  ];
-
-  const [dashboards, modifyDashboards, setDashboards] = useCollection(dev, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: [] });
+  const [dashboards, modifyDashboards, setDashboards] = useCollection(defaultDashboards, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: [] });
 
   const [hubitatTileDefinitions, modifyHubitatTileDefinitions, setHubitatTileDefinitions] = useCollection([], { iconName: "mdiApplication", sections: {
       primary: {

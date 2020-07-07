@@ -40,6 +40,7 @@ const useStyles = makeStyles(theme => ({
   },
 
   scrollContainer: {
+    overflowX: 'hidden',
     overflowY: 'auto'
   },
 
@@ -63,7 +64,6 @@ const useStyles = makeStyles(theme => ({
   bottomListItem: {
     display: 'inline-block',
 
-    width: 'auto',
     padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
 
     '&.right': {
