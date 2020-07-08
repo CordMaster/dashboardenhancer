@@ -54,7 +54,7 @@ export default React.forwardRef(({ options, ...props }, ref) => {
 
       if(type === 'constant') return prepare(value);
       else if(type === 'conditional') {
-        let ret;
+        let ret = '';
 
         value.forEach(condition => {
           const attribute = device.attributes[condition.attributeName];

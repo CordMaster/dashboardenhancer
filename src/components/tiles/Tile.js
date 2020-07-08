@@ -75,6 +75,9 @@ const useStyles = makeStyles(theme => ({
   anchor: {
     position: 'absolute',
 
+    opacity: 1,
+    transition: 'opacity 250ms linear',
+
     '&.tl': {
       top: theme.spacing(2),
       left: theme.spacing(2)
@@ -93,6 +96,10 @@ const useStyles = makeStyles(theme => ({
     '&.br': {
       bottom: theme.spacing(2),
       right: theme.spacing(2)
+    },
+
+    '&.popped': {
+      opacity: 0
     }
   },
 
@@ -163,12 +170,29 @@ const useStyles = makeStyles(theme => ({
     '&.fill': {
       top: 0,
       left: 0,
-
-      width: '100%',
-      height: '100%',
+      right: 0,
+      bottom: 0,
 
       transform: 'none'
+    },
+
+    '&.popped:not(.fill)': {
+      left: theme.spacing(2),
+
+      transform: 'translate(0, -50%)',
+    },
+
+    '&.popped-enter-done:not(.fill)': {
+      display: 'flex',
+      flexFlow: 'row nowrap',
+
+      alignItems: 'center'
     }
+  },
+
+  featuredPrimary: {
+    width: '100%',
+    height: '100%'
   },
 
   textContainer: {
@@ -193,10 +217,7 @@ const useStyles = makeStyles(theme => ({
 
     height: '100%',
     flexGrow: 1,
-
-    display: 'flex',
-    flexFlow: 'column nowrap',
-    justifyContent: 'center'
+    marginLeft: theme.spacing(2)
   },
 
   '@keyframes fadein': {
@@ -365,7 +386,7 @@ export const BaseTile = React.forwardRef(({ options, fillContent, content, onCli
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={multipleClasses(classes.tile, className, [popped, 'popped'], [popped && !poppedContent, 'popped-big'], [relative, 'relative'], [preview, 'preview'], [isDragging, 'dragging'], [hidden, 'hidden'])} elevation={8} style={compStyle} onClick={handleClick} {...props}>
+          <Paper className={multipleClasses(classes.tile, className, [popped, 'popped'], [popped && fillContent, 'popped-big'], [relative, 'relative'], [preview, 'preview'], [isDragging, 'dragging'], [hidden, 'hidden'])} elevation={8} style={compStyle} onClick={handleClick} {...props}>
               { showConfigOverlay &&
                 <Fragment>
                   <div ref={safeRefs.dragRef} className={classes.editCover}></div>
@@ -375,29 +396,31 @@ export const BaseTile = React.forwardRef(({ options, fillContent, content, onCli
               }
               <CSSTransition in={popped} timeout={250} classNames="popped">
                 <div className={multipleClasses(classes.featuredContainer, [fillContent, 'fill'], [popped, 'popped'])}>
-                    { content.primary }
-                    { content.secondary }
+                    <div className={classes.featuredPrimary}>
+                      { content.primary }
+                      { content.secondary }
+                    </div>
                     { outerTransitionState === 'entered' &&
-                      <div className={classes.advancedContainer}>
+                      <div className={classes.popContainer}>
                         { poppedContent }
                       </div>
                     }
                 </div>
               </CSSTransition>
 
-              <div className={multipleClasses(classes.anchor, 'tl')}>
+              <div className={multipleClasses(classes.anchor, 'tl', [popped, 'popped'])}>
                 {content.tl}
               </div>
 
-              <div className={multipleClasses(classes.anchor, 'tr')}>
+              <div className={multipleClasses(classes.anchor, 'tr', [popped, 'popped'])}>
                 {content.tr}
               </div>
 
-              <div className={multipleClasses(classes.anchor, 'bl')}>
+              <div className={multipleClasses(classes.anchor, 'bl', [popped, 'popped'])}>
                 {content.bl}
               </div>
 
-              <div className={multipleClasses(classes.anchor, 'br')}>
+              <div className={multipleClasses(classes.anchor, 'br', [popped, 'popped'])}>
                 {content.br}
               </div>
 

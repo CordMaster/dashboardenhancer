@@ -109,6 +109,7 @@ export default {
   'panel': {
     sectionLabel: 'Panel Options',
     sectionOptions: [
+      { name: 'cache', label: 'Cache panels', type: 'boolean', default: true },
       { name: 'panelRows', label: 'Rows', type: 'number', default: 20 },
       { name: 'panelCols', label: 'Columns', type: 'number', default: 35 }
     ]

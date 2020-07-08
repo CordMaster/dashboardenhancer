@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     height: '100%',
 
-    position: 'relative',
+    position: 'absolute',
 
     overflow: 'hidden',
 
@@ -55,7 +55,6 @@ const useStyles = makeStyles(theme => ({
 
     display: 'none',
     opacity: 0,
-
 
     backgroundColor: 'black',
     transition: 'opacity 250ms linear',
@@ -105,10 +104,33 @@ const useStyles = makeStyles(theme => ({
     to: {
       opacity: 1
     }
+  },
+
+  blur: {
+    filter: 'blur(5px)'
   }
 }));
 
-export default function({ index, className, isSmall, style, ...props }) {
+export default function({ index, isSmall, ...props }) {
+  const { dashboards, config } = useContext(MainContext);
+
+  const uiPanels = dashboards.map((dashboard, thisIndex) => {
+    const style = {
+      display: thisIndex !== index && config.panel.cache ? 'none' : 'initial'
+    };
+
+    return <Panel key={dashboard.id} index={thisIndex} isSmall={isSmall} style={style} />;
+  });
+
+  return (
+    <Fragment>
+      {uiPanels}
+    </Fragment>
+  );
+
+}
+
+export function Panel({ index, className, isSmall, style, ...props }) {
   const classes = useStyles();
 
   const { dashboards, modifyDashboards, config, locked, save } = useContext(MainContext);
@@ -419,25 +441,13 @@ export default function({ index, className, isSmall, style, ...props }) {
       dimensions.w = `calc(${dimensions.w} - 16px)`;
       dimensions.h = `calc(${dimensions.h} - 16px)`;
     }
-    
-    /*
-    const colPercentStr = `calc(100% / ${cols / colSpan})`;
-    const rowPercentStr = `calc(100% / ${rows / rowSpan})`;
-
-    const dimensions = {
-      w: `${colPercentStr}`,
-      h: `${rowPercentStr}`,
-      x: `calc(calc(100% / ${cols}) * ${col})`,
-      y: `calc(calc(100% / ${rows}) * ${row})`
-    }
-    */
 
     const handleConfigOpen = () => {
       setOptionBuffer(tile.options);
       setConfigOpen(tileIndex);
     }
 
-    ret = <DraggableTile key={tile.id} index={tileIndex} Type={tileMappings[tile.type].Type} tile={tile} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
+    ret = <DraggableTile key={tile.id} index={tileIndex} Type={tileMappings[tile.type].Type} tile={tile} className={multipleClasses([popped !== -1 && popped !== tile.id, classes.blur])} preview={editMode} isEditing={editMode} canDrag={editMode} popped={popped === tile.id} setPopped={() => setPopped(tile.id)} onSettingsClick={handleConfigOpen} containerRef={containerRef} {...dimensions} />
 
     smallCol++;
     if(smallCol > smallCols) {

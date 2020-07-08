@@ -79,7 +79,7 @@ function MainContainer({ width }) {
                 <Route path="/more" component={More} />
                 <Route path="/dev" render={() => <BatteryMeter value={75} />} />
                 <Route exact path="/" render={() => <Redirect to={config.other.defaultDashboard === -1 ? 'settings/' + window.location.search : '' + config.other.defaultDashboard + '/' + window.location.search} />} />
-                <Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} preload={!isSmall} isSmall={isSmall} />} />
+                <Route path={/\/[0-9]+\//} render={({ location }) => <View index={parseInt(location.pathname.substr(1))} isSmall={isSmall} />} />
               </Switch>
             </main>
           </div>
