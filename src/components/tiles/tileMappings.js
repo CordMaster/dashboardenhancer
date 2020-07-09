@@ -10,6 +10,10 @@ function getDefaultsFor(str) {
       showLabel: true
     },
 
+    padding: {
+      padding: 8
+    },
+
     colors: {
       backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
       foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 }

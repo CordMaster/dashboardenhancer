@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
     width: 'auto',
     height: 'auto',
 
-    padding: theme.spacing(2),
+    padding: `var(--padding)`,
 
     zIndex: 10,
 
@@ -79,23 +79,23 @@ const useStyles = makeStyles(theme => ({
     transition: 'opacity 250ms linear',
 
     '&.tl': {
-      top: theme.spacing(2),
-      left: theme.spacing(2)
+      top: `var(--padding)`,
+      left: `var(--padding)`
     },
 
     '&.tr': {
-      top: theme.spacing(2),
-      right: theme.spacing(2)
+      top: `var(--padding)`,
+      right: `var(--padding)`
     },
 
     '&.bl': {
-      bottom: theme.spacing(2),
-      left: theme.spacing(2)
+      bottom: `var(--padding)`,
+      left: `var(--padding)`
     },
 
     '&.br': {
-      bottom: theme.spacing(2),
-      right: theme.spacing(2)
+      bottom: `var(--padding)`,
+      right: `var(--padding)`
     },
 
     '&.popped': {
@@ -365,6 +365,10 @@ export const BaseTile = React.forwardRef(({ options, fillContent, content, onCli
       label: null
     },
 
+    padding: {
+      padding: 8
+    },
+
     colors: {
       backgroundColor: { r: 255, g: 255, b: 255, alpha: 1.0 },
       foregroundColor: { r: 0, g: 0, b: 0, alpha: 1.0 },
@@ -375,6 +379,8 @@ export const BaseTile = React.forwardRef(({ options, fillContent, content, onCli
     //styles from options
     backgroundColor: Color(compOptions.colors.backgroundColor).rgb().string(),
     color: Color(compOptions.colors.foregroundColor).rgb().string(),
+
+    '--padding': `${compOptions.padding.padding}px`,
 
     ...style
   };

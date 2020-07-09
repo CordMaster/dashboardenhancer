@@ -88,7 +88,10 @@ export default React.forwardRef(({ options, ...props }, ref) => {
 
     //merge options
     let newOptions = { ...options };
-    if(sections.optionOverrides.backgroundColor.type !== 'none') newOptions.colors.backgroundColor =  evalConditions(sections.optionOverrides.backgroundColor);
+    Object.entries(sections.optionOverrides).forEach(([key, override]) => {
+      const path = key.split('.');
+      if(override.type !== 'none' && path[0] && path[1]) newOptions[path[0]][path[1]] = evalConditions(override);
+    });
 
     const handleClick = () => {
       if(device.attributes.switch) {

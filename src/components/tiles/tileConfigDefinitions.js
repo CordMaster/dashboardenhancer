@@ -8,6 +8,13 @@ export default {
       ]
     },
 
+    'padding': {
+      sectionLabel: 'Padding',
+      sectionOptions: [
+        { name: 'padding', label: 'Padding', type: 'number', default: 8 }
+      ]
+    },
+
     'colors': {
       sectionLabel: 'Colors',
       sectionOptions: [

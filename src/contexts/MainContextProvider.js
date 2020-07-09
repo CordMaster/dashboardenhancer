@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-import Immutable, { List, Map } from 'immutable';
+import Immutable from 'immutable';
+import merge from 'deepmerge';
 
 import $ from 'jquery';
 import Color from 'color';
@@ -14,6 +15,7 @@ import useCollection from './useCollection.js';
 import useSettingsDefinition from '../definitions/useSettingsDefinition.js';
 import settingsDefinitons from '../definitions/settingsDefinitons.js';
 import defaultHubitatTileDefinitions from '../components/hubitatTileMaker/defaultHubitatTileDefinitions.js';
+import tileMappings from '../components/tiles/tileMappings.js';
 
 export const MainContext = React.createContext({});
 
@@ -22,7 +24,10 @@ function MainContextProvider(props) {
 
   const [dashboards, modifyDashboards, setDashboards] = useCollection(defaultDashboards, { iconName: "mdiHome", lock: false, backgroundColor: { r: 255, g: 255, b: 255, alpha: 1 }, tiles: [] });
 
-  const [hubitatTileDefinitions, modifyHubitatTileDefinitions, setHubitatTileDefinitions] = useCollection([], { iconName: "mdiApplication", sections: {
+  const hubitatTileDefinitionTemplate = { 
+    iconName: "mdiApplication", 
+    
+    sections: {
       primary: {
         enabled: false,
         type: 'none'
@@ -72,12 +77,18 @@ function MainContextProvider(props) {
       },
 
       optionOverrides: {
-        backgroundColor: {
+        'padding.padding': {
+          type: 'none'
+        },
+
+        'colors.backgroundColor': {
           type: 'none',
         }
       }
     }
-  });
+  }
+
+  const [hubitatTileDefinitions, modifyHubitatTileDefinitions, setHubitatTileDefinitions] = useCollection([], hubitatTileDefinitionTemplate);
 
   //const [config, setConfig, mergeAllConfig] = useConfig([{ name: 'iconsOnly', default: false }, { name: 'defaultDashboard', default: -1 }, { name: 'title', default: 'Panels' }, { name: 'theme', default: 'light' }, { name: 'fontSize', default: 16 }, { name: 'showBadges', default: false },
   //{ name: 'overrideColors', default: false }, { name: 'overrideBG', default: { r: 255, b: 255, g: 255, alpha: 1.0 } }, { name: 'overrideFG', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overridePrimary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } }, { name: 'overrideSecondary', default: { r: 0, b: 0, g: 0, alpha: 1.0 } },
@@ -139,8 +150,11 @@ function MainContextProvider(props) {
         $.get(`${endpoint}options/?access_token=${access_token}`, (data) => {
           if(!data.error) {
             mergeAllConfig(data.config ? data.config : {});
-            setDashboards(data.dashboards ? data.dashboards : []);
-            setHubitatTileDefinitions(data.hubitatTileDefinitions ? data.hubitatTileDefinitions : []);
+            setDashboards(data.dashboards ? data.dashboards.map(dashboard => {
+              dashboard.tiles = dashboard.tiles.map(tile => merge({ options: tileMappings[tile.type].defaultOptions }, tile));
+              return dashboard;
+            }) : []);
+            setHubitatTileDefinitions(data.hubitatTileDefinitions ? data.hubitatTileDefinitions.map(it => merge(hubitatTileDefinitionTemplate, it)) : []);
 
             devLog(`Got config`);
             devLog(data);
