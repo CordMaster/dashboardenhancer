@@ -116,10 +116,12 @@ export default function({ index, isSmall, ...props }) {
 
   const uiPanels = dashboards.map((dashboard, thisIndex) => {
     const style = {
-      display: thisIndex !== index && config.panel.cache ? 'none' : 'initial'
+      opacity: thisIndex !== index ? 0 : 1,
+      zIndex: thisIndex !== index ? -1 : 0
     };
 
-    return <Panel key={dashboard.id} index={thisIndex} isSmall={isSmall} style={style} />;
+    if(thisIndex === index || (config.panel.cache && thisIndex !== index)) return <Panel key={dashboard.id} index={thisIndex} isSmall={isSmall} style={style} />;
+    else return false;
   });
 
   return (
