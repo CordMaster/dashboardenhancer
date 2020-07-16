@@ -365,7 +365,10 @@ export function Panel({ index, className, isSmall, style, ...props }) {
       const tilePosition = item.tile.position;
 
       const newTile = {
-        ...item.tile,
+        type: item.tile.type,
+
+        options: item.tile.options,
+
         position: {
           ...tilePosition,
           x: newTileTemplate.position.x,

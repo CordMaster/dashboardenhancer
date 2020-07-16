@@ -13,7 +13,7 @@ import { MainContext } from '../contexts/MainContextProvider';
 import { withRouter } from 'react-router';
 import ClockWidget from '../Widgets/ClockWidget';
 import { endpoint, access_token, devMode } from '../Constants';
-import { devLog } from '../Utils';
+import { devLog, multipleClasses } from '../Utils';
 import useLock from './useLock';
 import WeatherWidget from '../Widgets/WeatherWidget';
 import { OpenWeatherContext } from '../contexts/OpenWeatherContextProvider';
@@ -64,7 +64,13 @@ const useStyles = makeStyles(theme => ({
   bottomListItem: {
     display: 'inline-block',
 
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
+    width: 'auto',
+    padding: theme.spacing(1.5),
+
+    '&.iconsOnly': {
+      width: '100%',
+      textAlign: 'center'
+    },
 
     '&.right': {
       borderRight: `1px solid ${theme.palette.divider}`
@@ -146,16 +152,16 @@ function AppDrawer({ location }) {
 
         <ListItem className={classes.bottomListContainer}>
           <List className={classes.bottomList}>
-              <ListItem button className={`${classes.bottomListItem} ${!drawerConfig.iconsOnly ? 'right' : 'bottom'}`} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} disabled={locked !== -1 && config.lock.lockSettings}>
+              <ListItem button className={multipleClasses(classes.bottomListItem, [drawerConfig.iconsOnly, 'iconsOnly'], !drawerConfig.iconsOnly ? 'right' : 'bottom')} component={Link} to={`/settings/${window.location.search}`} selected={subLocation === 'settings/'} disabled={locked !== -1 && config.lock.lockSettings}>
                 <Icons.mdiCog color="action" />
               </ListItem>
               
               <div>
-                <ListItem button className={`${classes.bottomListItem}  ${!drawerConfig.iconsOnly ? 'left' : 'bottom'}`} onClick={sync}>
+                <ListItem button className={multipleClasses(classes.bottomListItem, [drawerConfig.iconsOnly, 'iconsOnly'], !drawerConfig.iconsOnly ? 'left' : 'bottom')} onClick={sync}>
                   <Icons.mdiSync color="action" />
                 </ListItem>
                 
-                <ListItem button className={`${classes.bottomListItem} ${!drawerConfig.iconsOnly && 'left'}`} onClick={() => !config.lock.useLockCode ? (locked ? setLocked(false) : setLocked(true)) : openDialog()}>
+                <ListItem button className={multipleClasses(classes.bottomListItem, [drawerConfig.iconsOnly, 'iconsOnly'], [!drawerConfig.iconsOnly, 'left'])} onClick={() => !config.lock.useLockCode ? (locked ? setLocked(false) : setLocked(true)) : openDialog()}>
                   {locked ? <Icons.mdiLockOpen color="action" /> : <Icons.mdiLock color="action" />}
                 </ListItem>
               </div>

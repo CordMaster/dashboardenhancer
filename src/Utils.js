@@ -10,7 +10,7 @@ export function toSentence(str) {
 }
 
 export function rectOverlaps(a, b) {
-  return !(a.x >= b.x + b.w || a.x + a.w <= b.x || a.y >= b.y + b.h || a.y + a.y <= b.h);
+  return !(a.x >= b.x + b.w || a.x + a.w <= b.x || a.y >= b.y + b.h || a.y + a.h <= b.y);
 }
 
 export function rectInside(a, b) {
