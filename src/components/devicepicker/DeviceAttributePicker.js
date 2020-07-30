@@ -14,7 +14,7 @@ export default function({ value, onChange, disabled }) {
     onChange({ ...value, attribute: val });
   }
 
-  const uiAttrs = useMemo(() => value.device ? Object.values(devices[value.device].attr).map((it) => <MenuItem key={it.name} value={it.name}>{it.name}</MenuItem>) : [], [devices, value.device]);
+  const uiAttrs = useMemo(() => value.device ? Object.values(devices[value.device].attributes).map((it) => <MenuItem key={it.name} value={it.name}>{it.name}</MenuItem>) : [], [devices, value.device]);
 
   return (
     <Grid container direction="row" spacing={3}>

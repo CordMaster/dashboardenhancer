@@ -71,13 +71,13 @@ export default function() {
   const classes = useStyles();
 
   const { config } = useContext(MainContext);
-  const weatherConfig = config.weatherConfig;
+  const weatherConfig = config.weather;
 
   const { devices } = useContext(HubContext);
   const { loaded, error, current: currentWeather, future: futureWeather } = useContext(OpenWeatherContext);
 
-  const indoorTemp = weatherConfig.useHubDeviceForIndoorTemp && config.indoorTempHubDevice.device && config.indoorTempHubDevice.attribute ? Math.round(devices[config.indoorTempHubDevice.device].attr[config.indoorTempHubDevice.attribute].value) : false;
-  const outdoorTemp = Math.round(weatherConfig.useHubDeviceForOutdoorTemp && config.outdoorTempHubDevice.device && config.outdoorTempHubDevice.attribute ? devices[config.outdoorTempHubDevice.device].attr[config.outdoorTempHubDevice.attribute].value : (loaded && !error ? currentWeather.temp : 0));
+  const indoorTemp = weatherConfig.useHubDeviceForIndoorTemp && weatherConfig.indoorTempHubDevice.device && weatherConfig.indoorTempHubDevice.attribute ? Math.round(devices[weatherConfig.indoorTempHubDevice.device].attributes[weatherConfig.indoorTempHubDevice.attribute].currentState) : false;
+  const outdoorTemp = Math.round(weatherConfig.useHubDeviceForOutdoorTemp && weatherConfig.outdoorTempHubDevice.device && weatherConfig.outdoorTempHubDevice.attribute ? devices[weatherConfig.outdoorTempHubDevice.device].attributes[weatherConfig.outdoorTempHubDevice.attribute].currentState : (loaded && !error ? currentWeather.temp : 0));
 
   const futureWeatherParsed = loaded && !error ? futureWeather.map((data) => {
     return {
