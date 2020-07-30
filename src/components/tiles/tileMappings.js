@@ -2,6 +2,7 @@ import { BaseTile } from "./Tile";
 import IFrameTile from "./IFrameTile";
 import HubitatTile from "./HubitatTile";
 import tileConfigDefinitions from "./tileConfigDefinitions";
+import RTSPTile from "./RTSPTile";
 
 function getDefaultsFor(str) {
   let ret = {
@@ -31,15 +32,27 @@ function getDefaultsFor(str) {
 }
 
 export default {
+  'hubitatTile': {
+    label: 'Hubitat Tile',
+    icon: 'mdiHomeAutomation',
+    Type: HubitatTile,
+
+    defaultOptions: getDefaultsFor('hubitatTile')
+  },
+
   'iframeTile': {
+    label: 'IFrame Tile',
+    icon: 'mdiApplication',
     Type: IFrameTile,
     
     defaultOptions: getDefaultsFor('iframeTile')
   },
 
-  'hubitatTile': {
-    Type: HubitatTile,
-
-    defaultOptions: getDefaultsFor('hubitatTile')
+  'rtspTile': {
+    label: 'RTSP Tile',
+    icon: 'mdiVideo',
+    Type: RTSPTile,
+    
+    defaultOptions: getDefaultsFor('rtspTile')
   }
 }

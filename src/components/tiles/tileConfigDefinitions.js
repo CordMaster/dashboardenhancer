@@ -24,6 +24,18 @@ export default {
     },
   },
 
+  'hubitatTile': {
+    'deviceInfo': {
+      sectionLabel: 'Device Info',
+      sectionOptions: [
+        { name: 'device', label: 'Device', type: 'device', default: '' },
+        { name: 'type', label: 'Type', type: 'enum', values: (mainContext) => {
+          return mainContext.allHubitatTileDefinitions.map(it => ({ value: it.id, label: it.label }));
+        }, default: '' }
+      ]
+    }
+  },
+
   'iframeTile': {
     'iframe': {
       sectionLabel: 'iFrame Options',
@@ -33,14 +45,11 @@ export default {
     }
   },
 
-  'hubitatTile': {
+  'rtspTile': {
     'deviceInfo': {
       sectionLabel: 'Device Info',
       sectionOptions: [
-        { name: 'device', label: 'Device', type: 'device', default: '' },
-        { name: 'type', label: 'Type', type: 'enum', values: (mainContext) => {
-          return mainContext.allHubitatTileDefinitions.map(it => ({ value: it.id, label: it.label }));
-        }, default: '' }
+        { name: 'streamAddress', label: 'Stream Address', type: 'text', default: '' }
       ]
     }
   }

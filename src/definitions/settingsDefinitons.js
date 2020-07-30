@@ -78,6 +78,13 @@ export default {
     ]
   },
 
+  'rtspProxy': {
+    sectionLabel: 'RTSP Settings',
+    sectionOptions: [
+      { name: 'rtspProxyAddress', label: 'RTSP Proxy Address', type: 'text', default: '' },
+    ]
+  },
+
   'font': {
     sectionLabel: 'Font Size',
     saveBuffer: true,

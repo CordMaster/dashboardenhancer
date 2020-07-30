@@ -140,7 +140,9 @@ function MainContextProvider(props) {
     theme = responsiveFontSizes(theme);
 
     setGenTheme(theme);
-  }, [config.theme, config.font, config.themeColors]);
+
+    //expand all children for comparison
+  }, [...Object.values(config.theme), ...Object.values(config.font), ...(Object.values(config.themeColors).reduce((sum, val) => [...sum, ...Object.values(val)], []))]);
 
   //state save/load
   useEffect(() => {

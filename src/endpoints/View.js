@@ -475,6 +475,21 @@ export function Panel({ index, className, isSmall, style, ...props }) {
     bottom: `-${containerRef.current.scrollTop}px`
   }
 
+  //add tiles ui
+
+  const uiAddTiles = Object.entries(tileMappings).map(([type, tileMapping]) => {
+    const Icon = Icons[tileMapping.icon];
+
+    return (
+      <Fab key={type} className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type, options: tileMapping.defaultOptions })}>
+        <Icon />
+        Add a(n) {tileMapping.label}
+      </Fab>
+    );
+  });
+
+  //end add tiles ui
+
   return (
     <Paper className={multipleClasses(classes.container, [isSmall, 'small'], className)} square elevation={0} style={mergedStyles} {...props}>
       <div className={multipleClasses(classes.popCover, [popped !== -1, 'popped'])} style={popCoverStyles}></div>
@@ -503,15 +518,7 @@ export function Panel({ index, className, isSmall, style, ...props }) {
                   <Fragment>
                     { !addingTile ?
                       <Fragment>
-                        <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type: 'iframeTile', options: tileMappings.iframeTile.defaultOptions })}>
-                          <Icons.mdiApplication />
-                          Add an iframe
-                        </Fab>
-                        {console.log()}
-                        <Fab className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type: 'hubitatTile', options: tileMappings.hubitatTile.defaultOptions })}>
-                          <Icons.mdiHomeLightbulb />
-                          Add a Hubitat tile
-                        </Fab>
+                        {uiAddTiles}
                       </Fragment>
                       :
                       <Fab className={classes.fab} variant="extended" color="secondary" onClick={() => setAddingTile(null)}>
