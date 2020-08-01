@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from 'react';
-import { Grid, Typography, TextField, FormControl, InputLabel, MenuItem, Select, Tab, Tabs, Paper, DialogContent, makeStyles, Switch, FormControlLabel, Button } from '@material-ui/core';
+import { Grid, Typography, TextField, FormControl, InputLabel, MenuItem, Select, Tab, Tabs, Paper, DialogContent, makeStyles, Switch, FormControlLabel, Button, IconButton } from '@material-ui/core';
 import merge from 'deepmerge';
 
 import { useModifyImmutableCollection } from '../../contexts/useCollection';
@@ -8,6 +8,7 @@ import { toSentence, multipleClasses } from '../../Utils';
 import { PreviewTile, BaseTile } from '../tiles/Tile';
 import validHubitatTileDefinitionSectionTypes, { optionOverridesTemplates } from './validHubitatTileDefinitionSectionTypes';
 import InputComponents from '../InputComponents';
+import Icons from '../../Icons';
 
 const useStyles = makeStyles(theme => ({
   previewContainer: {
@@ -317,7 +318,7 @@ export function Condition({ ValueComponent, condition, modifyCondition }) {
         <ValueComponent value={condition.value} setValue={(value) => modifyCondition({ value })} />
       </Grid>
 
-      <Grid item xs={2}>
+      <Grid item xs={1}>
         <Typography variant="subtitle2" align="center">when</Typography>
       </Grid>
       
@@ -343,8 +344,14 @@ export function Condition({ ValueComponent, condition, modifyCondition }) {
         </FormControl>
       </Grid>
 
-      <Grid item xs={3}>
+      <Grid item xs={2}>
         <TextField fullWidth label="Value" value={condition.requiredState} onChange={(e) => modifyCondition({ requiredState: e.target.value })}/>
+      </Grid>
+
+      <Grid item xs={2}>
+        <IconButton><Icons.mdiArrowUp /></IconButton>
+        <IconButton><Icons.mdiArrowDown /></IconButton>
+        <IconButton color="secondary"><Icons.mdiDelete /></IconButton>
       </Grid>
     </Grid>
   );

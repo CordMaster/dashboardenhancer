@@ -10,6 +10,8 @@ import { HubContext } from '../../contexts/HubContextProvider';
 
 import Icons from '../../Icons';
 import validHubitatTileDefinitionSectionTypes from '../hubitatTileMaker/validHubitatTileDefinitionSectionTypes';
+import { ErrorBoundary } from 'react-error-boundary';
+import ErrorTile from './ErrorTile';
 
 const useStyles = makeStyles(theme => ({
   iframe: {
@@ -101,7 +103,11 @@ export default React.forwardRef(({ options, ...props }, ref) => {
     }
 
     //todo: unique title
-    return <BaseTile ref={ref} options={newOptions} {...props} content={content} onClick={handleClick} />
+    return (
+      <ErrorBoundary fallbackRender={() => <ErrorTile ref={ref} options={newOptions} {...props} />}>
+        <BaseTile ref={ref} options={newOptions} {...props} content={content} onClick={handleClick} />
+      </ErrorBoundary>
+    );
   }
 
   return <BaseTile ref={ref} options={options} {...props} content={{ }} />

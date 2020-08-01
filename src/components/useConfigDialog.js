@@ -1,5 +1,5 @@
 import React, { useState, useContext, useMemo, Fragment } from 'react';
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, withMobileDialog, Typography } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, withMobileDialog, Typography, makeStyles } from '@material-ui/core';
 
 export default function(label, renderProp, onApply) {
   const [openIndex, setOpenIndex] = useState(-1);
