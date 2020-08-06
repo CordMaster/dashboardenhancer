@@ -296,8 +296,9 @@ export function Conditions({ typeDefault, Component, conditions, setConditions }
   });
   
   const uiConditions = conditions.map((condition, index) => {
+    //TODO: fix index key?
     return (
-      <Condition key={index} ValueComponent={Component} condition={condition} modifyCondition={(data) => modifyConditions({ type: 'modify', index, data }) } />
+      <Condition key={index} index={index} length={uiConditions.length} ValueComponent={Component} condition={condition} modifyCondition={(data) => modifyConditions({ index, ...data }) } />
     );
   });
 
@@ -309,13 +310,13 @@ export function Conditions({ typeDefault, Component, conditions, setConditions }
   );
 }
 
-export function Condition({ ValueComponent, condition, modifyCondition }) {
-
-
+export function Condition({ index, length, ValueComponent, condition, modifyCondition }) {
+  const updateCondition = (data) => modifyCondition({ type: 'modify', data });
+  
   return (
     <Grid container alignItems="flex-end" spacing={2}>
       <Grid item xs={2}>
-        <ValueComponent value={condition.value} setValue={(value) => modifyCondition({ value })} />
+        <ValueComponent value={condition.value} setValue={(value) => updateCondition({ value })} />
       </Grid>
 
       <Grid item xs={1}>
@@ -323,7 +324,7 @@ export function Condition({ ValueComponent, condition, modifyCondition }) {
       </Grid>
       
       <Grid item xs={2}>
-        <TextField fullWidth label="Attr name" value={condition.attributeName} onChange={(e) => modifyCondition({ attributeName: e.target.value })} />
+        <TextField fullWidth label="Attr name" value={condition.attributeName} onChange={(e) => updateCondition({ attributeName: e.target.value })} />
       </Grid>
 
       <Grid item xs={1}>
@@ -333,7 +334,7 @@ export function Condition({ ValueComponent, condition, modifyCondition }) {
       <Grid item xs={2}>
         <FormControl fullWidth>
           <InputLabel>Condition</InputLabel>
-          <Select value={condition.comparator} onChange={(e) => modifyCondition({ comparator: e.target.value })}>
+          <Select value={condition.comparator} onChange={(e) => updateCondition({ comparator: e.target.value })}>
             <MenuItem value="===">equal to</MenuItem>
             <MenuItem value="!==">not equal to</MenuItem>
             <MenuItem value="<">less than</MenuItem>
@@ -345,13 +346,13 @@ export function Condition({ ValueComponent, condition, modifyCondition }) {
       </Grid>
 
       <Grid item xs={2}>
-        <TextField fullWidth label="Value" value={condition.requiredState} onChange={(e) => modifyCondition({ requiredState: e.target.value })}/>
+        <TextField fullWidth label="Value" value={condition.requiredState} onChange={(e) => updateCondition({ requiredState: e.target.value })}/>
       </Grid>
 
       <Grid item xs={2}>
-        <IconButton><Icons.mdiArrowUp /></IconButton>
-        <IconButton><Icons.mdiArrowDown /></IconButton>
-        <IconButton color="secondary"><Icons.mdiDelete /></IconButton>
+        { index !== 0 && <IconButton><Icons.mdiArrowUp onClick={() => modifyCondition({ type: 'move', srcIndex: index, destIndex: index - 1 })} /></IconButton> }
+        { index !== length - 1 && <IconButton><Icons.mdiArrowDown onClick={() => modifyCondition({ type: 'move', srcIndex: index, destIndex: index + 1 })} /></IconButton> }
+        <IconButton color="secondary" onClick={() => modifyCondition({ type: 'delete' })}><Icons.mdiDelete /></IconButton>
       </Grid>
     </Grid>
   );

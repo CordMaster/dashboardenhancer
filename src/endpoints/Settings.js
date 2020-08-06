@@ -193,7 +193,7 @@ function DashboardsSettings() {
     const {source, destination} = result;
     
     if(source.droppableId === destination.droppableId) {
-      modifyDashboards({ type: 'move', startIndex: source.index, destIndex: destination.index });
+      modifyDashboards({ type: 'move', srcIndex: source.index, destIndex: destination.index });
 
       //update the default too
       if(defaultDashboard === source.index) setDefaultDashboard(destination.index);
@@ -278,7 +278,7 @@ function HubitatTileDefinitionsSettings() {
     return <HubitatTileDefinitionMaker sectionsBuffer={sectionsBuffer} setSectionsBuffer={setSectionsBuffer} />
   }, (index) => {
     modifyHubitatTileDefinitions({ type: 'modify', index, data: { sections: sectionsBuffer } });
-  });
+  }, "xl");
 
   const handleAdd = () => {
     modifyHubitatTileDefinitions({ type: 'new', data: { label: newText } });
@@ -290,7 +290,7 @@ function HubitatTileDefinitionsSettings() {
     const {source, destination} = result;
     
     if(source.droppableId === destination.droppableId) {
-      modifyHubitatTileDefinitions({ type: 'move', startIndex: source.index, destIndex: destination.index });
+      modifyHubitatTileDefinitions({ type: 'move', srcIndex: source.index, destIndex: destination.index });
     }
   }
 

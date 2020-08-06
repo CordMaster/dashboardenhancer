@@ -21,9 +21,9 @@ export function useModifyImmutableCollection(objState, newTemplate, onChange) {
   return obj => {
     const type = obj.type;
       if(type === "move") {
-        const { startIndex, destIndex } = obj;
-        const startObj = state.get(startIndex);
-        const newArr = state.splice(startIndex, 1).insert(destIndex, startObj);
+        const { srcIndex, destIndex } = obj;
+        const startObj = state.get(srcIndex);
+        const newArr = state.splice(srcIndex, 1).insert(destIndex, startObj);
 
         onChange(newArr.toJS());
       } else if(type === "delete") {
