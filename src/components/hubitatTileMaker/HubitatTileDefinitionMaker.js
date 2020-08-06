@@ -298,7 +298,7 @@ export function Conditions({ typeDefault, Component, conditions, setConditions }
   const uiConditions = conditions.map((condition, index) => {
     //TODO: fix index key?
     return (
-      <Condition key={index} index={index} length={uiConditions.length} ValueComponent={Component} condition={condition} modifyCondition={(data) => modifyConditions({ index, ...data }) } />
+      <Condition key={index} index={index} length={conditions.length} ValueComponent={Component} condition={condition} modifyCondition={(data) => modifyConditions({ index, ...data }) } />
     );
   });
 
@@ -310,28 +310,36 @@ export function Conditions({ typeDefault, Component, conditions, setConditions }
   );
 }
 
+const useConditionStyles = makeStyles((theme) => ({
+  input: {
+    flexGrow: 1
+  }
+}));
+
 export function Condition({ index, length, ValueComponent, condition, modifyCondition }) {
+  const classes = useConditionStyles();
+
   const updateCondition = (data) => modifyCondition({ type: 'modify', data });
   
   return (
-    <Grid container alignItems="flex-end" spacing={2}>
-      <Grid item xs={2}>
+    <Grid container alignItems="flex-end" justify="space-between" spacing={2}>
+      <Grid item>
         <ValueComponent value={condition.value} setValue={(value) => updateCondition({ value })} />
       </Grid>
 
-      <Grid item xs={1}>
+      <Grid item>
         <Typography variant="subtitle2" align="center">when</Typography>
       </Grid>
       
-      <Grid item xs={2}>
+      <Grid item className={classes.input}>
         <TextField fullWidth label="Attr name" value={condition.attributeName} onChange={(e) => updateCondition({ attributeName: e.target.value })} />
       </Grid>
 
-      <Grid item xs={1}>
+      <Grid item>
         <Typography variant="subtitle2" align="center">is</Typography>
       </Grid>
 
-      <Grid item xs={2}>
+      <Grid item className={classes.input}>
         <FormControl fullWidth>
           <InputLabel>Condition</InputLabel>
           <Select value={condition.comparator} onChange={(e) => updateCondition({ comparator: e.target.value })}>
@@ -345,13 +353,13 @@ export function Condition({ index, length, ValueComponent, condition, modifyCond
         </FormControl>
       </Grid>
 
-      <Grid item xs={2}>
+      <Grid item className={classes.input}>
         <TextField fullWidth label="Value" value={condition.requiredState} onChange={(e) => updateCondition({ requiredState: e.target.value })}/>
       </Grid>
 
-      <Grid item xs={2}>
-        { index !== 0 && <IconButton><Icons.mdiArrowUp onClick={() => modifyCondition({ type: 'move', srcIndex: index, destIndex: index - 1 })} /></IconButton> }
-        { index !== length - 1 && <IconButton><Icons.mdiArrowDown onClick={() => modifyCondition({ type: 'move', srcIndex: index, destIndex: index + 1 })} /></IconButton> }
+      <Grid item>
+        <IconButton disabled={index === 0}><Icons.mdiArrowUp onClick={() => modifyCondition({ type: 'move', srcIndex: index, destIndex: index - 1 })} /></IconButton>
+        <IconButton disabled={index === length - 1}><Icons.mdiArrowDown onClick={() => modifyCondition({ type: 'move', srcIndex: index, destIndex: index + 1 })} /></IconButton>
         <IconButton color="secondary" onClick={() => modifyCondition({ type: 'delete' })}><Icons.mdiDelete /></IconButton>
       </Grid>
     </Grid>
