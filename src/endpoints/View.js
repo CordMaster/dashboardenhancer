@@ -1,6 +1,6 @@
 import React, { useContext, Fragment, useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
-import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent } from '@material-ui/core';
+import { Paper, makeStyles, Typography, FormControl, FormControlLabel, Switch, duration, Fab, AppBar, Tabs, Tab, DialogContent, MenuItem, ListItemIcon, Menu, Fade } from '@material-ui/core';
 import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
 import { HubContext } from '../contexts/HubContextProvider';
 import { MainContext } from '../contexts/MainContextProvider';
@@ -108,6 +108,13 @@ const useStyles = makeStyles(theme => ({
 
   blur: {
     filter: 'blur(5px)'
+  },
+
+
+  //menu
+  menu: {
+    bottom: 40,
+    right: 115
   }
 }));
 
@@ -475,21 +482,6 @@ export function Panel({ index, className, isSmall, style, ...props }) {
     bottom: `-${containerRef.current.scrollTop}px`
   }
 
-  //add tiles ui
-
-  const uiAddTiles = Object.entries(tileMappings).map(([type, tileMapping]) => {
-    const Icon = Icons[tileMapping.icon];
-
-    return (
-      <Fab key={type} className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type, options: tileMapping.defaultOptions })}>
-        <Icon />
-        Add a(n) {tileMapping.label}
-      </Fab>
-    );
-  });
-
-  //end add tiles ui
-
   return (
     <Paper className={multipleClasses(classes.container, [isSmall, 'small'], className)} square elevation={0} style={mergedStyles} {...props}>
       <div className={multipleClasses(classes.popCover, [popped !== -1, 'popped'])} style={popCoverStyles}></div>
@@ -517,9 +509,7 @@ export function Panel({ index, className, isSmall, style, ...props }) {
                 { editMode &&
                   <Fragment>
                     { !addingTile ?
-                      <Fragment>
-                        {uiAddTiles}
-                      </Fragment>
+                      <AddTileMenu newTileTemplate={newTileTemplate} setAddingTile={setAddingTile} />
                       :
                       <Fab className={classes.fab} variant="extended" color="secondary" onClick={() => setAddingTile(null)}>
                         <Icons.mdiCancel />
@@ -639,3 +629,34 @@ const BackgroundGrid = React.memo(({ rows, cols }) => {
     </div>
   )
 });
+
+function AddTileMenu({ newTileTemplate, setAddingTile }) {
+  const classes = useStyles();
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const menuAddTiles = Object.entries(tileMappings).map(([type, tileMapping]) => {
+    const Icon = Icons[tileMapping.icon];
+
+    return (
+      <MenuItem key={type} className={classes.fab} variant="extended" onClick={() => setAddingTile({ ...newTileTemplate, type, options: tileMapping.defaultOptions })}>
+        <ListItemIcon>
+          <Icon />
+        </ListItemIcon>
+        Add a(n) {tileMapping.label}
+      </MenuItem>
+    );
+  });
+
+  return (
+    <Fragment>
+      <Fab className={classes.fab} color="primary" onClick={() => setMenuOpen(true)}>
+        <Icons.mdiPlus />
+      </Fab>
+
+      <Menu open={menuOpen} anchorReference="none" classes={{ paper: classes.menu }} TransitionComponent={Fade} onClose={() => setMenuOpen(false)}>
+        {menuAddTiles}
+      </Menu>
+    </Fragment>
+  );
+}
