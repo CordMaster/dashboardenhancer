@@ -28,8 +28,8 @@ function Clock() {
     }
   }, [setTime]);
 
-  const attr1 = clockAttrsConfig.clockAttr1.device && clockAttrsConfig.clockAttr1.attribute && devices[clockAttrsConfig.clockAttr1.device].attr[clockAttrsConfig.clockAttr1.attribute].value;
-  const attr2 = clockAttrsConfig.clockAttr2.device && clockAttrsConfig.clockAttr2.attribute && devices[clockAttrsConfig.clockAttr2.device].attr[clockAttrsConfig.clockAttr2.attribute].value;
+  const attr1 = clockAttrsConfig.clockAttr1.device && clockAttrsConfig.clockAttr1.attribute && devices[clockAttrsConfig.clockAttr1.device].attributes[clockAttrsConfig.clockAttr1.attribute].currentState;
+  const attr2 = clockAttrsConfig.clockAttr2.device && clockAttrsConfig.clockAttr2.attribute && devices[clockAttrsConfig.clockAttr2.device].attributes[clockAttrsConfig.clockAttr2.attribute].currentState;
   return (
     <Fragment>
       <Typography>{clockConfig.showDate && time.toLocaleDateString()}</Typography>
