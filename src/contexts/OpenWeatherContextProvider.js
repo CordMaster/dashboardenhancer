@@ -9,9 +9,9 @@ export const OpenWeatherContext = React.createContext({});
 
 export default function(props) {
   const { config } = useContext(MainContext);
-  const weatherConfig = config.weather;
+  const weatherConfig = config.weatherLocation;
 
-  const position = useMemo(() => { return { coords: { latitude: weatherConfig.latitude, longitude: weatherConfig.longitude } } }, [weatherConfig.latitude, weatherConfig.longitude]);
+  const position = useMemo(() => ({ coords: { latitude: weatherConfig.latitude, longitude: weatherConfig.longitude } }), [weatherConfig.latitude, weatherConfig.longitude]);
 
   /*useEffect(() => {
     navigator.geolocation.getCurrentPosition((gotPosition) => setPosition(gotPosition));

@@ -35,7 +35,7 @@ function Clock() {
       <Typography>{clockConfig.showDate && time.toLocaleDateString()}</Typography>
       <Typography variant="h6">{time.getHours() > 12 ? time.getHours() - 12 : time.getHours()}:{timeStr(time.getMinutes())}{clockConfig.showSeconds && `:${timeStr(time.getSeconds())}`} {time.getHours() > 12 ? 'PM' : 'AM'}</Typography>
       
-      {clockAttrsConfig.showClockAttributes &&
+      {clockConfig.showClockAttributes &&
         <Grid container direction="row" spacing={3}>
           <Grid item>
             <Typography variant="caption">{clockAttrsConfig.clockAttr1Label}: {attr1}</Typography>

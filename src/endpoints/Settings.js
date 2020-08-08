@@ -88,7 +88,7 @@ function Settings() {
           {compiledSettings}
 
           <SettingsSection title="Legal">
-            <Button variant="outlined" color="secondary" onClick={() => window.location.assign('https://cdn.plumpynuggets.com/attribution.txt')}>Licenses</Button>
+            <Button variant="outlined" color="secondary" onClick={() => window.location.href = "/local/attribution.txt"}>Licenses</Button>
           </SettingsSection>
         </Grid>
       </Grid>
