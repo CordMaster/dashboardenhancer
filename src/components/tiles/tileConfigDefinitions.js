@@ -41,6 +41,8 @@ export default {
       sectionLabel: 'iFrame Options',
       sectionOptions: [
         { name: 'src', label: 'iFrame Source', type: 'text', default: '' },
+        { name: 'refresh', label: 'Reload iFrame', type: 'boolean', default: false },
+        { name: 'refreshInterval', label: 'iFrame Reload Interval (Minutes)', type: 'number', default: 5, dependsOn: [{ name: 'iframe.refresh', value: true }] }
       ]
     }
   },
