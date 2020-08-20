@@ -3,6 +3,7 @@ import IFrameTile from "./IFrameTile";
 import HubitatTile from "./HubitatTile";
 import tileConfigDefinitions from "./tileConfigDefinitions";
 import RTSPTile from "./RTSPTile";
+import ClockTile from "./ClockTile";
 
 function getDefaultsFor(str) {
   let ret = {
@@ -32,6 +33,14 @@ function getDefaultsFor(str) {
 }
 
 export default {
+  'clockTile': {
+    label: 'Clock Tile',
+    icon: 'mdiClock',
+    Type: ClockTile,
+    
+    defaultOptions: getDefaultsFor('clockTile')
+  },
+
   'hubitatTile': {
     label: 'Hubitat Tile',
     icon: 'mdiHomeAutomation',

@@ -24,6 +24,30 @@ export default {
     },
   },
 
+  'clockTile': {
+    'clock': {
+      sectionLabel: 'Clock Settings',
+      dependsOn: [{ name: 'drawer.showClock', value: true }],
+      sectionOptions: [
+        { name: 'showSeconds', label: 'Show seconds', type: 'boolean', default: true },
+        { name: 'showDate', label: 'Show date', type: 'boolean', default: true },
+        { name: 'showClockAttributes', label: 'Show attributes from devices', type: 'boolean', default: false }
+      ]
+    },
+  
+    'clockAttrs': {
+      sectionLabel: 'Clock Device Attributes',
+      dependsOn: [{ name: 'clock.showClockAttributes', value: true }],
+      sectionOptions: [
+        { name: 'clockAttr1Label', label: '1st attribute label', type: 'text', default: 'Attr1' },
+        { name: 'clockAttr1', label: '1st attribute', type: 'deviceattribute', default: { device: '', attribute: '' } },
+  
+        { name: 'clockAttr2Label', label: '2nd attribute label', type: 'text', default: 'Attr2' },
+        { name: 'clockAttr2', label: '2nd attribute', type: 'deviceattribute', default: { device: '', attribute: '' } }
+      ]
+    }
+  },
+
   'hubitatTile': {
     'deviceInfo': {
       sectionLabel: 'Device Info',

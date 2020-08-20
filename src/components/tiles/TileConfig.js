@@ -37,7 +37,7 @@ export default function({ tile, optionBuffer, setOptionBuffer }) {
   return (
     <Fragment>
       <Paper square elevation={0}>
-        <Tabs color="default" value={currentTab} onChange={(e, value) => setCurrentTab(value)}>
+        <Tabs variant="scrollable" color="default" value={currentTab} onChange={(e, value) => setCurrentTab(value)}>
           {uiTabs}
         </Tabs>
       </Paper>

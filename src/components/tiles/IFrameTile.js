@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, Fragment, useEffect, useRef } from 'react';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { BaseTile } from './Tile';
 import { multipleClasses } from '../../Utils';
@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 export default React.forwardRef(({ options, popped, ...props }, ref) => {
   const classes = useStyles();
 
-  const frameRef = React.createRef(null);
+  const frameRef = useRef();
 
   //set reload interval
   useEffect(() => {

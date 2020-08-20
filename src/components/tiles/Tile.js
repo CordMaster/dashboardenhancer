@@ -356,7 +356,7 @@ export const BaseTile = React.forwardRef(({ options, fillContent, content, onCli
   }
 
   //make refs safe
-  const safeRefs = ref !== null ? ref : { dragRef: false, resizeDragRef: false };
+  const safeRefs = ref !== null ? ref : { tileRef: false, dragRef: false, resizeDragRef: false };
 
   //conpute styles
   const compOptions = options ? options : {
@@ -392,7 +392,7 @@ export const BaseTile = React.forwardRef(({ options, fillContent, content, onCli
     <Transition in={popped} timeout={250}>
       { outerTransitionState =>
         <CSSTransition in={popped} timeout={250} classNames="popped">
-          <Paper className={multipleClasses(classes.tile, className, [popped, 'popped'], [popped && fillContent, 'popped-big'], [relative, 'relative'], [preview, 'preview'], [isDragging, 'dragging'], [hidden, 'hidden'])} elevation={8} style={compStyle} onClick={handleClick} {...props}>
+          <Paper ref={safeRefs.tileRef} className={multipleClasses(classes.tile, className, [popped, 'popped'], [popped && fillContent, 'popped-big'], [relative, 'relative'], [preview, 'preview'], [isDragging, 'dragging'], [hidden, 'hidden'])} elevation={8} style={compStyle} onClick={handleClick} {...props}>
               { showConfigOverlay &&
                 <Fragment>
                   <div ref={safeRefs.dragRef} className={classes.editCover}></div>

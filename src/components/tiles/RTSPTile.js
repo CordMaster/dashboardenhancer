@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useEffect, useContext } from 'react';
+import React, { useState, Fragment, useEffect, useContext, useRef } from 'react';
 import JSMpeg from '@cycjimmy/jsmpeg-player';
 import { Paper, makeStyles, Typography } from '@material-ui/core';
 import { BaseTile } from './Tile';
@@ -15,7 +15,7 @@ export default React.forwardRef(({ options, popped, ...props }, ref) => {
   const classes = useStyles();
 
   const { config } = useContext(MainContext);
-  const canvasRef = React.createRef(null);
+  const canvasRef = useRef();
 
   const proxyAddress = config.rtspProxy.rtspProxyAddress;
   const streamAddress = options.deviceInfo.streamAddress;
